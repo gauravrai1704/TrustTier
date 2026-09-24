@@ -1,0 +1,29 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+deployments
+
+# Off-chain router / EZKL working directories (added in later phases)
+off-chain/__pycache__/
+off-chain/**/__pycache__/
+off-chain/.venv/
+off-chain/.pytest_cache/
+off-chain/risk_model/artifacts/
+*.pyc
+
+# EZKL circuit artifacts (Weeks 3-5): regenerate via circuits/build_circuit.py.
+# pk.key alone is ~375MB and kzg.srs regenerates in under a second, so
+# neither belongs in version control. network.compiled, vk.key, proof.json,
+# Verifier.sol, and calldata.bytes are small and kept tracked, since they
+# let a reviewer verify the pipeline's output without re-running proving.
+circuits/pk.key
+circuits/kzg.srs
+circuits/risk_model.onnx
+circuits/model_metadata.json

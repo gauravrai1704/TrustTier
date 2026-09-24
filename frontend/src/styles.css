@@ -1,0 +1,441 @@
+:root {
+  /* Color */
+  --bg: #0f1420;
+  --surface: #171e2e;
+  --surface-raised: #1e2740;
+  --border: #2a3348;
+  --border-strong: #3a4562;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8891a8;
+  --text-tertiary: #5a6482;
+
+  /* Tier semantics - reused everywhere: badges, table rows, chart bars */
+  --tier0: #4fd1c5;
+  --tier0-dim: rgba(79, 209, 197, 0.14);
+  --tier1: #f0b429;
+  --tier1-dim: rgba(240, 180, 41, 0.14);
+  --tier2: #ff6b4a;
+  --tier2-dim: rgba(255, 107, 74, 0.14);
+
+  /* Type */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+#root {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+a {
+  color: var(--tier0);
+}
+
+/* ---- Layout: masthead ---- */
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 36px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.masthead h1 {
+  font-size: 22px;
+}
+
+.masthead .subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.masthead .connection {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+.connection .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.connection .dot.live {
+  background: var(--tier0);
+}
+
+.connection .dot.down {
+  background: var(--tier2);
+}
+
+/* ---- Panels ---- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.panel-header h2 {
+  font-size: 16px;
+}
+
+.panel-header .panel-note {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* ---- Tier badges ---- */
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.tier-badge.tier-0 {
+  background: var(--tier0-dim);
+  color: var(--tier0);
+}
+
+.tier-badge.tier-1 {
+  background: var(--tier1-dim);
+  color: var(--tier1);
+}
+
+.tier-badge.tier-2 {
+  background: var(--tier2-dim);
+  color: var(--tier2);
+}
+
+.tier-badge .swatch {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Controls ---- */
+
+.controls-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 720px) {
+  .controls-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.field-group input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 10px;
+}
+
+.field-group input:focus {
+  outline: none;
+  border-color: var(--border-strong);
+}
+
+button {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--tier0);
+  color: var(--tier0);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--tier0);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--tier0-dim);
+  border-color: var(--tier0);
+  color: var(--tier0);
+}
+
+.error-text {
+  color: var(--tier2);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* ---- Table ---- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  padding: 0 10px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th.num {
+  text-align: right;
+}
+
+tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+tbody td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+tbody tr.row-enter {
+  animation: rowFadeIn 0.4s ease-out both;
+}
+
+@keyframes rowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  tbody tr.row-enter {
+    animation: none;
+  }
+}
+
+.tx-hash {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---- Summary stat cards ---- */
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 720px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.stat-card .stat-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+/* ---- Cost comparison bars ---- */
+
+.cost-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cost-bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px;
+  align-items: center;
+  gap: 12px;
+}
+
+.cost-bar-row .cost-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cost-bar-track {
+  height: 20px;
+  background: var(--surface-raised);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
+}
+
+.cost-bar-row .cost-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* ---- Tier pipeline hero ---- */
+
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.pipeline-stage {
+  flex: 1;
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: relative;
+}
+
+.pipeline-stage:not(:first-child) {
+  border-left: none;
+}
+
+.pipeline-stage .stage-tier {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.pipeline-stage .stage-name {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.pipeline-stage .stage-count {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.pipeline-stage .stage-desc {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
+.pipeline-stage .stage-bar {
+  height: 3px;
+  margin-top: 16px;
+  border-radius: 2px;
+}
+
+.empty-state {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  padding: 20px 0;
+  text-align: center;
+}

@@ -1,0 +1,560 @@
+# TrustTier
+
+**A Cost-Tiered Zero-Knowledge Verification Framework for DeFi Liquidation Risk Scoring**
+
+CSD436 (Blockchain Technology) course project.
+
+TrustTier escalates the strength of on-chain verification for a liquidation
+decision in proportion to how close a position is to its liquidation
+boundary — a near-free heuristic check far from danger, a cheap
+cryptographic commitment check approaching the boundary, and a full
+zk-SNARK proof of correct model execution only when a position is at
+genuine risk. See `PROPOSAL.md` (or the course-submitted proposal doc) for
+the full problem statement, baseline references, and system architecture.
+
+## Current status: Weeks 1–8 milestones complete
+
+**Weeks 1–2:** Contracts, tier-routing logic, and a full test suite are
+implemented and passing against a **mocked** Tier-2 verifier.
+
+**Weeks 2–3:** The off-chain router (FastAPI + web3.py) computes each
+position's delta, decides its tier, runs the risk model where needed, and
+submits the matching on-chain transaction. A synthetic position stream has
+been verified end-to-end against a local chain, correctly exercising all
+three tiers.
+
+**Weeks 3–5:** The real EZKL zero-knowledge proving pipeline is built and
+verified end-to-end: the risk model is compiled into a Halo2 circuit, a
+real zk-SNARK proof is generated and verified both locally and on-chain,
+and the mock Tier-2 verifier has been replaced with the real EZKL-generated
+verifier contract inside `LiquidationEngine`. See "The EZKL pipeline"
+below for full details and measured performance numbers.
+
+**Weeks 5–6:** The tiering policy has been replayed against real
+historical Aave V2 data (one wallet's full on-chain health-factor
+trajectory, including a genuine liquidation event) plus a larger synthetic
+batch, producing the cost-comparison and tier-distribution numbers the
+proposal calls for: TrustTier's policy uses **53.5% less gas** than
+verifying every position with a full zk-SNARK, while still providing real
+cryptographic verification wherever it matters. See "The Weeks 5-6
+evaluation" below for the full report, data provenance, and an honestly-
+documented calibration finding.
+
+**Weeks 6–7:** Sepolia network configuration, verifier-mode selection
+(mock vs. the real EZKL verifier), and Etherscan verification tooling are
+built and locally dry-run tested (`VERIFIER_MODE=real` against a local
+funded account exercises the exact same deployment code path Sepolia
+uses). The actual Sepolia broadcast itself has not been executed — the
+development environment this repo was built in has no network access to
+any Ethereum RPC endpoint, confirmed directly rather than assumed. See
+"Deploying to Sepolia" below for the exact remaining steps, which require
+your own RPC provider and funded testnet account.
+
+**Concurrency (guide feedback response):** two distinct concurrency gaps
+have been addressed. First, a genuine correctness gap: the per-position
+finalization lock described in the project's problem statement had been
+written into the proposal text but never actually implemented in
+`LiquidationEngine.sol` until now — confirmed by re-reading the contract,
+not assumed. Second, a performance gap directly responding to the guide's
+comment on applying concurrency to execute multiple transactions
+concurrently: `TierAuditLog`'s original array-based storage forced every
+transaction, regardless of position, to conflict with every other one.
+Both are now fixed, and the resulting parallelism improvement is
+concretely measured, not just claimed: **374 rounds (fully sequential) →
+1 round (fully parallel)** for the same 374-transaction batch used in the
+Weeks 5-6 evaluation. See "Concurrency" below for the full design
+rationale, the measurement methodology, and its honestly-stated
+limitations.
+
+**Weeks 7–8:** A React dashboard (`frontend/`) is built and its full data
+pipeline verified end-to-end: Vite's dev-server proxy correctly forwards
+real on-chain transaction data (actual tx hashes, actual gas costs) from
+the FastAPI backend into the UI. It shows the live tier-distribution
+pipeline, a synthetic-stream trigger, a manual single-position evaluator,
+the on-chain audit trail, and a cost-comparison panel reading the same
+measured gas constants as the Weeks 5-6 evaluation (via a new `/cost-model`
+endpoint, so the frontend never duplicates those numbers). One honest
+limitation: this sandboxed environment has no browser, so the data layer
+is confirmed working correctly but the rendered UI's visual appearance
+has not been screenshotted or visually verified — see `frontend/README.md`.
+
+## Repo structure
+
+```
+trusttier/
+├── contracts/
+│   ├── ModelRegistry.sol        # registers/revokes hash-committed model versions
+│   ├── TierAuditLog.sol         # append-only on-chain audit trail
+│   ├── LiquidationEngine.sol    # core tier-routing logic (Tier 0/1/2)
+│   ├── EzklVerifier.sol         # REAL zk-SNARK verifier, generated by EZKL (Weeks 3-5)
+│   ├── interfaces/
+│   │   └── ITier2Verifier.sol   # verifier interface, matching EZKL's actual generated signature
+│   └── mocks/
+│       └── MockTier2Verifier.sol  # configurable mock verifier, used in Weeks 1-2
+├── test/                        # Hardhat/Solidity test suite (47 tests)
+│   ├── ModelRegistry.test.js
+│   ├── TierAuditLog.test.js
+│   ├── LiquidationEngine.test.js    # tier routing against the mock verifier
+│   ├── EzklVerifier.test.js         # standalone real-verifier on-chain tests
+│   └── EzklIntegration.test.js      # full LiquidationEngine + real verifier integration
+├── scripts/
+│   └── deploy.js                # deploys + wires the full stack, writes deployments/<network>.json
+├── deployments/                 # generated: contract addresses + ABIs per network
+├── circuits/
+│   ├── build_circuit.py         # the full EZKL pipeline, ONNX -> proof -> Solidity verifier
+│   ├── requirements.txt         # ezkl (kept separate from off-chain/'s runtime deps)
+│   ├── settings.json            # generated: circuit settings (visibility, scale, logrows)
+│   ├── network.compiled         # generated: the compiled circuit
+│   ├── vk.key                   # generated: verification key
+│   ├── proof.json               # generated: a real proof for the sample position
+│   ├── calldata.bytes           # generated: ready-to-send EVM calldata for that proof
+│   ├── Verifier.sol             # generated: EZKL's raw output (copied into contracts/ with a header)
+│   └── (pk.key, kzg.srs not tracked - regenerate via build_circuit.py, see .gitignore)
+├── off-chain/
+│   ├── requirements.txt
+│   ├── main.py                  # FastAPI app (health, evaluate, simulate)
+│   ├── risk_model/
+│   │   ├── features.py          # shared feature schema (train + inference)
+│   │   ├── synthetic_data.py    # synthetic *training* data for the risk model
+│   │   ├── train.py             # trains the model, exports ONNX (zipmap=False for EZKL), computes model hash
+│   │   ├── inference.py         # ONNX Runtime inference wrapper
+│   │   └── artifacts/           # generated: risk_model.onnx, model_metadata.json
+│   ├── router/
+│   │   ├── delta.py             # distance-to-liquidation-boundary calculator
+│   │   ├── tiering.py           # tier escalation policy (Tier 0/1/2 bands)
+│   │   ├── commitment.py        # Tier-1 commitment hash (input+output binding)
+│   │   ├── position_stream.py   # synthetic *position* stream for demos (distinct from training data)
+│   │   ├── chain_client.py      # web3.py wrapper around the deployed contracts
+│   │   └── processor.py         # orchestrates delta -> tier -> model -> on-chain call
+│   ├── scripts/
+│   │   ├── setup_chain.py       # registers the trained model on-chain (idempotent)
+│   │   └── run_synthetic_stream.py  # CLI milestone demo
+│   ├── evaluation/
+│   │   ├── data/
+│   │   │   ├── aave_v2_wallet_0x01ac....csv  # REAL Aave V2 wallet health-factor history
+│   │   │   └── README.md        # data provenance, license, single-account limitation
+│   │   ├── real_data.py         # loads the real CSV, derives the 5 model features
+│   │   ├── cost_model.py        # measured (not estimated) per-tier gas/timing constants
+│   │   ├── evaluate.py          # the Weeks 5-6 milestone script
+│   │   ├── concurrency_sim.py   # Weeks 6-7 OCC scheduling simulation (guide feedback response)
+│   │   └── results/
+│   │       ├── evaluation_report.md      # generated: full cost-comparison report
+│   │       └── concurrency_report.md     # generated: parallelism simulation report
+│   └── tests/
+│       ├── test_delta_tiering.py     # pure unit tests (13 tests, no chain dependency)
+│       ├── test_evaluation.py        # evaluation module tests (8 tests, no chain dependency)
+│       └── test_concurrency_sim.py   # OCC scheduler tests (11 tests, no chain dependency)
+├── hardhat.config.js
+├── .env.example                 # Sepolia deployment vars (Weeks 6-7)
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js            # proxies /api to the FastAPI backend on :8000
+│   ├── index.html                # loads Space Grotesk + IBM Plex Mono
+│   ├── README.md
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx               # layout, state, API orchestration
+│       ├── api.js                # fetch wrapper for the off-chain router
+│       ├── styles.css            # design system (color/type tokens, components)
+│       └── components/
+│           ├── TierPipeline.jsx   # hero: live tier-distribution flow diagram
+│           ├── TierBadge.jsx
+│           ├── Controls.jsx       # simulate-stream + manual-evaluate forms
+│           ├── ResultsTable.jsx   # on-chain audit trail
+│           └── CostComparison.jsx # TrustTier vs always-Tier-0/2, live
+└── package.json
+```
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- No local Solidity compiler needed — Hardhat manages this automatically
+
+## Setup
+
+```bash
+npm install
+```
+
+## Running tests
+
+```bash
+npx hardhat test
+```
+
+You should see 55 passing tests covering:
+- Model registration, revocation, and authorization (`ModelRegistry`)
+- Audit log access control and per-position decision logging (`TierAuditLog`)
+- All three verification tiers, the mock verifier's accept/reject paths,
+  verifier hot-swapping, the per-position finalization lock, and a full
+  end-to-end multi-tier flow (`LiquidationEngine`)
+- The real EZKL-generated verifier, standalone: on-chain verification of a
+  genuine zk-SNARK proof, gas measurement, and rejection of tampered
+  calldata (`EzklVerifier.test.js`)
+- The real EZKL verifier wired into `LiquidationEngine`: a genuine Tier-2
+  decision end to end, including the mock-to-real hot-swap demonstration
+  (`EzklIntegration.test.js`)
+
+## Compiling
+
+```bash
+npx hardhat compile
+```
+
+## Deploying locally
+
+```bash
+npx hardhat node                                       # in one terminal, keep running
+npx hardhat run scripts/deploy.js --network localhost   # in another
+```
+
+This deploys `ModelRegistry`, `TierAuditLog`, `MockTier2Verifier`, and
+`LiquidationEngine`, authorizes the engine to write to the audit log, and
+writes `deployments/localhost.json` (addresses + ABIs) for the Python
+router to consume.
+
+## Running the off-chain router
+
+With a local node running and contracts deployed (above):
+
+```bash
+cd off-chain
+pip install -r requirements.txt
+
+# Train the risk model and export it to ONNX (only needs to be re-run if
+# the model changes)
+python -m risk_model.train
+
+# Register the trained model's hash on-chain (idempotent, safe to re-run)
+python -m scripts.setup_chain
+
+# Run pure unit tests (delta/tiering logic, no chain dependency)
+python -m pytest tests/ -v
+
+# Run the Weeks 2-3 milestone demo: a synthetic position stream routed
+# through Tier 0/1/2 against the local chain
+python -m scripts.run_synthetic_stream
+
+# Or serve it over HTTP
+uvicorn main:app --reload --port 8000
+# then: curl -X POST "http://127.0.0.1:8000/simulate?n_positions=12"
+```
+
+## Frontend dashboard (Weeks 7-8)
+
+With the local chain, contracts, and off-chain router already running
+(the four steps in "Running the off-chain router" above, including
+`uvicorn main:app --reload --port 8000`):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the URL Vite prints. See `frontend/README.md` for what's on the page
+and the design rationale. The dashboard's `/cost-model` data and every
+number in its on-chain audit trail come from live calls to the same
+backend and contracts everything else in this repo uses — nothing in the
+frontend is mocked or hardcoded.
+
+## Deploying to Sepolia (Weeks 6-7)
+
+1. Get a Sepolia RPC URL from a provider (Alchemy, Infura, or any public
+   Sepolia endpoint) and some free Sepolia testnet ETH from a faucet
+   (e.g. the Google Cloud Web3 faucet, or Alchemy's Sepolia faucet).
+2. Copy `.env.example` to `.env` and fill in `SEPOLIA_RPC_URL` and
+   `PRIVATE_KEY` (the private key of an account holding that testnet ETH -
+   **never** a real-funds key). `ETHERSCAN_API_KEY` is optional, only
+   needed for the verification step below.
+3. Deploy:
+   ```bash
+   npx hardhat run scripts/deploy.js --network sepolia
+   ```
+   This automatically deploys the **real EZKL-generated verifier**
+   (`Halo2Verifier`, not the mock) - Sepolia is the real testnet
+   demonstration, so `deploy.js` defaults to `real` verifier mode for any
+   network other than `hardhat`/`localhost`. Override either way with
+   `VERIFIER_MODE=mock` or `VERIFIER_MODE=real` if needed.
+4. Verify the contracts on Sepolia Etherscan (the deploy script prints the
+   exact commands, with addresses filled in, at the end of its output):
+   ```bash
+   npx hardhat verify --network sepolia <ModelRegistry address>
+   npx hardhat verify --network sepolia <TierAuditLog address>
+   npx hardhat verify --network sepolia <Halo2Verifier address>
+   npx hardhat verify --network sepolia <LiquidationEngine address> \
+     <ModelRegistry address> <TierAuditLog address> <Halo2Verifier address>
+   ```
+5. Point the off-chain router at Sepolia instead of the local chain:
+   ```bash
+   export TRUSTTIER_RPC_URL=<your Sepolia RPC URL>
+   export TRUSTTIER_NETWORK=sepolia
+   cd off-chain
+   python -m scripts.setup_chain
+   python -m scripts.run_synthetic_stream
+   ```
+   (`chain_client.py` reads `deployments/sepolia.json`, written automatically
+   by step 3 above, exactly the way it reads `deployments/localhost.json`
+   today - no code changes needed to switch networks.)
+
+**A note on what this project could and couldn't do in its own development
+environment:** the sandboxed environment these instructions and this
+repository were built in has no network access to any Ethereum RPC
+endpoint (Infura, Alchemy, or any public node) - only a small allowlist of
+package-registry domains (npm, PyPI, GitHub, crates.io) is reachable. This
+was confirmed directly (a request to a public Sepolia RPC returned "Host
+not in allowlist"), not assumed. As a result, the actual Sepolia broadcast
+in step 3 above has not been executed and cannot be, from within that
+environment - it requires a real funded account and real RPC access, which
+are yours to provide. Everything else in this section (the network
+config, the verifier-mode logic, the Etherscan verification command
+generation) has been fully built and dry-run tested locally: running
+`VERIFIER_MODE=real npx hardhat run scripts/deploy.js --network localhost`
+exercises the exact same code path Sepolia deployment will use - deploying
+the real `Halo2Verifier` (not the mock) and wiring it into
+`LiquidationEngine` - against a local funded account, confirming the
+mechanics work correctly before you spend real testnet ETH on it.
+
+## The EZKL pipeline (Weeks 3-5)
+
+The full pipeline — ONNX model to compiled circuit to proof to on-chain
+verifier — is implemented in `circuits/build_circuit.py`. To reproduce it:
+
+```bash
+cd off-chain && python -m risk_model.train    # if not already done
+cd ../circuits
+pip install -r requirements.txt
+python3 build_circuit.py
+```
+
+This regenerates every circuit artifact, including `pk.key` (~375MB) and
+`kzg.srs` (~4MB), neither of which are tracked in the repo — see
+`.gitignore`. Everything else (the compiled circuit, verification key,
+proof, generated verifier contract, and calldata) is small and already
+included.
+
+**Measured results from this pipeline** (on the reference model: 5 inputs
+→ 8 hidden → 1 output, `logrows=15`):
+
+| Step | Time / Size |
+|---|---|
+| Circuit compilation | 5.6 KB compiled circuit |
+| Setup (proving + verification keys) | ~16s, 375MB pk.key / 109KB vk.key |
+| Proof generation | ~25s, 32KB proof |
+| Local verification | ~0.06s |
+| On-chain verification (standalone `Halo2Verifier.verifyProof`) | 847,265 gas |
+| Full Tier-2 decision (`LiquidationEngine.decideZkProof`, includes registry check + verification + audit log write) | 1,009,202 gas |
+
+The ~25s proving time is dramatically faster than the "minutes to hours"
+figure reported for large models in the ZKML EuroSys 2024 baseline
+reference — a direct, measured confirmation that keeping the risk model
+small (rather than deep) is what makes Tier-2 verification practical at all.
+
+**Two caveats, documented in detail in `build_circuit.py`'s module
+docstring:**
+1. The SRS (structured reference string) is **self-generated**
+   (`ezkl.gen_srs`), not from a public trusted-setup ceremony. This is
+   appropriate for local development and coursework demonstration; a real
+   deployment should use a ceremony-audited SRS instead (only skipped here
+   because this environment's network restrictions blocked the remote
+   params server, not because self-generation is the right general approach).
+2. `ezkl.create_evm_verifier` internally attempts a `solc`-based sanity
+   check that can fail in network-restricted environments (it tries to
+   fetch a compiler via `svm-rs`). This does not affect the generated
+   verifier's correctness — `Verifier.sol` is already written to disk
+   before that internal check runs, and Hardhat's own separately-configured
+   `solc` toolchain compiles and deploys it correctly regardless (confirmed
+   by the full passing test suite).
+
+An important interface fix discovered during this phase: EZKL's generated
+`Halo2Verifier.verifyProof` is declared `public`, not `view`. Since
+Solidity resolves a call's opcode (`CALL` vs `STATICCALL`) based on the
+*interface's* declared mutability at the call site (not the callee's
+actual implementation), `ITier2Verifier` originally declaring the function
+`view` would have caused calls to the real verifier to compile down to a
+`STATICCALL` — safe only so long as the callee never touches state in any
+way Solidity's own analysis didn't already catch. `ITier2Verifier` has
+been updated to drop `view` entirely, exactly matching EZKL's actual
+declared mutability, removing that risk.
+
+## Swapping in the real EZKL verifier — already done
+
+This swap (mock → real EZKL verifier) has already been carried out and is
+covered by `test/EzklIntegration.test.js`, which deploys
+`LiquidationEngine` wired directly to the real `EzklVerifier.sol` (not
+`MockTier2Verifier`) and calls `decideZkProof` with a genuine zk-SNARK
+proof. That test also includes an explicit hot-swap demonstration: the
+same `LiquidationEngine` instance is shown accepting a garbage proof under
+the permissive mock, then correctly rejecting that same garbage proof
+immediately after `setTier2Verifier` swaps in the real verifier — with the
+genuine proof still succeeding.
+
+To perform this swap against your own deployment:
+```javascript
+await liquidationEngine.setTier2Verifier(await ezklVerifier.getAddress());
+```
+No redeployment of `LiquidationEngine`, `ModelRegistry`, or `TierAuditLog`
+is required — this is exactly what the `ITier2Verifier` interface
+abstraction (introduced in Weeks 1-2, before EZKL was ever integrated) was
+designed to enable.
+
+## The Weeks 5-6 evaluation
+
+Run from the `off-chain/` directory (no chain or contracts needed - this
+is a pure off-chain simulation using measured cost constants, see
+`evaluation/cost_model.py`):
+
+```bash
+cd off-chain
+python -m evaluation.evaluate
+```
+
+This replays two datasets through the tiering policy and the actual
+trained risk model:
+
+1. **Real data**: 74 snapshots from one real Aave V2 wallet's full
+   on-chain health-factor history (2021-01 to 2022-06), including a
+   genuine liquidation event where health factor crosses below 1.0 and
+   collateral subsequently collapses. See `evaluation/data/README.md` for
+   full provenance, license, and an important honesty note: this is a
+   **single real account**, not a large-N historical sample - the full
+   35,524-account source dataset is Dropbox-hosted and wasn't reachable
+   from this project's network environment. The file documents exactly
+   how to extend to a larger real sample later (an Etherscan or TheGraph
+   API key).
+2. **Synthetic data**: 300 positions from the existing generator
+   (`router/position_stream.py`), for statistical breadth alongside the
+   real single-account case study.
+
+**Measured results** (see `evaluation/results/evaluation_report.md` for
+the full report):
+
+| Dataset | N | Tier 0 | Tier 1 | Tier 2 | TrustTier gas | Always-Tier-2 gas | Savings |
+|---|---|---|---|---|---|---|---|
+| Real (single-account) | 74 | 26 | 13 | 35 | 39,993,555 | 74,680,948 | 46.4% |
+| Synthetic | 300 | 100 | 91 | 109 | 135,356,787 | 302,760,600 | 55.3% |
+| Combined | 374 | 126 | 104 | 144 | 175,350,342 | 377,441,548 | **53.5%** |
+
+Per-tier gas costs are measured values from this project's own test suite
+(`test/EzklIntegration.test.js`'s real zk-SNARK verification for Tier 2),
+not estimates. A fresh proof is deliberately **not** regenerated per
+evaluation position - proving cost is a property of the fixed circuit, not
+of any individual input, so applying one measured cost via simulation is
+standard methodology here (re-proving 374 times would take over an hour
+and change nothing about the result).
+
+**An honestly-reported limitation, not hidden:** the evaluation also
+includes a Tier-0 calibration check (do positions receiving no
+verification ever look risky by the model's own assessment?), which
+surfaced a real finding: 84.1% of Tier-0-routed positions are flagged
+high-risk by the model at its default threshold. Investigation traced this
+to the *synthetic training data's* label construction (a sigmoid centered
+at `ltv=0.5`, while both the position generator and the real wallet's data
+concentrate LTV mass above 0.5) rather than a flaw in the tiering bands
+themselves - confirmed by checking that 93.3% of *all* synthetic
+positions, regardless of tier, get flagged high-risk. This is documented
+in full in the evaluation report as a data/model calibration issue to
+address (e.g. retraining on a better-balanced label distribution) rather
+than smoothed over.
+
+## Concurrency
+
+Two distinct concurrency concerns are addressed here, prompted by the
+guide's comment: *"Consider multiple transactions in a block for
+execution; you may apply concurrency to execute the multiple transactions
+concurrently and achieve better performance."*
+
+### 1. A correctness gap that had to be honestly identified first
+
+The project's problem statement has described a per-position finalization
+lock since Weeks 5-6 ("each position may only be finalized once"), but
+re-reading `LiquidationEngine.sol` while investigating the guide's comment
+showed this had never actually been implemented — only described in
+prose. Concretely, before this fix, two transactions for the *same*
+position (e.g. one liquidator bot submitting `decideHeuristic(5)`, another
+simultaneously submitting `decideZkProof(5)`) could both succeed, with the
+second silently overwriting the first in the audit log and no record that
+a race had even occurred.
+
+**Fix:** `LiquidationEngine` now has a `positionFinalized` mapping,
+checked and set (via `_finalizeOnce`) as the first effect of every
+`decide*` function. A second attempt on an already-finalized position
+reverts with `PositionAlreadyFinalized`, regardless of which tier either
+attempt used. A reverted attempt (e.g. an invalid proof) does *not*
+consume the position's one shot — confirmed by a dedicated test.
+
+### 2. A performance gap: false conflicts that blocked all parallelism
+
+`TierAuditLog`'s original design called `decisions.push(...)` on every
+single decision, which writes to the shared array-length storage slot —
+meaning **every transaction, for every position, conflicted with every
+other transaction** under any conflict-aware concurrent execution scheme
+(optimistic concurrency control / parallel EVM execution, in the style of
+Block-STM). This is the opposite of what the guide's comment asks for: a
+design that forces full serialization even when the underlying positions
+have nothing to do with each other.
+
+**Fix:** `TierAuditLog.decisions` (a `DecisionRecord[]` array) was
+replaced with `decisionByPosition` (a `mapping(uint256 => DecisionRecord)`
+keyed by position ID), and the on-chain `decisionCount()`/array-index
+accessors were removed entirely rather than replaced with a shared counter
+(a counter would reintroduce the exact same false-conflict problem via a
+different shared slot). Off-chain aggregation now uses the
+`DecisionLogged` event log instead (see
+`chain_client.get_decisions_via_events()`), which carries no on-chain
+storage-conflict cost since events aren't contract storage.
+
+### Measuring the improvement
+
+Building a real parallel transaction executor is out of scope (no
+production Ethereum client executes transactions within a block in
+parallel by default — this is a protocol-level constraint, not a gap in
+this project). What's in scope, and what `evaluation/concurrency_sim.py`
+does, is exactly how the parallel-execution research literature (e.g.
+Block-STM) itself measures achievable parallelism: model each
+transaction's storage read/write set, run a conflict-aware greedy
+scheduler, and report how many sequential "rounds" the batch needs.
+
+Run from the `off-chain/` directory:
+```bash
+python -m evaluation.concurrency_sim
+```
+
+**Result**, over the same 374-transaction batch (74 real + 300 synthetic
+positions) used in the Weeks 5-6 evaluation:
+
+| Design | Rounds needed | Achieved parallelism |
+|---|---|---|
+| OLD (array-based audit log) | 374 | 1.00x (fully sequential) |
+| NEW (per-position mapping + finalization lock) | 1 | 374.00x (fully parallel) |
+
+**Honestly-stated limitation** (also documented in the generated report):
+this is an idealized upper bound. All 374 transactions in this batch
+happen to target distinct positions, so the new design's achievable
+parallelism here is close to the best possible case. Real production
+traffic would include some fraction of transactions genuinely racing for
+the *same* position (competing liquidator bots) — those correctly still
+serialize under the new design too, and are additionally now caught by
+the finalization lock rather than silently corrupting state. This is
+confirmed by a dedicated test (`test_new_design_still_serializes_same_position_collisions`
+in `test_concurrency_sim.py`) rather than glossed over.
+
+## Design notes / security properties
+
+See the project proposal for the full breakdown. In summary, per contract:
+
+- **ModelRegistry** — authentication (only registered model versions are
+  valid) and non-repudiation (registration/revocation is permanently logged).
+- **TierAuditLog** — non-repudiation and provenance (every decision, at
+  every tier, is publicly and permanently logged with its evidence reference).
+- **LiquidationEngine** — integrity (Tier 2 requires a verified zk-SNARK
+  proof — now a genuine EZKL-generated Halo2 proof, not a mock — before
+  approving a liquidation), confidentiality (only a proof and a model
+  hash ever touch the chain — never the model weights or the raw
+  input/output pair at Tier 2, enforced via the circuit's
+  `input_visibility`/`param_visibility` settings, both set to `private`),
+  and **concurrency/consistency** (the `positionFinalized` lock guarantees
+  at most one decision is ever recorded per position, preventing race
+  conditions between concurrent liquidation attempts from producing
+  conflicting on-chain state — see "Concurrency" above for the full
+  correctness-and-performance discussion).
