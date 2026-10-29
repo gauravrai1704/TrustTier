@@ -35,6 +35,9 @@ const P = {
   reset: "M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.7L3 8M3 3v5h5",
   chevron: "M9 6l6 6-6 6",
   external: "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6",
+  database: "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6",
+  download: "M12 3v12M7 10l5 5 5-5M5 21h14",
+  user: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0",
 };
 
 export default function Icon({ name, className, title }) {

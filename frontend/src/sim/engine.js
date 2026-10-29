@@ -9,6 +9,7 @@
 // zk proofs (the "proof" is the model's output, labelled as simulated). Every
 // method returns the same shape as the live router API (off-chain/main.py),
 // so the UI cannot tell the difference except through `mode`.
+import { verifyMessage } from "ethers";
 import GAS from "../../../off-chain/evaluation/results/gas_measurements.json";
 import { MODEL_HASH, predict } from "./model";
 
@@ -105,7 +106,28 @@ export class SimEngine {
   }
 
   _emit(type, fields) {
-    this.s.events.push({ type, blockNumber: this.s.block, txHash: hex(64), timestamp: this.s.time, ...fields });
+    this.s.events.push({ type, blockNumber: this.s.block, txHash: hex(64), timestamp: this.s.time,
+      actor: (this.actor || ROUTER).toLowerCase(), ...fields });
+  }
+
+  _log(action, positionId, ok, detail, gasUsed) {
+    (this.s.actions ||= []).push({ id: this.s.actions.length + 1, ts: Math.floor(Date.now() / 1000), action,
+      address: this.actor ? this.actor.toLowerCase() : null, position_id: positionId == null ? null : String(positionId),
+      ok: ok ? 1 : 0, detail: detail || null, gas_used: gasUsed ?? null, tx_hash: null });
+  }
+
+  /** Wrap an action so it lands in the simulated action log. */
+  async _act(action, positionId, fn) {
+    try {
+      const r = await fn();
+      this._log(action, positionId ?? r?.position_id, true, r?.tier_reason || r?.outcome || r?.detail, r?.gas_used);
+      this._save();
+      return r;
+    } catch (e) {
+      this._log(action, positionId, false, e.message);
+      this._save();
+      throw e;
+    }
   }
 
   _price(m, at = this.s.time) {
@@ -194,7 +216,7 @@ export class SimEngine {
 
   _openClaim(id, q, deltaBps, commitment) {
     const st = this._st(id);
-    st.claimant = ROUTER;
+    st.claimant = this.actor || ROUTER;
     st.bond = this._requiredBond();
     st.challengeDeadline = this.s.time + CHALLENGE_WINDOW;
     st.challenged = false;
@@ -307,7 +329,7 @@ export class SimEngine {
 
   // ---- actions ---------------------------------------------------------
 
-  async openPosition({ market = 0, ltv, account_age_days = 200, time_since_last_topup_days = 5, position_id } = {}) {
+  async _openPosition({ market = 0, ltv, account_age_days = 200, time_since_last_topup_days = 5, position_id } = {}) {
     const m = this.s.markets[market];
     if (!m) throw new Error(`unknown market ${market}`);
     const id = position_id ?? ++this.s.nextId;
@@ -324,7 +346,7 @@ export class SimEngine {
     return this.getPosition(id);
   }
 
-  async evaluate(id, forceTier = null) {
+  async _evaluate(id, forceTier = null) {
     id = Number(id);
     const f = this._features(id);
     const allowed = f.deltaBps > T0_MIN ? "HEURISTIC" : f.deltaBps > T1_MIN ? "COMMITMENT" : "ZK_PROOF";
@@ -407,7 +429,7 @@ export class SimEngine {
     };
   }
 
-  async challenge(id) {
+  async _challenge(id) {
     id = Number(id);
     const proof = await this.challengeProof(id);
     if (!proof.high_risk) return { slashed: false, proof, detail: "the proof on the snapshot shows low risk: the claim holds" };
@@ -416,19 +438,20 @@ export class SimEngine {
     if (st.bond === 0n) throw new Error("NotChallengeable: no bond to slash");
     if (this.s.time > st.challengeDeadline) throw new Error("ChallengeWindowClosed");
     this._tick();
-    this._emit("ChallengeCommitted", { positionId: id, challenger: WATCHER });
+    const watcher = this.actor || WATCHER;
+    this._emit("ChallengeCommitted", { positionId: id, challenger: watcher });
     this._tick();
     const bond = st.bond;
     st.challenged = true;
     st.bond = 0n;
     if (!st.liquidationFinal) st.decided = false;
-    this.s.pending[WATCHER] = (this.s.pending[WATCHER] || 0n) + bond;
-    this._emit("DecisionChallenged", { positionId: id, challenger: WATCHER, bond: bond.toString() });
+    this.s.pending[watcher] = (this.s.pending[watcher] || 0n) + bond;
+    this._emit("DecisionChallenged", { positionId: id, challenger: watcher, bond: bond.toString() });
     this._save();
     return { slashed: true, proof, gas_used: GAS.commitChallenge + GAS.revealChallenge, tx_hash: hex(64) };
   }
 
-  async reclaim(id) {
+  async _reclaim(id) {
     id = Number(id);
     const st = this._st(id);
     if (this.s.time <= st.challengeDeadline) throw new Error("ChallengeWindowStillOpen");
@@ -440,7 +463,7 @@ export class SimEngine {
     return { gas_used: GAS.reclaimBond, position: await this.getPosition(id) };
   }
 
-  async liquidate(id) {
+  async _liquidate(id) {
     id = Number(id);
     const st = this._st(id);
     if (!(st.liquidationFinal && this.s.time <= st.approvedAt + APPROVAL_TTL)) {
@@ -457,12 +480,12 @@ export class SimEngine {
     p.liquidations = (p.liquidations || 0) + 1;
     this._tick();
     this._emit("ApprovalConsumed", { positionId: id });
-    this._emit("PositionLiquidated", { positionId: id, liquidator: KEEPER, debtRepaidUsd: repaid, collateralSeized: seized });
+    this._emit("PositionLiquidated", { positionId: id, liquidator: this.actor || KEEPER, debtRepaidUsd: repaid, collateralSeized: seized });
     this._save();
     return { gas_used: GAS.liquidate, position: await this.getPosition(id) };
   }
 
-  async setPrice(market, price) {
+  async _setPrice(market, price) {
     const m = this.s.markets[market];
     this._tick();
     m.rounds.push({ t: this.s.time, price });
@@ -471,11 +494,127 @@ export class SimEngine {
     return this.markets();
   }
 
-  async advance(seconds) {
+  async _advance(seconds) {
     this._tick(seconds);
     for (const m of this.s.markets) m.rounds.push({ t: this.s.time, price: this._price(m) });
     this._save();
     return { block_time: this.s.time };
+  }
+
+  openPosition(req) { return this._act("open_position", null, () => this._openPosition(req)); }
+  evaluate(id, forceTier = null) { return this._act("route", id, () => this._evaluate(id, forceTier)); }
+  challenge(id) { return this._act("challenge", id, () => this._challenge(id)); }
+  reclaim(id) { return this._act("settle_bond", id, () => this._reclaim(id)); }
+  liquidate(id) { return this._act("liquidate", id, () => this._liquidate(id)); }
+  setPrice(market, price) { return this._act("set_price", null, () => this._setPrice(market, price)); }
+  advance(seconds) { return this._act("advance_time", null, () => this._advance(seconds)); }
+
+  // ---- accounts (signature checked locally) -------------------------------
+
+  async authNonce(address) {
+    this._nonce = Math.random().toString(36).slice(2);
+    return { message: `Sign in to TrustTier.\n\nAddress: ${address.toLowerCase()}\nNonce: ${this._nonce}\nThis signature only proves wallet ownership and never authorizes any transaction or spending.` };
+  }
+
+  async authVerify(address, signature) {
+    const expected = `Sign in to TrustTier.\n\nAddress: ${address.toLowerCase()}\nNonce: ${this._nonce}\nThis signature only proves wallet ownership and never authorizes any transaction or spending.`;
+    if (verifyMessage(expected, signature).toLowerCase() !== address.toLowerCase()) throw new Error("Signature does not match the address.");
+    const users = (this.s.users ||= {});
+    const a = address.toLowerCase();
+    const now = Math.floor(Date.now() / 1000);
+    users[a] = { address: a, created_at: users[a]?.created_at || now, last_seen: now, sign_ins: (users[a]?.sign_ins || 0) + 1 };
+    this._save();
+    return { session_token: `sim-${a}`, address: a, user: users[a] };
+  }
+
+  async authLogout() { return { ok: true }; }
+
+  async faucet(address) {
+    const a = address.toLowerCase();
+    (this.s.balances ||= {})[a] = (this.s.balances[a] || 0n) + 10n * 10n ** 18n;
+    this._log("faucet", null, true, "10 simulated ETH");
+    this._save();
+    return { address, amount_wei: String(10n ** 19n), balance_wei: this.s.balances[a].toString() };
+  }
+
+  async balanceOf(address) {
+    return (this.s.balances?.[address.toLowerCase()] || 0n).toString();
+  }
+
+  async pendingOf(address) {
+    return (this.s.pending?.[address] || this.s.pending?.[address.toLowerCase()] || 0n).toString();
+  }
+
+  async recordAction() { return null; }
+
+  // ---- the ledger, over the simulated events -------------------------------
+
+  _rows() {
+    return this.s.events.map((e, i) => ({
+      id: i + 1, deployment: "simulation", block_number: e.blockNumber, block_time: e.timestamp, tx_hash: e.txHash,
+      log_index: i, contract: "simulated", type: e.type, position_id: e.positionId == null ? null : String(e.positionId),
+      actor: e.actor || null, tier: e.tier || null, amount_wei: e.bond || e.amount || null,
+      // the live database stores raw event arguments (USD with 8 decimals)
+      data: e.debtRepaidUsd != null ? { ...e, debtRepaidUsd: Math.round(e.debtRepaidUsd * 1e8) } : e,
+    }));
+  }
+
+  async dbDeployments() {
+    const r = this._rows();
+    return { current: "simulation", deployments: [{ deployment: "simulation", events: r.length, first: r[0]?.block_time, last: r.at(-1)?.block_time }] };
+  }
+
+  async dbSummary() {
+    const r = this._rows();
+    const by = (k) => r.reduce((m, e) => ((m[e[k]] = (m[e[k]] || 0) + 1), m), {});
+    const sum = (t) => r.filter((e) => e.type === t).reduce((a, e) => a + BigInt(e.amount_wei || 0), 0n).toString();
+    return {
+      deployment: "simulation", events: r.length, actors: new Set(r.map((e) => e.actor)).size,
+      positions: new Set(r.filter((e) => e.position_id).map((e) => e.position_id)).size,
+      indexed_block: this.s.block, by_type: by("type"),
+      decisions_by_tier: r.filter((e) => e.type === "DecisionLogged").reduce((m, e) => ((m[e.tier] = (m[e.tier] || 0) + 1), m), {}),
+      slashed_wei: sum("DecisionChallenged"), rewards_wei: sum("RewardPaid"), forfeited_wei: sum("BondForfeited"),
+      debt_repaid_usd: r.filter((e) => e.type === "PositionLiquidated").reduce((a, e) => a + (e.data.debtRepaidUsd || 0) / 1e8, 0),
+      actions: (this.s.actions || []).length, users: Object.keys(this.s.users || {}).length,
+    };
+  }
+
+  async dbLeaderboard() {
+    const r = this._rows();
+    const rank = (type, withAmount) => Object.values(r.filter((e) => e.type === type).reduce((m, e) => {
+      const k = e.actor;
+      m[k] ||= { address: k, count: 0, amount_wei: 0n };
+      m[k].count += 1;
+      if (withAmount) m[k].amount_wei += BigInt(e.amount_wei || 0);
+      return m;
+    }, {})).map((x) => ({ ...x, amount_wei: x.amount_wei.toString() })).sort((a, b) => b.count - a.count).slice(0, 10);
+    return { watchers: rank("DecisionChallenged", true), claimants: rank("SafeClaimRecorded"), liquidators: rank("PositionLiquidated") };
+  }
+
+  async dbEvents({ type, position_id, actor, limit = 100, offset = 0 } = {}) {
+    let r = this._rows().reverse();
+    if (type) r = r.filter((e) => e.type === type);
+    if (position_id) r = r.filter((e) => e.position_id === String(position_id));
+    if (actor) r = r.filter((e) => e.actor === actor.toLowerCase());
+    return { deployment: "simulation", total: r.length, events: r.slice(Number(offset), Number(offset) + Number(limit)) };
+  }
+
+  async dbActions(limit = 50) {
+    return { actions: (this.s.actions || []).slice().reverse().slice(0, limit) };
+  }
+
+  async dbAccount(address) {
+    const a = address.toLowerCase();
+    return { address: a, user: this.s.users?.[a] || null, events: (await this.dbEvents({ actor: a, limit: 200 })).events,
+      actions: (this.s.actions || []).filter((x) => x.address === a).reverse() };
+  }
+
+  async currentProof(id) {
+    const f = this._features(Number(id));
+    const { label, probs } = predict(f.q);
+    return { position_id: Number(id), past_round: 1, model_hash: MODEL_HASH, proof: hex(64), features_q: f.q,
+      public_inputs: [...f.q, label, Math.round(probs[0] * 1024), Math.round(probs[1] * 1024)].map(String),
+      label, high_risk: label === 1, proof_kind: "simulated", proving_seconds: 16.1 };
   }
 
   async simulate(n = 9) {
@@ -484,13 +623,15 @@ export class SimEngine {
       const market = i % 3;
       const band = i % 3;
       const ltv = band === 0 ? 0.35 + Math.random() * 0.2 : band === 1 ? 0.68 + Math.random() * 0.06 : 0.76 + Math.random() * 0.12;
-      const pos = await this.openPosition({ market, ltv: Math.min(ltv, this.s.markets[market].thresholdBps / 10_000 + 0.1),
+      const pos = await this._openPosition({ market, ltv: Math.min(ltv, this.s.markets[market].thresholdBps / 10_000 + 0.1),
         account_age_days: Math.round(30 + Math.random() * 900), time_since_last_topup_days: Math.round(Math.random() * 40) });
-      const r = await this.evaluate(pos.position_id);
+      const r = await this._evaluate(pos.position_id);
       results.push({ ...r, market: this.s.markets[market].name });
     }
     const tier_counts = {};
     for (const r of results) tier_counts[r.tier] = (tier_counts[r.tier] || 0) + 1;
+    this._log("route_stream", null, true, Object.entries(tier_counts).map(([k, v]) => `${k}:${v}`).join(" "));
+    this._save();
     return { results, tier_counts, all_tiers_exercised: Object.keys(tier_counts).length === 3 };
   }
 }

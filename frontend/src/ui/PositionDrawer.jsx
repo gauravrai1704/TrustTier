@@ -5,7 +5,9 @@ import Icon from "./Icon";
 import { Callout, DeltaGauge, Drawer, FeatureBars, Proving, StateBadge, TierBadge, useAction } from "./kit";
 import { useBackend, useData } from "../api/backend";
 import { useWallet } from "./Wallet";
+import { AbiCoder, hexlify, keccak256, randomBytes } from "ethers";
 import { engineContract, liquidatorContract, walletChallenge } from "../wallet";
+import { explorerTx } from "../lib/account";
 import { duration, eth, gas, num, short, usd } from "../lib/format";
 
 const EVENT_TEXT = {
@@ -46,6 +48,49 @@ export default function PositionDrawer({ id, onClose }) {
   const events = (ev?.events || []).filter((e) => Number(e.positionId) === Number(id));
   const live = backend?.mode === "live";
   const signer = live && wallet.state?.signer && wallet.deployment ? wallet.state.signer : null;
+  const chainId = wallet.deployment?.chainId;
+
+  /** The signed-in account decides the position itself: its key, its bond, its gas. */
+  async function decideMyself() {
+    const engine = engineContract(signer, wallet.deployment);
+    const required = await engine.requiredBond();
+    const bond = required > 10n ** 16n ? (required * 5n) / 4n : required;
+    let tier = dishonest ? (p.allowed_tier === "HEURISTIC" ? "HEURISTIC" : "COMMITMENT") : p.allowed_tier;
+    if (tier === "COMMITMENT" && !dishonest && p.model_label === 1) tier = "ZK_PROOF"; // never make a claim a watcher could slash
+    if (tier === "HEURISTIC") {
+      const r = await (await engine.decideHeuristic(id, p.past_round, { value: bond })).wait();
+      wallet.record("decide_tier0", id, r);
+      return { tier, gas: r.gasUsed, hash: r.hash };
+    }
+    if (tier === "COMMITMENT") {
+      const score = BigInt(Math.round(p.model_p_high * 1e6));
+      const salt = hexlify(randomBytes(32));
+      const q = p.features_q.map(BigInt);
+      const commitment = keccak256(AbiCoder.defaultAbiCoder().encode(["uint256[]", "int256", "bytes32"], [q, score, salt]));
+      const r = await (await engine.decideCommitment(id, p.past_round, wallet.deployment.modelHash, commitment, { value: bond })).wait();
+      wallet.record("decide_tier1", id, r);
+      let gasUsed = r.gasUsed;
+      if (!dishonest) {
+        const r2 = await (await engine.revealCommitment(id, q, score, salt)).wait();
+        wallet.record("reveal_commitment", id, r2);
+        gasUsed += r2.gasUsed;
+      }
+      return { tier, gas: gasUsed, hash: r.hash };
+    }
+    const proof = await backend.currentProof(id);
+    if (!proof.high_risk) return { tier, low: true };
+    const r = await (await engine.decideZkProof(id, proof.past_round, proof.model_hash, proof.proof, proof.public_inputs.map(BigInt))).wait();
+    wallet.record("decide_tier2", id, r);
+    return { tier, gas: r.gasUsed, hash: r.hash };
+  }
+
+  async function routeMyself() {
+    await run("mine", decideMyself, {
+      ok: "Decided from your account",
+      okText: (r) => (r.low ? "The proof shows low risk: nothing to submit." : `${r.tier.replace("_", " ")} · ${num(r.gas)} gas, paid by you${r.tier !== "ZK_PROOF" ? " · bond posted" : ""}`),
+    });
+    refresh();
+  }
 
   async function route() {
     const force = dishonest ? (p.allowed_tier === "HEURISTIC" ? "HEURISTIC" : "COMMITMENT") : null;
@@ -66,9 +111,10 @@ export default function PositionDrawer({ id, onClose }) {
 
   async function challenge() {
     if (signer) {
-      await run("challenge", () => walletChallenge(signer, wallet.deployment, id, proof), {
-        ok: "Claim slashed from your wallet", okText: "Commit + reveal confirmed; the bond is credited to you.",
+      const r = await run("challenge", () => walletChallenge(signer, wallet.deployment, id, proof), {
+        ok: "Claim slashed from your account", okText: "Commit + reveal confirmed; the bond is credited to you.",
       });
+      if (r) wallet.record("challenge", id, r);
     } else {
       await run("challenge", () => backend.challenge(id), {
         ok: "Claim slashed", okText: (r) => (r.slashed ? `Commit-reveal challenge · ${num(r.gas_used)} gas` : r.detail),
@@ -80,9 +126,10 @@ export default function PositionDrawer({ id, onClose }) {
 
   async function liquidate() {
     if (signer) {
-      await run("liq", async () => (await liquidatorContract(signer, wallet.deployment).liquidate(id)).wait(), {
-        ok: "Soft liquidation executed from your wallet",
+      const r = await run("liq", async () => (await liquidatorContract(signer, wallet.deployment).liquidate(id)).wait(), {
+        ok: "Soft liquidation executed from your account", okText: "The 5% liquidation bonus was credited to you in the pool.",
       });
+      if (r) wallet.record("liquidate", id, r);
     } else {
       await run("liq", () => backend.liquidate(id), {
         ok: "Soft liquidation executed", okText: (r) => `50% of the debt closed · ${num(r.gas_used)} gas`,
@@ -93,7 +140,8 @@ export default function PositionDrawer({ id, onClose }) {
 
   async function reclaim() {
     if (signer) {
-      await run("reclaim", async () => (await engineContract(signer, wallet.deployment).reclaimBond(id)).wait(), { ok: "Bond settled" });
+      const r = await run("reclaim", async () => (await engineContract(signer, wallet.deployment).reclaimBond(id)).wait(), { ok: "Bond settled" });
+      if (r) wallet.record("settle_bond", id, r);
     } else {
       await run("reclaim", () => backend.reclaim(id), { ok: "Bond settled", okText: (r) => `${num(r.gas_used)} gas` });
     }
@@ -165,9 +213,15 @@ export default function PositionDrawer({ id, onClose }) {
                 </label>
                 <button className="btn btn-primary" disabled={!!busy} onClick={route}>
                   <Icon name="play" />
-                  {busy === "route" ? "Routing…" : dishonest ? "Make a cheap claim anyway" : "Route through TrustTier"}
+                  {busy === "route" ? "Routing…" : dishonest ? "Router: make a cheap claim anyway" : "Route through TrustTier"}
                 </button>
-                {busy === "route" && p.allowed_tier === "ZK_PROOF" && <Proving />}
+                {signer && (
+                  <button className="btn" disabled={!!busy} onClick={routeMyself}>
+                    <Icon name="key" />{busy === "mine" ? "Waiting for your signatures…" : "Decide it myself (sign with my account)"}
+                  </button>
+                )}
+                {!wallet.state && <div className="small muted"><a href="#" onClick={(e) => { e.preventDefault(); wallet.openSignIn(); }}>Sign in</a> to make claims, challenges and liquidations from your own account.</div>}
+                {(busy === "route" || busy === "mine") && p.allowed_tier === "ZK_PROOF" && <Proving />}
               </div>
             )}
 
@@ -190,7 +244,7 @@ export default function PositionDrawer({ id, onClose }) {
                 {proof?.high_risk && (
                   <button className="btn btn-danger" disabled={!!busy} onClick={challenge}>
                     <Icon name="hammer" />
-                    {busy === "challenge" ? "Committing, then revealing…" : signer ? "Slash it from my wallet (commit + reveal)" : "Slash the bond (commit + reveal)"}
+                    {busy === "challenge" ? "Committing, then revealing…" : signer ? "Slash it from my account (commit + reveal)" : "Slash the bond (commit + reveal)"}
                   </button>
                 )}
               </div>
@@ -201,7 +255,7 @@ export default function PositionDrawer({ id, onClose }) {
             )}
             {p.state === "APPROVED" && (
               <button className="btn btn-danger" disabled={!!busy} onClick={liquidate}>
-                <Icon name="bolt" />{busy === "liq" ? "Executing…" : signer ? "Execute from my wallet" : "Execute the soft liquidation"}
+                <Icon name="bolt" />{busy === "liq" ? "Executing…" : signer ? "Execute from my account (earn the bonus)" : "Execute the soft liquidation"}
               </button>
             )}
             {lastResult && (
@@ -224,7 +278,7 @@ export default function PositionDrawer({ id, onClose }) {
                       <span className="node"><Icon name={icon} /></span>
                       <div className="t-title">{text}</div>
                       <div className="t-meta">
-                        block {e.blockNumber}
+                        {explorerTx(chainId, e.txHash) ? <a href={explorerTx(chainId, e.txHash)} target="_blank" rel="noreferrer">block {e.blockNumber}</a> : <>block {e.blockNumber}</>}
                         {e.tier ? ` · ${e.tier}` : ""}
                         {e.bond ? ` · ${eth(e.bond)}` : ""}
                         {e.amount ? ` · ${eth(e.amount)}` : ""}

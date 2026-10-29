@@ -6,6 +6,16 @@ export class LiveBackend {
   constructor(base = "/api") {
     this.mode = "live";
     this.base = base.replace(/\/$/, "");
+    this.session = null; // SIWE session token, sent as X-Session
+  }
+
+  /** Absolute URL of the router's JSON-RPC proxy (for in-browser wallets). */
+  get rpcUrl() {
+    return new URL(`${this.base}/rpc`, window.location.href).href;
+  }
+
+  url(path) {
+    return new URL(`${this.base}${path}`, window.location.href).href;
   }
 
   async _req(path, { method = "GET", body, timeout } = {}) {
@@ -14,7 +24,7 @@ export class LiveBackend {
     try {
       const res = await fetch(`${this.base}${path}`, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(this.session ? { "X-Session": this.session } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: ctrl.signal,
       });
@@ -47,4 +57,22 @@ export class LiveBackend {
   simulate(n) { return this._req(`/simulate?n_positions=${n}`, { method: "POST" }); }
   authNonce(address) { return this._req(`/auth/nonce?address=${encodeURIComponent(address)}`); }
   authVerify(address, signature) { return this._req("/auth/verify", { method: "POST", body: { address, signature } }); }
+  authMe() { return this._req("/auth/me"); }
+  authLogout() { return this._req("/auth/logout", { method: "POST" }); }
+  faucet(address) { return this._req("/faucet", { method: "POST", body: { address } }); }
+  currentProof(id) { return this._req(`/positions/${id}/proof`, { method: "POST" }); }
+  recordAction(a) { return this._req("/actions", { method: "POST", body: a }).catch(() => null); }
+  dbSummary() { return this._req("/db/summary"); }
+  dbDeployments() { return this._req("/db/deployments"); }
+  dbLeaderboard() { return this._req("/db/leaderboard"); }
+  dbActions(limit = 50) { return this._req(`/db/actions?limit=${limit}`); }
+  dbAccount(address) { return this._req(`/db/accounts/${address}`); }
+  dbEvents(f = {}) {
+    const q = new URLSearchParams(Object.entries(f).filter(([, v]) => v !== "" && v != null));
+    return this._req(`/db/events?${q}`);
+  }
+  dbCsvUrl(f = {}) {
+    const q = new URLSearchParams(Object.entries(f).filter(([, v]) => v !== "" && v != null));
+    return this.url(`/db/events.csv?${q}`);
+  }
 }

@@ -11,6 +11,7 @@ import Watchtower from "./pages/Watchtower";
 import Economics from "./pages/Economics";
 import Activity from "./pages/Activity";
 import Protocol from "./pages/Protocol";
+import Ledger from "./pages/Ledger";
 
 const PAGES = {
   overview: { title: "Overview", icon: "overview", crumb: "Cost-tiered zero-knowledge verification for DeFi liquidations", C: Overview },
@@ -18,6 +19,7 @@ const PAGES = {
   watchtower: { title: "Watchtower", icon: "watch", crumb: "Catch false claims, execute approvals", C: Watchtower },
   economics: { title: "Economics", icon: "economics", crumb: "Measured gas, baselines and incentives", C: Economics },
   activity: { title: "Activity", icon: "activity", crumb: "Contract events, live", C: Activity },
+  ledger: { title: "Ledger", icon: "database", crumb: "The database: every event and every action", C: Ledger },
   protocol: { title: "Protocol", icon: "protocol", crumb: "Deployment, trust assumptions, connection", C: Protocol },
 };
 

@@ -428,8 +428,10 @@ details.table-view table { margin-top: 8px; }
   .hero h2 { font-size: 30px; }
   .mobile-nav {
     display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: var(--surface);
-    border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); justify-content: space-around;
+    border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); justify-content: space-between;
+    overflow-x: auto; scrollbar-width: none;
   }
+  .mobile-nav a { flex: 1 0 auto; min-width: 54px; }
   .mobile-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--muted); padding: 4px 6px; text-decoration: none; }
   .mobile-nav a.active { color: var(--accent); }
   .mobile-nav svg { width: 20px; height: 20px; }
@@ -443,3 +445,21 @@ details.table-view table { margin-top: 8px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------------------------------------------------------------- modal + accounts */
+.modal {
+  position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px); overflow-y: auto; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 18px;
+  box-shadow: var(--shadow-lg); padding: 22px; display: flex; flex-direction: column; gap: 16px; animation: fade 0.18s ease;
+}
+.modal-head { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; }
+.modal-head h3 { font-size: 17px; }
+.phrase { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
+.phrase span { font-family: var(--mono); font-size: 13px; padding: 7px 9px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+.phrase span i { font-style: normal; color: var(--muted); font-size: 11px; margin-right: 6px; }
+.phrase.hidden span { filter: blur(6px); user-select: none; }
+.phrase-cover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; color: var(--ink); }
+.acct-row { display: grid; grid-template-columns: auto auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.acct-row.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.acct-row input { accent-color: var(--accent); }
+textarea.input { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; }
