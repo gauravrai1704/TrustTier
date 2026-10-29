@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {IPositionSource} from "../interfaces/IPositionSource.sol";
 import {AggregatorV3Interface} from "../interfaces/AggregatorV3Interface.sol";
+import {ILiquidationTarget} from "../interfaces/ILiquidationTarget.sol";
 
 /// @title MockLendingPool
 /// @notice A minimal lending protocol that integrates TrustTier natively: it
@@ -11,7 +12,15 @@ import {AggregatorV3Interface} from "../interfaces/AggregatorV3Interface.sol";
 ///         Chainlink price feed. Positions are bookkeeping only (no tokens
 ///         move): this is a TEST/DEMO stand-in for a real protocol, and the
 ///         timestamp setter exists so demos can create aged positions.
-contract MockLendingPool is IPositionSource {
+///
+///         Liquidations are SOFT: an approved liquidation closes CLOSE_FACTOR
+///         of the debt and moves collateral worth the repaid debt plus a
+///         LIQUIDATION_BONUS to the liquidator, which pulls the position back
+///         from the boundary instead of closing it. Only the pool's
+///         TrustTierLiquidator may liquidate, so every liquidation is backed
+///         by a Tier-2 proof - including pre-emptive ones before LTV crosses
+///         the threshold, which is what the model is for.
+contract MockLendingPool is IPositionSource, ILiquidationTarget {
     struct Market {
         address priceFeed;
         address volatilityFeed;
@@ -27,18 +36,43 @@ contract MockLendingPool is IPositionSource {
         bool exists;
     }
 
+    uint256 public constant CLOSE_FACTOR_BPS = 5000;     // repay 50% of the debt
+    uint256 public constant LIQUIDATION_BONUS_BPS = 500; // +5% collateral to the liquidator
+
     Market[] public markets;
     mapping(uint256 => Account) public accounts;
+    /// @notice Collateral credited to liquidators, per market (asset units).
+    mapping(address => mapping(uint256 => uint256)) public seizedCollateral;
+    address public owner;
+    address public liquidator;
 
     event MarketAdded(uint256 indexed market, address priceFeed, address volatilityFeed, uint256 thresholdBps);
     event PositionOpened(uint256 indexed positionId, uint256 indexed market, uint256 collateralAmount, uint256 debtUsd);
     event CollateralAdded(uint256 indexed positionId, uint256 amount);
     event DebtChanged(uint256 indexed positionId, uint256 debtUsd);
+    event LiquidatorSet(address indexed liquidator);
+    event PositionLiquidated(
+        uint256 indexed positionId, address indexed liquidator, uint256 debtRepaidUsd, uint256 collateralSeized
+    );
 
     error UnknownPosition(uint256 positionId);
     error PositionExists(uint256 positionId);
     error UnknownMarket(uint256 market);
     error BadPrice(address feed);
+    error NotOwner();
+    error NotLiquidator();
+    error NothingToLiquidate(uint256 positionId);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    /// @notice Wire the TrustTierLiquidator once it is deployed.
+    function setLiquidator(address _liquidator) external {
+        if (msg.sender != owner) revert NotOwner();
+        liquidator = _liquidator;
+        emit LiquidatorSet(_liquidator);
+    }
 
     function addMarket(address priceFeed, address volatilityFeed, uint256 thresholdBps) external returns (uint256 id) {
         id = markets.length;
@@ -75,6 +109,27 @@ contract MockLendingPool is IPositionSource {
         Account storage a = _account(positionId);
         a.openedAt = openedAt;
         a.lastTopUpAt = lastTopUpAt;
+    }
+
+    /// @inheritdoc ILiquidationTarget
+    function executeLiquidation(uint256 positionId, address to)
+        external
+        override
+        returns (uint256 debtRepaidUsd, uint256 collateralSeized)
+    {
+        if (msg.sender != liquidator) revert NotLiquidator();
+        Account storage a = _account(positionId);
+        if (a.debtUsd == 0 || a.collateralAmount == 0) revert NothingToLiquidate(positionId);
+        Market storage m = markets[a.market];
+        (, int256 price, , , ) = AggregatorV3Interface(m.priceFeed).latestRoundData();
+        if (price <= 0) revert BadPrice(m.priceFeed);
+        debtRepaidUsd = (a.debtUsd * CLOSE_FACTOR_BPS) / 10_000;
+        collateralSeized = (debtRepaidUsd * (10_000 + LIQUIDATION_BONUS_BPS) * 1e18) / (10_000 * uint256(price));
+        if (collateralSeized > a.collateralAmount) collateralSeized = a.collateralAmount;
+        a.debtUsd -= debtRepaidUsd;
+        a.collateralAmount -= collateralSeized;
+        seizedCollateral[to][a.market] += collateralSeized;
+        emit PositionLiquidated(positionId, to, debtRepaidUsd, collateralSeized);
     }
 
     /// @inheritdoc IPositionSource

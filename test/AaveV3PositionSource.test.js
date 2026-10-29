@@ -76,7 +76,7 @@ describe("AaveV3PositionSource", function () {
   it("enforces tiers on Aave positions: safe accounts can use Tier 0, risky ones only Tier 2", async function () {
     await source.register(alice.address);
     await source.register(bob.address);
-    await expect(t.engine.decideHeuristic(1, PAST_ROUND, { value: BOND })).to.emit(t.engine, "LiquidationApproved");
+    await expect(t.engine.decideHeuristic(1, PAST_ROUND, { value: BOND })).to.emit(t.engine, "SafeClaimRecorded");
     await expect(t.engine.decideHeuristic(0, PAST_ROUND, { value: BOND }))
       .to.be.revertedWithCustomError(t.engine, "TierNotAllowed");
     await expect(t.engine.decideZkProof(0, PAST_ROUND, t.modelHash, "0x01", await t.inputs(0, 1)))

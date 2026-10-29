@@ -65,9 +65,15 @@ class RealPosition:
         }
 
 
-def load_real_positions(position_id_start: int = 2000) -> list:
-    df = pd.read_csv(DATA_PATH)
+def load_real_positions(position_id_start: int = 2000, path: str = DATA_PATH) -> list:
+    return positions_from_frame(pd.read_csv(path), position_id_start)
+
+
+def positions_from_frame(df: pd.DataFrame, position_id_start: int = 2000) -> list:
+    """One wallet's snapshots (Cred Protocol's column layout) -> RealPositions."""
+    df = df.copy()
     df["block_timestamp"] = pd.to_datetime(df["block_timestamp"])
+    df = df.sort_values("block_timestamp")
 
     # Drop the very first row: HF is `inf` there (zero debt yet), which
     # isn't a meaningful position to route through tiering.

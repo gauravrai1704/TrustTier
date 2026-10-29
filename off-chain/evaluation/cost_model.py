@@ -30,10 +30,13 @@ _MEASUREMENTS = os.path.join(os.path.dirname(__file__), "results", "gas_measurem
 with open(_MEASUREMENTS) as _f:
     MEASURED = json.load(_f)
 
-# Gas of the full decision transaction per tier (features computed on-chain).
+# Gas of the full decision per tier (features computed on-chain). A Tier-1
+# claim is only complete once its commitment is opened (an unopened one
+# forfeits its bond), so its cost includes revealCommitment.
+REVEAL_GAS = MEASURED["revealCommitment"]
 DECISION_GAS_BY_TIER = {
     "HEURISTIC": MEASURED["decideHeuristic"],
-    "COMMITMENT": MEASURED["decideCommitment"],
+    "COMMITMENT": MEASURED["decideCommitment"] + REVEAL_GAS,
     "ZK_PROOF": MEASURED["decideZkProof"],
 }
 
@@ -44,6 +47,8 @@ TIER2_GAS = DECISION_GAS_BY_TIER["ZK_PROOF"]
 GAS_BY_TIER = dict(DECISION_GAS_BY_TIER)
 
 CHALLENGE_GAS = MEASURED["challengeDecision"]
+COMMITTED_CHALLENGE_GAS = MEASURED["commitChallenge"] + MEASURED["revealChallenge"]
+LIQUIDATE_GAS = MEASURED["liquidate"]
 
 # Off-chain proving time for one Tier-2 proof (EZKL, 2^16-row circuit): the
 # mean of the sample proofs circuits/build_circuit.py generated and timed on

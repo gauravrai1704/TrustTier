@@ -14,6 +14,9 @@
 //   3. Authorizes the engine as the audit-log writer and registers the model
 //      (off-chain/risk_model/artifacts/model_metadata.json). There is no
 //      feature oracle: the engine computes every feature itself.
+//      With the demo pool, deploys TrustTierLiquidator - the only path that
+//      can liquidate a pool position, and only on a Tier-2 approval - and
+//      optionally funds claim rewards (CLAIM_REWARD_ETH, REWARD_FUND_ETH).
 //   4. Optionally hands every contract to governance: a TrustTierMultisig
 //      (M-of-N) that is the only proposer/executor of a TrustTierTimelock,
 //      which becomes the owner of all three contracts.
@@ -159,6 +162,21 @@ async function main() {
   if (modelHash !== hre.ethers.ZeroHash) {
     await send(`Registered model ${modelHash}`, registry.registerModel(modelHash, "local://risk_model/artifacts/risk_model.onnx"));
   }
+  let liquidatorContract = null;
+  if (pool) {
+    liquidatorContract = await deployed("TrustTierLiquidator", await engine.getAddress(), await pool.getAddress());
+    const la = await liquidatorContract.getAddress();
+    await send("Engine: liquidator set", engine.setLiquidator(la));
+    await send("Pool: liquidator set", pool.setLiquidator(la));
+  }
+  const claimReward = process.env.CLAIM_REWARD_ETH ?? (localNetworks.has(networkName) ? "0.002" : "0");
+  const rewardFund = process.env.REWARD_FUND_ETH ?? (localNetworks.has(networkName) ? "1" : "0");
+  if (Number(claimReward) > 0) {
+    await send(`Claim reward set to ${claimReward} ETH`, engine.setClaimReward(hre.ethers.parseEther(claimReward)));
+  }
+  if (Number(rewardFund) > 0) {
+    await send(`Reward pool funded with ${rewardFund} ETH`, engine.fundRewards({ value: hre.ethers.parseEther(rewardFund) }));
+  }
 
   Object.assign(contracts, {
     ModelRegistry: { address: await registry.getAddress(), artifactName: "ModelRegistry" },
@@ -167,6 +185,9 @@ async function main() {
     LiquidationEngine: { address: await engine.getAddress(), artifactName: "LiquidationEngine" },
     PositionSource: { address: await source.getAddress(), artifactName: sourceArtifact },
   });
+  if (liquidatorContract) {
+    contracts.TrustTierLiquidator = { address: await liquidatorContract.getAddress(), artifactName: "TrustTierLiquidator" };
+  }
   const extra = {
     verifierMode, modelHash, positionSource: sourceArtifact, markets,
     maxPriceAge, maxVolatilityAge: maxVolAge,
@@ -203,6 +224,10 @@ async function main() {
     console.log(`  npx hardhat verify --network ${networkName} ${a.TierAuditLog}`);
     console.log(`  npx hardhat verify --network ${networkName} ${a.Tier2Verifier}`);
     console.log(`  npx hardhat verify --network ${networkName} ${a.LiquidationEngine} ${a.ModelRegistry} ${a.TierAuditLog} ${a.Tier2Verifier} ${modelHash} ${a.PositionSource} ${maxPriceAge} ${maxVolAge}`);
+    if (a.TrustTierLiquidator) {
+      console.log(`  npx hardhat verify --network ${networkName} ${a.TrustTierLiquidator} ${a.LiquidationEngine} ${a.PositionSource}`);
+      console.log(`  npx hardhat verify --network ${networkName} ${a.MockLendingPool}`);
+    }
     if (extra.governance) {
       const g = extra.governance;
       console.log(`  npx hardhat verify --network ${networkName} ${a.TrustTierMultisig} '[${g.owners.map((o) => `"${o}"`).join(",")}]' ${g.threshold}`);

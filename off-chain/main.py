@@ -36,6 +36,16 @@ Endpoints:
                                   features the Tier 0/1 claim snapshotted, returned
                                   unsigned; the DApp user submits the
                                   challenge from their own wallet
+    GET  /overview             - protocol parameters (required bond, reward
+                                  pool, windows) and position counts by state
+    GET  /positions            - every demo position with its on-chain view and state
+    GET  /positions/{id}       - one position: features, model verdict, state
+    POST /positions/{id}/challenge - router-account watcher: commit-reveal
+                                  challenge with a fresh proof (no wallet needed)
+    POST /positions/{id}/reclaim   - settle a claim whose window has closed
+    POST /positions/{id}/liquidate - execute an open Tier-2 approval through
+                                  TrustTierLiquidator (soft liquidation)
+    POST /chain/advance        - local chains only: fast-forward block time
 
 On authentication / sessions / a database (see docs/SECURITY.md and the
 frontend README for the fuller reasoning): this project deliberately has
@@ -80,7 +90,8 @@ app = FastAPI(title="TrustTier Off-Chain Router", version="0.1.0")
 # deployed static build) without going through that proxy.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173",
+                   "http://127.0.0.1:4173"] + [o for o in os.environ.get("TRUSTTIER_CORS", "").split(",") if o],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -131,6 +142,10 @@ class EvaluateRequest(BaseModel):
 
 class PriceRequest(BaseModel):
     price: float = Field(..., gt=0)
+
+
+class AdvanceRequest(BaseModel):
+    seconds: int = Field(3600, ge=1, le=30 * 86400)
 
 
 def _next_id() -> int:
@@ -302,10 +317,18 @@ def deployment():
         manifest = json.load(f)
 
     engine = manifest["contracts"]["LiquidationEngine"]
-    return {
+    out = {
         "network": manifest["network"],
+        "chainId": get_processor().chain.chain_id,
+        "verifierMode": manifest.get("verifierMode"),
+        "modelHash": manifest.get("modelHash"),
         "liquidationEngine": {"address": engine["address"], "abi": engine["abi"]},
+        "contracts": {k: v["address"] for k, v in manifest["contracts"].items()},
     }
+    if "TrustTierLiquidator" in manifest["contracts"]:
+        liq = manifest["contracts"]["TrustTierLiquidator"]
+        out["liquidator"] = {"address": liq["address"], "abi": liq["abi"]}
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -447,6 +470,31 @@ def events(from_block: int = 0):
             }
         )
 
+    engine_events = {
+        "LiquidationApproved": lambda a: {"positionId": a["positionId"]},
+        "SafeClaimRecorded": lambda a: {"positionId": a["positionId"], "tier": _TIER_NAMES.get(a["tier"]),
+                                        "claimant": a["claimant"], "bond": str(a["bond"])},
+        "CommitmentRevealed": lambda a: {"positionId": a["positionId"], "score": a["score"] / 1e6},
+        "CommitmentContradicted": lambda a: {"positionId": a["positionId"], "score": a["score"] / 1e6,
+                                             "bond": str(a["bondForfeited"])},
+        "BondForfeited": lambda a: {"positionId": a["positionId"], "claimant": a["claimant"], "bond": str(a["bond"])},
+        "RewardPaid": lambda a: {"positionId": a["positionId"], "claimant": a["claimant"], "amount": str(a["amount"])},
+        "ChallengeCommitted": lambda a: {"positionId": a["positionId"], "challenger": a["challenger"]},
+        "ApprovalConsumed": lambda a: {"positionId": a["positionId"]},
+        "ApprovalExpired": lambda a: {"positionId": a["positionId"]},
+        "FeaturesAnchored": lambda a: {"positionId": a["positionId"]},
+    }
+    for name, fmt in engine_events.items():
+        for e in getattr(chain.liquidation_engine.events, name).get_logs(fromBlock=from_block):
+            out.append({"type": name, "blockNumber": e["blockNumber"], "txHash": e["transactionHash"].hex(),
+                        **fmt(e["args"])})
+    if chain.lending_pool is not None:
+        for e in chain.lending_pool.events.PositionLiquidated.get_logs(fromBlock=from_block):
+            a = e["args"]
+            out.append({"type": "PositionLiquidated", "blockNumber": e["blockNumber"],
+                        "txHash": e["transactionHash"].hex(), "positionId": a["positionId"],
+                        "liquidator": a["liquidator"], "debtRepaidUsd": a["debtRepaidUsd"] / 1e8,
+                        "collateralSeized": a["collateralSeized"] / 1e18})
     out.sort(key=lambda x: x["blockNumber"])
     return {"events": out, "latest_block": chain.w3.eth.block_number}
 
@@ -477,8 +525,28 @@ def position_status(position_id: int):
     now = chain.w3.eth.get_block("latest")["timestamp"]
     challengeable = bond > 0 and not challenged and now <= deadline
 
+    approval_open = engine.functions.approvalOpen(position_id).call()
+    approved_at = engine.functions.approvedAt(position_id).call()
+    revealed = engine.functions.commitmentRevealed(position_id).call()
+    ttl = engine.functions.APPROVAL_TTL().call()
+    if approval_open:
+        state = "APPROVED"
+    elif engine.functions.liquidationFinal(position_id).call():
+        state = "APPROVAL_EXPIRED"
+    elif challenged and not finalized:
+        state = "SLASHED"
+    elif challengeable:
+        state = "CLAIM_OPEN"
+    elif finalized:
+        state = "SETTLED" if bond == 0 else "AWAITING_SETTLEMENT"
+    else:
+        state = "UNDECIDED"
     return {
         "position_id": position_id,
+        "state": state,
+        "approval_open": approval_open,
+        "approval_expires_in": max(0, approved_at + ttl - now) if approval_open else 0,
+        "commitment_revealed": revealed,
         "snapshot_features_q": chain.feature_snapshot(position_id),
         "tier2_model_hash": chain.tier2_model_hash(),
         "finalized": finalized,
@@ -492,3 +560,109 @@ def position_status(position_id: int):
         "challengeable": challengeable,
     }
 
+
+
+# ---------------------------------------------------------------------------
+# App views and actions used by the DApp (frontend/), all reading the chain.
+# ---------------------------------------------------------------------------
+
+def _liquidation_counts(chain) -> dict:
+    if chain.lending_pool is None:
+        return {}
+    counts = {}
+    for e in chain.lending_pool.events.PositionLiquidated.get_logs(fromBlock=0):
+        pid = int(e["args"]["positionId"])
+        counts[pid] = counts.get(pid, 0) + 1
+    return counts
+
+
+def _position_view(position_id: int, liquidations: Optional[dict] = None) -> dict:
+    view = position_features(position_id)
+    status = position_status(position_id)
+    chain = get_processor().chain
+    market = None
+    if chain.lending_pool is not None:
+        market = int(chain.lending_pool.functions.accounts(position_id).call()[0])
+    liq = (liquidations if liquidations is not None else _liquidation_counts(get_processor().chain)).get(position_id, 0)
+    return {**view, **status, "market": market, "liquidations": liq}
+
+
+@app.get("/overview")
+def overview():
+    chain = get_processor().chain
+    chain.refresh_mock_feeds()
+    state = chain.protocol_state()
+    ids = chain.demo_position_ids()
+    return {"protocol": {k: (str(v) if k.endswith("_wei") else v) for k, v in state.items()},
+            "positions": len(ids), "verifier_mode": chain.verifier_mode,
+            "model_hash": chain.tier2_model_hash(), "network": chain.manifest.get("network")}
+
+
+@app.get("/positions")
+def list_positions(limit: int = 60):
+    chain = get_processor().chain
+    chain.refresh_mock_feeds()
+    liquidations = _liquidation_counts(chain)
+    out = []
+    for pid in reversed(chain.demo_position_ids()[-limit:]):
+        try:
+            out.append(_position_view(pid, liquidations))
+        except HTTPException:
+            continue
+    return {"positions": out}
+
+
+@app.get("/positions/{position_id}")
+def get_position(position_id: int):
+    return _position_view(position_id)
+
+
+@app.post("/positions/{position_id}/challenge")
+def challenge_as_router(position_id: int):
+    """Watcher run by the router's own account: prove the claim's snapshot,
+    then commit and reveal the challenge (two transactions, so the proof
+    cannot be front-run). For users without a wallet in the demo."""
+    processor = get_processor()
+    chain = processor.chain
+    proof = processor.challenge_proof(position_id)
+    if not proof["high_risk"]:
+        return {"slashed": False, "proof": proof, "detail": "the proof on the snapshot shows low risk: the claim holds"}
+    p = bytes.fromhex(proof["proof"][2:])
+    inputs = [int(x) for x in proof["public_inputs"]]
+    try:
+        c, r = chain.commit_and_reveal_challenge(position_id, proof["model_hash"], p, inputs)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=_revert_reason(e))
+    return {"slashed": True, "proof": proof, "gas_used": c.gasUsed + r.gasUsed,
+            "tx_hash": "0x" + r.transactionHash.hex().removeprefix("0x")}
+
+
+@app.post("/positions/{position_id}/reclaim")
+def reclaim(position_id: int):
+    chain = get_processor().chain
+    try:
+        r = chain.reclaim_bond(position_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=_revert_reason(e))
+    return {"gas_used": r.gasUsed, "position": _position_view(position_id)}
+
+
+@app.post("/positions/{position_id}/liquidate")
+def liquidate(position_id: int):
+    chain = get_processor().chain
+    try:
+        r = chain.liquidate(position_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=_revert_reason(e))
+    return {"gas_used": r.gasUsed, "position": _position_view(position_id)}
+
+
+@app.post("/chain/advance")
+def advance(request: AdvanceRequest):
+    chain = get_processor().chain
+    try:
+        t = chain.advance_time(request.seconds)
+        chain.refresh_mock_feeds()
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"block_time": t}

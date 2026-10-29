@@ -1,0 +1,21 @@
+{
+  "data": "/home/user/TrustTier/off-chain/evaluation/data/aave_v2_wallet_0x01acb3804ba9c42111c6e9c127831eb486ca1ac7.csv",
+  "wallets": 1,
+  "snapshots": 73,
+  "horizon_days": 7,
+  "deployed_model_v2": {
+    "n": 73,
+    "positives": 1,
+    "precision": 0.026,
+    "recall": 1.0,
+    "roc_auc": 0.861
+  },
+  "hf_rule_warn_below_1.15": {
+    "n": 73,
+    "positives": 1,
+    "precision": 0.025,
+    "recall": 1.0,
+    "roc_auc": 0.819
+  },
+  "candidate_model": "skipped: 1 wallet(s); retraining needs at least 20 (download the complete dataset, see module docstring)"
+}

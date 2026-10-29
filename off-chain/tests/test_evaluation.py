@@ -83,7 +83,7 @@ class TestCostModelSource:
         with open(path) as f:
             measured = json.load(f)
         assert DECISION_GAS_BY_TIER["HEURISTIC"] == measured["decideHeuristic"]
-        assert DECISION_GAS_BY_TIER["COMMITMENT"] == measured["decideCommitment"]
+        assert DECISION_GAS_BY_TIER["COMMITMENT"] == measured["decideCommitment"] + measured["revealCommitment"]
         assert DECISION_GAS_BY_TIER["ZK_PROOF"] == measured["decideZkProof"]
         assert "commitPositionFeatures" not in measured  # no oracle transaction any more
 

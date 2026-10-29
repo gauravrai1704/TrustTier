@@ -101,14 +101,16 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
 
   describe("tier enforcement from on-chain delta", function () {
     it("allows Tier 0 only when delta > 15%", async function () {
-      await expect(tier0(SAFE)).to.emit(engine, "LiquidationApproved").withArgs(SAFE, Tier.Heuristic, ethers.ZeroHash);
+      await expect(tier0(SAFE)).to.emit(engine, "SafeClaimRecorded")
+        .withArgs(SAFE, Tier.Heuristic, ethers.ZeroHash, owner.address, BOND);
       await expect(tier0(WATCH))
         .to.be.revertedWithCustomError(engine, "TierNotAllowed").withArgs(WATCH, Tier.Heuristic, 1000);
       await expect(tier0(RISKY)).to.be.revertedWithCustomError(engine, "TierNotAllowed");
     });
 
     it("allows Tier 1 only when delta > 5%", async function () {
-      await expect(tier1(WATCH)).to.emit(engine, "LiquidationApproved").withArgs(WATCH, Tier.Commitment, MODEL);
+      await expect(tier1(WATCH)).to.emit(engine, "SafeClaimRecorded")
+        .withArgs(WATCH, Tier.Commitment, MODEL, owner.address, BOND);
       await expect(tier1(RISKY))
         .to.be.revertedWithCustomError(engine, "TierNotAllowed").withArgs(RISKY, Tier.Commitment, -1300);
     });
@@ -262,11 +264,15 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
       await expect(engine.reclaimBond(SAFE)).to.emit(engine, "BondReclaimed").withArgs(SAFE, other.address, BOND);
     });
 
-    it("a Tier-2 liquidation is final", async function () {
+    it("a Tier-2 approval blocks every decision until it expires, then the position re-opens", async function () {
       await tier2(RISKY);
-      await increaseTime(2 * 3600);
-      await priceFeed.updateAnswer(PRICE);
       await expect(tier2(RISKY)).to.be.revertedWithCustomError(engine, "PositionAlreadyFinalized");
+      expect(await engine.approvalOpen(RISKY)).to.equal(true);
+      await increaseTime(31 * 60); // APPROVAL_TTL = 30 min
+      await priceFeed.updateAnswer(PRICE);
+      expect(await engine.approvalOpen(RISKY)).to.equal(false);
+      await expect(tier2(RISKY)).to.emit(engine, "ApprovalExpired").withArgs(RISKY)
+        .and.to.emit(engine, "LiquidationApproved");
     });
 
     it("after an unchallenged window the position can be re-decided, crediting the old bond", async function () {
@@ -361,7 +367,7 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
   describe("deposit-funded bonds", function () {
     it("a claim without ETH draws MIN_BOND from the claimant's deposit", async function () {
       await expect(engine.connect(other).deposit({ value: BOND * 3n })).to.emit(engine, "Deposited").withArgs(other.address, BOND * 3n);
-      await expect(engine.connect(other).decideHeuristic(SAFE, PAST_ROUND)).to.emit(engine, "LiquidationApproved");
+      await expect(engine.connect(other).decideHeuristic(SAFE, PAST_ROUND)).to.emit(engine, "SafeClaimRecorded");
       expect(await engine.bondOf(SAFE)).to.equal(BOND);
       expect(await engine.claimant(SAFE)).to.equal(other.address);
       expect(await engine.pendingWithdrawals(other.address)).to.equal(BOND * 2n);

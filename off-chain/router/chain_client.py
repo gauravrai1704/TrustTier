@@ -86,6 +86,9 @@ class ChainClient:
         self.position_source = self._load_contract(manifest, "PositionSource")
         self.lending_pool = (self._load_contract(manifest, "MockLendingPool")
                              if "MockLendingPool" in manifest["contracts"] else None)
+        # The consumer that executes Tier-2 approvals (demo pool deployments).
+        self.liquidator = (self._load_contract(manifest, "TrustTierLiquidator")
+                           if "TrustTierLiquidator" in manifest["contracts"] else None)
         self._aggregator_abi = manifest["aggregatorAbi"]
         self.markets = manifest.get("markets", [])
 
@@ -93,15 +96,18 @@ class ChainClient:
         entry = manifest["contracts"][name]
         return self.w3.eth.contract(address=entry["address"], abi=entry["abi"])
 
-    def _send(self, function_call, value: int = 0):
-        """Build, sign, and send a transaction from self.account; wait for the receipt."""
-        tx = function_call.build_transaction(
-            {
-                "from": self.account.address,
-                "nonce": self.w3.eth.get_transaction_count(self.account.address),
-                "value": value,
-            }
-        )
+    def _send(self, function_call, value: int = 0, gas: int | None = None):
+        """Build, sign, and send a transaction from self.account; wait for the
+        receipt. `gas` skips estimation (needed when a call is only valid in
+        a later block than the one estimation simulates, e.g. revealChallenge)."""
+        params = {
+            "from": self.account.address,
+            "nonce": self.w3.eth.get_transaction_count(self.account.address),
+            "value": value,
+        }
+        if gas is not None:
+            params["gas"] = gas
+        tx = function_call.build_transaction(params)
         signed = self.w3.eth.account.sign_transaction(tx, private_key=self.account.key)
         raw_tx = getattr(signed, "raw_transaction", None) or signed.rawTransaction
         tx_hash = self.w3.eth.send_raw_transaction(raw_tx)
@@ -122,6 +128,32 @@ class ChainClient:
 
     def min_bond(self) -> int:
         return self.liquidation_engine.functions.MIN_BOND().call()
+
+    def required_bond(self) -> int:
+        """Bond a Tier 0/1 claim needs now: max(MIN_BOND, BOND_GAS_COVER * basefee).
+        Evaluated on the pending block, with 25% headroom for a base-fee rise
+        before inclusion (any excess is returned with the bond)."""
+        base = self.liquidation_engine.functions.requiredBond().call(block_identifier="pending")
+        return base if base == self.min_bond() else base * 5 // 4
+
+    def protocol_state(self) -> dict:
+        e = self.liquidation_engine.functions
+        latest = self.w3.eth.get_block("latest")
+        return {
+            "required_bond_wei": e.requiredBond().call(),
+            "min_bond_wei": e.MIN_BOND().call(),
+            "bond_gas_cover": e.BOND_GAS_COVER().call(),
+            "base_fee_wei": latest.get("baseFeePerGas", 0),
+            "reward_pool_wei": e.rewardPool().call(),
+            "claim_reward_wei": e.claimReward().call(),
+            "challenge_window_s": e.CHALLENGE_WINDOW().call(),
+            "approval_ttl_s": e.APPROVAL_TTL().call(),
+            "anchor_ttl_s": e.ANCHOR_TTL().call(),
+            "liquidator": e.liquidator().call(),
+            "block_number": latest["number"],
+            "block_time": latest["timestamp"],
+            "chain_id": self.chain_id,
+        }
 
     @property
     def verifier_mode(self) -> str:
@@ -262,13 +294,29 @@ class ChainClient:
             raise RuntimeError("real price feeds cannot be moved")
         return self._send(self.feed(m["priceFeed"]).functions.updateAnswer(price))
 
+    def advance_time(self, seconds: int) -> int:
+        """Local demo chains only: move block time forward (e.g. past a
+        challenge window) and mine a block. Returns the new block time."""
+        if self.chain_id not in LOCAL_CHAIN_IDS:
+            raise RuntimeError("time travel is only available on a local dev chain")
+        self.w3.provider.make_request("evm_increaseTime", [int(seconds)])
+        self.w3.provider.make_request("evm_mine", [])
+        return self.block_time()
+
+    def demo_position_ids(self) -> list[int]:
+        """Every position opened in the demo pool (from PositionOpened logs)."""
+        if self.lending_pool is None:
+            return []
+        logs = self.lending_pool.events.PositionOpened.get_logs(fromBlock=0)
+        return [int(e["args"]["positionId"]) for e in logs]
+
     # ---- Decisions ----
 
     def decide_heuristic(self, position_id: int, past_round: int, bond: int = None):
         """Tier 0: allowed by the chain only if delta > 15%; bonded."""
         return self._send(
             self.liquidation_engine.functions.decideHeuristic(position_id, past_round),
-            value=bond if bond is not None else self.min_bond(),
+            value=bond if bond is not None else self.required_bond(),
         )
 
     def decide_commitment(self, position_id: int, past_round: int, model_hash: str, commitment_hash: str,
@@ -276,8 +324,41 @@ class ChainClient:
         """Tier 1: allowed by the chain only if delta > 5%; bonded."""
         return self._send(
             self.liquidation_engine.functions.decideCommitment(position_id, past_round, model_hash, commitment_hash),
-            value=bond if bond is not None else self.min_bond(),
+            value=bond if bond is not None else self.required_bond(),
         )
+
+    def reveal_commitment(self, position_id: int, q: list[int], score_fixed: int, salt: bytes):
+        """Open a Tier-1 commitment (must happen inside the challenge window,
+        or the bond is forfeited)."""
+        return self._send(
+            self.liquidation_engine.functions.revealCommitment(position_id, [int(x) for x in q], score_fixed, salt)
+        )
+
+    def anchor_features(self, position_id: int, past_round: int) -> tuple[list[int], object]:
+        """Fix the position's features for ANCHOR_TTL; returns (q, receipt)."""
+        receipt = self._send(self.liquidation_engine.functions.anchorFeatures(position_id, past_round))
+        ev = self.liquidation_engine.events.FeaturesAnchored().process_receipt(receipt)[0]
+        return [int(x) for x in ev["args"]["features"]], receipt
+
+    def commit_and_reveal_challenge(self, position_id: int, model_hash: str, proof: bytes, public_inputs: list):
+        """Front-running-proof challenge: commit to keccak(proof) bound to this
+        account and the claim's snapshot, then reveal in a later block."""
+        from eth_abi import encode
+        snapshot = self.liquidation_engine.functions.featureSnapshot(position_id).call()
+        commitment = Web3.keccak(encode(["address", "uint256", "bytes32", "bytes32"],
+                                        [self.account.address, position_id, snapshot, Web3.keccak(proof)]))
+        c = self._send(self.liquidation_engine.functions.commitChallenge(position_id, commitment))
+        r = self._send(self.liquidation_engine.functions.revealChallenge(position_id, model_hash, proof, public_inputs),
+                       gas=2_000_000)
+        if r.status != 1:
+            raise RuntimeError("revealChallenge reverted")
+        return c, r
+
+    def liquidate(self, position_id: int):
+        """Execute an open Tier-2 approval through TrustTierLiquidator."""
+        if self.liquidator is None:
+            raise RuntimeError("this deployment has no TrustTierLiquidator")
+        return self._send(self.liquidator.functions.liquidate(position_id))
 
     def decide_zk_proof(self, position_id: int, past_round: int, model_hash: str, proof: bytes,
                         public_inputs: list):

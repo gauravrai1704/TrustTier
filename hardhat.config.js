@@ -1,5 +1,22 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+const { subtask } = require("hardhat/config");
+const { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } = require("hardhat/builtin-tasks/task-names");
+
+// Offline builds: HARDHAT_LOCAL_SOLC=1 compiles with the solcjs package from
+// node_modules instead of downloading a compiler (same 0.8.24 release).
+if (process.env.HARDHAT_LOCAL_SOLC === "1") {
+  subtask(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD, async (args, hre, runSuper) => {
+    const solc = require("solc");
+    if (args.solcVersion !== "0.8.24") return runSuper();
+    return {
+      compilerPath: require.resolve("solc/soljson.js"),
+      isSolcJs: true,
+      version: args.solcVersion,
+      longVersion: solc.version(),
+    };
+  });
+}
 
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";

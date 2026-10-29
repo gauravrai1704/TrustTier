@@ -10,13 +10,18 @@ The router supplies NO position data. Per position it:
   2. Picks the weakest tier the chain will accept for that delta
      (decide_tier_bps mirrors the contract's thresholds), then:
      Tier 0: bonded claim; the contract snapshots q.
-     Tier 1: bonded, salted keccak commitment to (q, score) - unless the model
-             flags the position as high risk: a cheap "safe" claim would be
-             false and slashable by any watcher, so the router escalates.
+     Tier 1: bonded, salted keccak commitment to (q, score), opened on-chain
+             right away (an unopened commitment forfeits its bond) - unless
+             the model flags the position as high risk: a cheap "safe" claim
+             would be false and slashable by any watcher, so the router
+             escalates.
      Tier 2: a proof on q. Against the real verifier this is a genuine EZKL
              proof (~16 s); against the mock verifier (local demos) a
-             placeholder with the same public-input layout. If the model says
-             the position is NOT high risk there is nothing to liquidate.
+             placeholder with the same public-input layout. If a feed moves
+             while proving, the router anchors the features on-chain and
+             proves once more on the anchor, which stays valid for
+             ANCHOR_TTL while the position does not get safer. If the model
+             says the position is NOT high risk there is nothing to liquidate.
 A router that lies about any of this gains nothing: the contract recomputes q
 and delta itself, rejects a tier that is too weak, and rejects a proof made on
 any other features.
@@ -30,7 +35,7 @@ from web3 import Web3
 
 from risk_model.inference import RiskModel
 from router.chain_client import ChainClient
-from router.commitment import compute_commitment_hash, new_salt
+from router.commitment import _to_fixed_point, compute_commitment_hash, new_salt
 from router.prover import EzklProver
 from router.tiering import Tier, TierDecision, decide_tier_bps
 
@@ -58,6 +63,8 @@ class ProcessingResult:
     salt: Optional[str] = None         # Tier 1: keep to reveal the commitment later
     proof_kind: Optional[str] = None   # Tier 2: "ezkl" or "mock"
     proving_seconds: Optional[float] = None
+    revealed: Optional[bool] = None    # Tier 1: commitment opened on-chain
+    anchored: Optional[bool] = None    # Tier 2: proof made on anchored features
 
     def to_dict(self):
         return asdict(self)
@@ -145,6 +152,14 @@ class PositionProcessor:
             result.salt = "0x" + salt.hex()
             result.evidence_ref = compute_commitment_hash(q, result.risk_score, salt)
             receipt = self.chain.decide_commitment(position_id, past_round, result.model_hash, result.evidence_ref)
+            if force_tier is None:
+                # An honest claimant opens at once; a forced (dishonest) demo
+                # claim stays closed, to be slashed by a watcher instead.
+                reveal = self.chain.reveal_commitment(position_id, q, _to_fixed_point(result.risk_score), salt)
+                result.revealed = True
+                result.gas_used = receipt.gasUsed + reveal.gasUsed
+            else:
+                result.revealed = False
 
         else:  # Tier.ZK_PROOF
             result.risk_score = probs[1]
@@ -156,11 +171,24 @@ class PositionProcessor:
                 # nothing on-chain (the engine would revert), so submit nothing.
                 result.outcome = "NOT_LIQUIDATED"
                 return result
+            extra_gas = 0
+            if kind == "ezkl" and self.chain.current_features(position_id)["q"] != q:
+                # A feed moved during proving: anchor, then prove on the anchor.
+                q, anchor_receipt = self.chain.anchor_features(position_id, past_round)
+                extra_gas = anchor_receipt.gasUsed
+                proof, public_inputs, proven_label, kind, seconds2 = self.tier2_proof(q)
+                result.features_q, result.anchored = q, True
+                result.proving_seconds = round(seconds + seconds2, 2)
+                if proven_label != 1:
+                    result.outcome = "NOT_LIQUIDATED"
+                    return result
             receipt = self.chain.decide_zk_proof(position_id, past_round, result.model_hash, proof, public_inputs)
+            receipt_gas = receipt.gasUsed + extra_gas
             ev = Web3.keccak(proof).hex()
             result.evidence_ref = ev if ev.startswith("0x") else "0x" + ev
 
         tx = receipt.transactionHash.hex()
         result.tx_hash = tx if tx.startswith("0x") else "0x" + tx
-        result.gas_used = receipt.gasUsed
+        if result.gas_used is None:
+            result.gas_used = receipt_gas if decision.tier == Tier.ZK_PROOF else receipt.gasUsed
         return result
