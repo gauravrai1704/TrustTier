@@ -1,0 +1,67 @@
+{
+  "real": {
+    "label": "Real (single-account)",
+    "n": 74,
+    "tier_counts": {
+      "HEURISTIC": 26,
+      "COMMITMENT": 7,
+      "ZK_PROOF": 41
+    },
+    "total_gas_trusttier": 45662430,
+    "total_gas_always_tier0": 19945516,
+    "total_gas_always_tier2": 64976366,
+    "gas_savings_vs_always_tier2_pct": 29.72455554070229,
+    "tier0_count": 26,
+    "tier0_high_risk_misses": 1,
+    "miss_rate_pct": 3.8461538461538463,
+    "proving_seconds_trusttier": 668.3000000000001,
+    "proving_seconds_always_tier2": 1206.2,
+    "tier2_low_risk": 3,
+    "escalated_tier1_to_tier2": 6
+  },
+  "synthetic": {
+    "label": "Synthetic",
+    "n": 300,
+    "tier_counts": {
+      "HEURISTIC": 100,
+      "COMMITMENT": 76,
+      "ZK_PROOF": 124
+    },
+    "total_gas_trusttier": 164648952,
+    "total_gas_always_tier0": 80860200,
+    "total_gas_always_tier2": 263417700,
+    "gas_savings_vs_always_tier2_pct": 37.495106820840064,
+    "tier0_count": 100,
+    "tier0_high_risk_misses": 0,
+    "miss_rate_pct": 0.0,
+    "proving_seconds_trusttier": 2021.2,
+    "proving_seconds_always_tier2": 4890.0,
+    "tier2_low_risk": 6,
+    "escalated_tier1_to_tier2": 15
+  },
+  "combined": {
+    "label": "Combined",
+    "n": 374,
+    "tier_counts": {
+      "HEURISTIC": 126,
+      "COMMITMENT": 83,
+      "ZK_PROOF": 165
+    },
+    "total_gas_trusttier": 210311382,
+    "total_gas_always_tier0": 100805716,
+    "total_gas_always_tier2": 328394066,
+    "gas_savings_vs_always_tier2_pct": 35.957618064876975,
+    "tier0_count": 126,
+    "tier0_high_risk_misses": 1,
+    "miss_rate_pct": 0.7936507936507936,
+    "proving_seconds_trusttier": 2689.5,
+    "proving_seconds_always_tier2": 6096.2,
+    "tier2_low_risk": 9,
+    "escalated_tier1_to_tier2": 21
+  },
+  "gas_by_tier": {
+    "HEURISTIC": 269534,
+    "COMMITMENT": 379161,
+    "ZK_PROOF": 878059
+  }
+}

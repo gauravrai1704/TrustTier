@@ -14,6 +14,7 @@ Run from the off-chain/ directory:
     python -m evaluation.evaluate
 """
 
+import json
 import os
 
 from evaluation.cost_model import GAS_BY_TIER, TIER0_GAS, TIER2_GAS, TIER2_PROVING_SECONDS
@@ -295,6 +296,10 @@ def main():
     print_summary(combined_summary)
 
     write_markdown_report(real_summary, synthetic_summary, combined_summary)
+    # Machine-readable copy for the DApp's economics view (frontend/).
+    with open(REPORT_PATH.replace(".md", ".json"), "w") as f:
+        json.dump({"real": real_summary, "synthetic": synthetic_summary, "combined": combined_summary,
+                   "gas_by_tier": GAS_BY_TIER}, f, indent=2)
 
 
 if __name__ == "__main__":

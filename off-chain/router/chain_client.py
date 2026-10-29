@@ -229,7 +229,14 @@ class ChainClient:
         """The engine's own view of a position: q, delta and the momentum
         round to pass to decide*."""
         pos = self.get_position(position_id)
-        past_round = self.find_past_round(pos["price_feed"])
+        # The 24-hour round only changes when a feed updates or time passes:
+        # cache it per (feed, latest round, block time) for list views.
+        key = (pos["price_feed"], self.feed(pos["price_feed"]).functions.latestRoundData().call()[0], self.block_time())
+        cache = self.__dict__.setdefault("_past_round_cache", {})
+        if key not in cache:
+            cache.clear() if len(cache) > 64 else None
+            cache[key] = self.find_past_round(pos["price_feed"])
+        past_round = cache[key]
         q, delta_bps = self.liquidation_engine.functions.currentFeatures(position_id, past_round).call()
         return {"q": [int(x) for x in q], "delta_bps": int(delta_bps), "past_round": past_round,
                 "position": pos}

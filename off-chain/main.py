@@ -91,7 +91,7 @@ app = FastAPI(title="TrustTier Off-Chain Router", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173",
-                   "http://127.0.0.1:4173"] + [o for o in os.environ.get("TRUSTTIER_CORS", "").split(",") if o],
+                   "http://127.0.0.1:4173", "https://gauravrai1704.github.io"] + [o for o in os.environ.get("TRUSTTIER_CORS", "").split(",") if o],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -183,9 +183,21 @@ def markets():
     chain = get_processor().chain
     out = []
     for m in chain.markets:
-        price = chain.feed(m["priceFeed"]).functions.latestRoundData().call()[1]
+        feed = chain.feed(m["priceFeed"]).functions
+        latest_id, price, _, _, _ = feed.latestRoundData().call()
         vol = chain.feed(m["volatilityFeed"]).functions.latestRoundData().call()[1]
-        out.append({**m, "price": price / 1e8, "volatility_pct": vol / 1e8})
+        history = []
+        for rid in range(max(1, latest_id - 23), latest_id + 1):
+            try:
+                r = feed.getRoundData(rid).call()
+                history.append({"t": r[3], "price": r[1] / 1e8})
+            except Exception:
+                continue
+        try:
+            past = feed.getRoundData(chain.find_past_round(m["priceFeed"])).call()[1] / 1e8
+        except Exception:
+            past = None
+        out.append({**m, "price": price / 1e8, "volatility_pct": vol / 1e8, "price_24h_ago": past, "history": history})
     return {"markets": out, "position_source": chain.manifest.get("positionSource")}
 
 
@@ -207,11 +219,12 @@ def open_position(request: OpenPositionRequest):
 
 
 @app.get("/positions/{position_id}/features")
-def position_features(position_id: int):
+def position_features(position_id: int, refresh: bool = True):
     """The engine's own view of a position - nothing here is supplied by the router."""
     processor = get_processor()
     try:
-        processor.chain.refresh_mock_feeds()
+        if refresh:
+            processor.chain.refresh_mock_feeds()
         view = processor.chain.current_features(position_id)
     except Exception as e:
         raise HTTPException(status_code=404, detail=_revert_reason(e))
@@ -576,8 +589,8 @@ def _liquidation_counts(chain) -> dict:
     return counts
 
 
-def _position_view(position_id: int, liquidations: Optional[dict] = None) -> dict:
-    view = position_features(position_id)
+def _position_view(position_id: int, liquidations: Optional[dict] = None, refresh: bool = True) -> dict:
+    view = position_features(position_id, refresh=refresh)
     status = position_status(position_id)
     chain = get_processor().chain
     market = None
@@ -606,7 +619,7 @@ def list_positions(limit: int = 60):
     out = []
     for pid in reversed(chain.demo_position_ids()[-limit:]):
         try:
-            out.append(_position_view(pid, liquidations))
+            out.append(_position_view(pid, liquidations, refresh=False))
         except HTTPException:
             continue
     return {"positions": out}

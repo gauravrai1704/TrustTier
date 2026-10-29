@@ -1,160 +1,144 @@
-import { useEffect, useState } from "react";
-import TierPipeline from "./components/TierPipeline";
-import Controls from "./components/Controls";
-import ResultsTable from "./components/ResultsTable";
-import CostComparison from "./components/CostComparison";
-import WalletConnect from "./components/WalletConnect";
-import EventFeed from "./components/EventFeed";
-import PositionWorkflow from "./components/PositionWorkflow";
-import WalletActions from "./components/WalletActions";
-import { checkHealth, runSimulation, evaluatePosition, getDeployment, getPositionStatus } from "./api";
+import { useEffect, useRef, useState } from "react";
+import Icon, { Logo } from "./ui/Icon";
+import { ToastProvider, useAction } from "./ui/kit";
+import { WalletButton, WalletProvider } from "./ui/Wallet";
+import { BackendProvider, useBackend, useData } from "./api/backend";
+import { useRoute } from "./lib/router";
+import { useTheme } from "./lib/theme";
+import Overview from "./pages/Overview";
+import Positions from "./pages/Positions";
+import Watchtower from "./pages/Watchtower";
+import Economics from "./pages/Economics";
+import Activity from "./pages/Activity";
+import Protocol from "./pages/Protocol";
+
+const PAGES = {
+  overview: { title: "Overview", icon: "overview", crumb: "Cost-tiered zero-knowledge verification for DeFi liquidations", C: Overview },
+  positions: { title: "Positions", icon: "positions", crumb: "Open, route, challenge and liquidate", C: Positions },
+  watchtower: { title: "Watchtower", icon: "watch", crumb: "Catch false claims, execute approvals", C: Watchtower },
+  economics: { title: "Economics", icon: "economics", crumb: "Measured gas, baselines and incentives", C: Economics },
+  activity: { title: "Activity", icon: "activity", crumb: "Contract events, live", C: Activity },
+  protocol: { title: "Protocol", icon: "protocol", crumb: "Deployment, trust assumptions, connection", C: Protocol },
+};
+
+function ModePill() {
+  const { status } = useBackend();
+  if (status === "live") return <span className="pill pill-good"><span className="live-dot" />On-chain</span>;
+  if (status === "sim") return <a href="#/protocol" className="pill pill-accent" style={{ textDecoration: "none" }}><Icon name="cpu" />Simulation</a>;
+  if (status === "unreachable") return <a href="#/protocol" className="pill pill-crit" style={{ textDecoration: "none" }}><Icon name="alert" />Router unreachable</a>;
+  return <span className="pill"><Icon name="refresh" className="spin" />Connecting</span>;
+}
+
+function TimeTravel() {
+  const { backend, refresh } = useBackend();
+  const { data } = useData((b) => b.overview(), [], { poll: 5000 });
+  const [busy, run] = useAction();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const fn = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  const local = backend?.mode === "sim" || [31337, 1337].includes(data?.protocol?.chain_id);
+  if (!local) return null;
+  const t = data?.protocol?.block_time;
+  const go = async (s, label) => {
+    await run("t", () => backend.advance(s), { ok: `Fast-forwarded ${label}`, okText: "Windows, approvals and anchors moved on with the clock." });
+    refresh();
+    setOpen(false);
+  };
+  return (
+    <div className="pop-anchor" ref={ref}>
+      <button className="btn" onClick={() => setOpen((o) => !o)} title="Chain clock">
+        <Icon name="clock" />
+        <span className="tnum hide-sm">{t ? new Date(t * 1000).toISOString().slice(5, 16).replace("T", " ") : "—"}</span>
+      </button>
+      {open && (
+        <div className="popover" style={{ width: 260 }}>
+          <div className="small muted">Local chain clock (UTC). Skip ahead to close challenge windows or expire approvals.</div>
+          <div className="row-wrap">
+            {[[600, "10 min"], [1860, "31 min"], [3660, "1 hour"], [86400, "1 day"]].map(([s, l]) => (
+              <button key={s} className="btn btn-sm" disabled={!!busy} onClick={() => go(s, l)}><Icon name="forward" />{l}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Shell() {
+  const route = useRoute();
+  const theme = useTheme();
+  const page = PAGES[route.page] || PAGES.overview;
+  const { status } = useBackend();
+  const P = page.C;
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <a className="brand" href="#/overview" style={{ textDecoration: "none", color: "inherit" }}>
+          <Logo />
+          <div><div className="brand-name">TrustTier</div><div className="brand-sub">Risk-tiered ZK verification</div></div>
+        </a>
+        <nav className="nav" aria-label="Main">
+          <div className="nav-label">App</div>
+          {Object.entries(PAGES).map(([k, p]) => (
+            <a key={k} href={`#/${k}`} className={route.page === k || (k === "overview" && !PAGES[route.page]) ? "active" : ""}>
+              <Icon name={p.icon} />{p.title}
+            </a>
+          ))}
+        </nav>
+        <div className="sidebar-foot">
+          <div className="mode-card">
+            {status === "live" ? (
+              <><strong>On-chain mode.</strong> Every action is a transaction on the connected chain.</>
+            ) : (
+              <><strong>Simulation mode.</strong> The contract's rules and the real model, in your browser. <a href="#/protocol">Go on-chain</a>.</>
+            )}
+          </div>
+          <a className="small muted" href="https://github.com/gauravrai1704/TrustTier" target="_blank" rel="noreferrer">
+            <Icon name="external" className="" /> Source on GitHub
+          </a>
+        </div>
+      </aside>
+      <div className="main">
+        <header className="topbar">
+          <div>
+            <h1>{page.title}</h1>
+            <div className="crumb">{page.crumb}</div>
+          </div>
+          <div className="topbar-right">
+            <ModePill />
+            <TimeTravel />
+            <button className="btn btn-icon" onClick={theme.toggle} aria-label={`Switch to ${theme.resolved === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${theme.resolved === "dark" ? "light" : "dark"} mode`}>
+              <Icon name={theme.resolved === "dark" ? "sun" : "moon"} />
+            </button>
+            <WalletButton />
+          </div>
+        </header>
+        <main className="content">
+          <P params={route.params} />
+        </main>
+      </div>
+      <nav className="mobile-nav" aria-label="Main">
+        {Object.entries(PAGES).map(([k, p]) => (
+          <a key={k} href={`#/${k}`} className={route.page === k ? "active" : ""}><Icon name={p.icon} />{p.title}</a>
+        ))}
+      </nav>
+    </div>
+  );
+}
 
 export default function App() {
-  const [connected, setConnected] = useState(null); // null = checking, true/false after
-  const [results, setResults] = useState([]);
-  const [tierCounts, setTierCounts] = useState({});
-  const [gasByTier, setGasByTier] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [wallet, setWallet] = useState(null);
-  const [auth, setAuth] = useState(null);
-  const [deployment, setDeployment] = useState(null);
-
-  const [selectedPositionId, setSelectedPositionId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-
-  useEffect(() => {
-    checkHealth()
-      .then(() => setConnected(true))
-      .catch(() => setConnected(false));
-
-    fetch("/api/cost-model")
-      .then((r) => r.json())
-      .then((d) => setGasByTier(d.gas_by_tier))
-      .catch(() => {});
-
-    getDeployment()
-      .then(setDeployment)
-      .catch(() => {});
-  }, []);
-
-  async function refreshSelectedStatus(id) {
-    if (id == null) return;
-    try {
-      const status = await getPositionStatus(id);
-      setSelectedStatus(status);
-    } catch {
-      setSelectedStatus(null);
-    }
-  }
-
-  useEffect(() => {
-    refreshSelectedStatus(selectedPositionId);
-  }, [selectedPositionId]);
-
-  async function handleSimulate(nPositions) {
-    setBusy(true);
-    setError(null);
-    try {
-      const data = await runSimulation(nPositions);
-      setResults(data.results);
-      setTierCounts(data.tier_counts);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleEvaluate(positionId, forceTier = null) {
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await evaluatePosition(positionId, forceTier);
-      setResults((prev) => [result, ...prev.filter((r) => r.position_id !== positionId)]);
-      setSelectedPositionId(positionId);
-      refreshSelectedStatus(positionId);
-      setTierCounts((prev) => {
-        const next = { ...prev };
-        next[result.tier] = (next[result.tier] || 0) + 1;
-        return next;
-      });
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    <>
-      <div className="masthead">
-        <div>
-          <h1>TrustTier</h1>
-          <div className="subtitle">Cost-tiered zero-knowledge verification for DeFi liquidation risk</div>
-        </div>
-        <div className="masthead-right">
-          <WalletConnect onWallet={setWallet} onAuthenticated={setAuth} />
-          <div className="connection">
-            <span className={`dot ${connected ? "live" : "down"}`} />
-            {connected === null ? "connecting…" : connected ? "router online" : "router unreachable"}
-          </div>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-header">
-          <h2>Verification pipeline</h2>
-          <span className="panel-note">live tier distribution</span>
-        </div>
-        <TierPipeline tierCounts={tierCounts} />
-      </div>
-
-      <Controls onSimulate={handleSimulate} onEvaluate={handleEvaluate} busy={busy} />
-
-      {error && <div className="error-text">{error}</div>}
-
-      <div className="panel">
-        <div className="panel-header">
-          <h2>On-chain audit trail</h2>
-          <span className="panel-note">{results.length} decision{results.length === 1 ? "" : "s"} recorded — click a row to inspect its workflow</span>
-        </div>
-        <ResultsTable results={results} onSelect={setSelectedPositionId} selectedId={selectedPositionId} />
-      </div>
-
-      <div className="grid-2col">
-        <div className="panel">
-          <div className="panel-header">
-            <h2>Position workflow</h2>
-            <span className="panel-note">bonded challenge window, live</span>
-          </div>
-          <PositionWorkflow positionId={selectedPositionId} />
-          <WalletActions
-            wallet={wallet}
-            deployment={deployment}
-            positionId={selectedPositionId}
-            status={selectedStatus}
-            onActionComplete={() => refreshSelectedStatus(selectedPositionId)}
-          />
-        </div>
-
-        <div className="panel">
-          <div className="panel-header">
-            <h2>Live activity</h2>
-            <span className="panel-note">polling on-chain events</span>
-          </div>
-          <EventFeed />
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-header">
-          <h2>Cost comparison</h2>
-          <span className="panel-note">measured gas, not estimated</span>
-        </div>
-        <CostComparison results={results} gasByTier={gasByTier} />
-      </div>
-    </>
+    <ToastProvider>
+      <BackendProvider>
+        <WalletProvider>
+          <Shell />
+        </WalletProvider>
+      </BackendProvider>
+    </ToastProvider>
   );
 }
