@@ -1,0 +1,1566 @@
+[
+ {
+  "scenario": "deposit_n100",
+  "balance_mode": "delta",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 63.13,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.58,
+   "16": 14.31,
+   "32": 24.1,
+   "64": 45.4
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.58,
+   "16": 14.31,
+   "32": 24.1,
+   "64": 45.4
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n100",
+  "balance_mode": "rmw",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 63.13,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.58,
+   "16": 14.31,
+   "32": 24.1,
+   "64": 45.4
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.58,
+   "16": 14.31,
+   "32": 24.1,
+   "64": 45.4
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n200",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 126.96,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.95,
+   "32": 27.48,
+   "64": 48.46
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.95,
+   "32": 27.48,
+   "64": 48.46
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n200",
+  "balance_mode": "rmw",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 126.96,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.95,
+   "32": 27.48,
+   "64": 48.46
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.95,
+   "32": 27.48,
+   "64": 48.46
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n374",
+  "balance_mode": "delta",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 236.48,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.86,
+   "16": 15.33,
+   "32": 29.52,
+   "64": 54.87
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.86,
+   "16": 15.33,
+   "32": 29.52,
+   "64": 54.87
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n374",
+  "balance_mode": "rmw",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 236.48,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.86,
+   "16": 15.33,
+   "32": 29.52,
+   "64": 54.87
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.86,
+   "16": 15.33,
+   "32": 29.52,
+   "64": 54.87
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n50",
+  "balance_mode": "delta",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 31.57,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.93,
+   "8": 7.32,
+   "16": 13.2,
+   "32": 22.7,
+   "64": 31.57
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.93,
+   "8": 7.32,
+   "16": 13.2,
+   "32": 22.7,
+   "64": 31.57
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "deposit_n50",
+  "balance_mode": "rmw",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 31.57,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.93,
+   "8": 7.32,
+   "16": 13.2,
+   "32": 22.7,
+   "64": 31.57
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.93,
+   "8": 7.32,
+   "16": 13.2,
+   "32": 22.7,
+   "64": 31.57
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention10",
+  "balance_mode": "delta",
+  "txs": 220,
+  "succeeded": 200,
+  "reverted": 20,
+  "rounds_strict": 2,
+  "raw_edges": 20,
+  "critical_path_speedup": 122.97,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.87,
+   "32": 27.53,
+   "64": 48.65
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.97,
+   "8": 7.74,
+   "16": 14.89,
+   "32": 27.58,
+   "64": 51.04
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 1,
+   "16": 2,
+   "32": 6,
+   "64": 8
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention10",
+  "balance_mode": "rmw",
+  "txs": 220,
+  "succeeded": 200,
+  "reverted": 20,
+  "rounds_strict": 126,
+  "raw_edges": 7880,
+  "critical_path_speedup": 3.36,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.82,
+   "4": 2.85,
+   "8": 3.36,
+   "16": 3.36,
+   "32": 3.36,
+   "64": 3.36
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.79,
+   "4": 3.14,
+   "8": 3.36,
+   "16": 3.36,
+   "32": 3.36,
+   "64": 3.36
+  },
+  "aborts": {
+   "1": 0,
+   "2": 45,
+   "4": 114,
+   "8": 125,
+   "16": 125,
+   "32": 125,
+   "64": 127
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (126 txs)"
+  ]
+ },
+ {
+  "scenario": "final_contention20",
+  "balance_mode": "delta",
+  "txs": 240,
+  "succeeded": 200,
+  "reverted": 40,
+  "rounds_strict": 2,
+  "raw_edges": 40,
+  "critical_path_speedup": 123.54,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.8,
+   "16": 15.08,
+   "32": 27.66,
+   "64": 48.49
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.82,
+   "16": 15.13,
+   "32": 28.75,
+   "64": 52.75
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 1,
+   "16": 2,
+   "32": 6,
+   "64": 16
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention20",
+  "balance_mode": "rmw",
+  "txs": 240,
+  "succeeded": 200,
+  "reverted": 40,
+  "rounds_strict": 138,
+  "raw_edges": 9466,
+  "critical_path_speedup": 3.35,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.88,
+   "4": 2.94,
+   "8": 3.35,
+   "16": 3.35,
+   "32": 3.35,
+   "64": 3.35
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.85,
+   "4": 3.13,
+   "8": 3.35,
+   "16": 3.35,
+   "32": 3.35,
+   "64": 3.35
+  },
+  "aborts": {
+   "1": 0,
+   "2": 35,
+   "4": 126,
+   "8": 138,
+   "16": 139,
+   "32": 140,
+   "64": 145
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (138 txs)"
+  ]
+ },
+ {
+  "scenario": "final_contention30",
+  "balance_mode": "delta",
+  "txs": 260,
+  "succeeded": 200,
+  "reverted": 60,
+  "rounds_strict": 2,
+  "raw_edges": 60,
+  "critical_path_speedup": 124.13,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.94,
+   "8": 7.7,
+   "16": 14.86,
+   "32": 27.32,
+   "64": 47.08
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.94,
+   "8": 7.72,
+   "16": 14.93,
+   "32": 28.48,
+   "64": 49.11
+  },
+  "aborts": {
+   "1": 0,
+   "2": 1,
+   "4": 0,
+   "8": 2,
+   "16": 3,
+   "32": 17,
+   "64": 29
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention30",
+  "balance_mode": "rmw",
+  "txs": 260,
+  "succeeded": 200,
+  "reverted": 60,
+  "rounds_strict": 146,
+  "raw_edges": 10610,
+  "critical_path_speedup": 3.35,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.87,
+   "4": 2.93,
+   "8": 3.34,
+   "16": 3.35,
+   "32": 3.35,
+   "64": 3.35
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.83,
+   "4": 3.08,
+   "8": 3.34,
+   "16": 3.34,
+   "32": 3.34,
+   "64": 3.34
+  },
+  "aborts": {
+   "1": 0,
+   "2": 42,
+   "4": 135,
+   "8": 145,
+   "16": 145,
+   "32": 154,
+   "64": 158
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (146 txs)"
+  ]
+ },
+ {
+  "scenario": "final_contention5",
+  "balance_mode": "delta",
+  "txs": 210,
+  "succeeded": 200,
+  "reverted": 10,
+  "rounds_strict": 2,
+  "raw_edges": 10,
+  "critical_path_speedup": 122.68,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.96,
+   "8": 7.78,
+   "16": 15.01,
+   "32": 27.47,
+   "64": 48.67
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.96,
+   "8": 7.78,
+   "16": 15.01,
+   "32": 27.51,
+   "64": 49.6
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 1,
+   "64": 4
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention5",
+  "balance_mode": "rmw",
+  "txs": 210,
+  "succeeded": 200,
+  "reverted": 10,
+  "rounds_strict": 118,
+  "raw_edges": 6906,
+  "critical_path_speedup": 3.38,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.83,
+   "4": 2.93,
+   "8": 3.38,
+   "16": 3.38,
+   "32": 3.38,
+   "64": 3.38
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.78,
+   "4": 3.03,
+   "8": 3.38,
+   "16": 3.38,
+   "32": 3.38,
+   "64": 3.38
+  },
+  "aborts": {
+   "1": 0,
+   "2": 49,
+   "4": 109,
+   "8": 117,
+   "16": 117,
+   "32": 118,
+   "64": 119
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (118 txs)"
+  ]
+ },
+ {
+  "scenario": "final_contention50",
+  "balance_mode": "delta",
+  "txs": 300,
+  "succeeded": 200,
+  "reverted": 100,
+  "rounds_strict": 2,
+  "raw_edges": 100,
+  "critical_path_speedup": 125.29,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.98,
+   "4": 3.94,
+   "8": 7.72,
+   "16": 14.57,
+   "32": 26.36,
+   "64": 42.8
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.98,
+   "8": 7.79,
+   "16": 15.14,
+   "32": 27.86,
+   "64": 49.5
+  },
+  "aborts": {
+   "1": 0,
+   "2": 1,
+   "4": 3,
+   "8": 6,
+   "16": 11,
+   "32": 28,
+   "64": 49
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_contention50",
+  "balance_mode": "rmw",
+  "txs": 300,
+  "succeeded": 200,
+  "reverted": 100,
+  "rounds_strict": 166,
+  "raw_edges": 13740,
+  "critical_path_speedup": 3.33,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.87,
+   "4": 2.98,
+   "8": 3.32,
+   "16": 3.33,
+   "32": 3.33,
+   "64": 3.33
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.88,
+   "4": 3.1,
+   "8": 3.33,
+   "16": 3.33,
+   "32": 3.33,
+   "64": 3.33
+  },
+  "aborts": {
+   "1": 0,
+   "2": 41,
+   "4": 153,
+   "8": 168,
+   "16": 172,
+   "32": 184,
+   "64": 197
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (166 txs)"
+  ]
+ },
+ {
+  "scenario": "final_mix_t0heavy",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 70.19,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.98,
+   "8": 7.91,
+   "16": 15.58,
+   "32": 26.99,
+   "64": 43.65
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.98,
+   "8": 7.91,
+   "16": 15.58,
+   "32": 26.99,
+   "64": 43.65
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_mix_t2heavy",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 161.47,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.98,
+   "8": 7.86,
+   "16": 15.12,
+   "32": 28.79,
+   "64": 53.82
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.98,
+   "8": 7.86,
+   "16": 15.12,
+   "32": 28.79,
+   "64": 53.82
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_n100",
+  "balance_mode": "delta",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 62.8,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.57,
+   "16": 14.32,
+   "32": 24.08,
+   "64": 45.36
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.57,
+   "16": 14.32,
+   "32": 24.08,
+   "64": 45.36
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_n100",
+  "balance_mode": "rmw",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 56,
+  "raw_edges": 1540,
+  "critical_path_speedup": 3.34,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.89,
+   "4": 3.02,
+   "8": 3.34,
+   "16": 3.34,
+   "32": 3.34,
+   "64": 3.34
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.86,
+   "4": 3.1,
+   "8": 3.33,
+   "16": 3.33,
+   "32": 3.33,
+   "64": 3.33
+  },
+  "aborts": {
+   "1": 0,
+   "2": 14,
+   "4": 51,
+   "8": 55,
+   "16": 55,
+   "32": 55,
+   "64": 55
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (56 txs)"
+  ]
+ },
+ {
+  "scenario": "final_n200",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 126.29,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.97,
+   "32": 27.45,
+   "64": 48.42
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.97,
+   "32": 27.45,
+   "64": 48.42
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_n200",
+  "balance_mode": "rmw",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 111,
+  "raw_edges": 6105,
+  "critical_path_speedup": 3.39,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.89,
+   "4": 3.02,
+   "8": 3.39,
+   "16": 3.39,
+   "32": 3.39,
+   "64": 3.39
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.86,
+   "4": 3.06,
+   "8": 3.39,
+   "16": 3.39,
+   "32": 3.39,
+   "64": 3.39
+  },
+  "aborts": {
+   "1": 0,
+   "2": 28,
+   "4": 98,
+   "8": 110,
+   "16": 110,
+   "32": 110,
+   "64": 110
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (111 txs)"
+  ]
+ },
+ {
+  "scenario": "final_n374",
+  "balance_mode": "delta",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 235.23,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.85,
+   "16": 15.32,
+   "32": 29.46,
+   "64": 54.75
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.85,
+   "16": 15.32,
+   "32": 29.46,
+   "64": 54.75
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_n374",
+  "balance_mode": "rmw",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 209,
+  "raw_edges": 21736,
+  "critical_path_speedup": 3.35,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.89,
+   "4": 2.98,
+   "8": 3.34,
+   "16": 3.35,
+   "32": 3.35,
+   "64": 3.35
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.85,
+   "4": 3.12,
+   "8": 3.35,
+   "16": 3.35,
+   "32": 3.35,
+   "64": 3.35
+  },
+  "aborts": {
+   "1": 0,
+   "2": 56,
+   "4": 193,
+   "8": 208,
+   "16": 208,
+   "32": 208,
+   "64": 208
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (209 txs)"
+  ]
+ },
+ {
+  "scenario": "final_n50",
+  "balance_mode": "delta",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 31.4,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.93,
+   "8": 7.31,
+   "16": 13.17,
+   "32": 22.68,
+   "64": 31.4
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.93,
+   "8": 7.31,
+   "16": 13.17,
+   "32": 22.68,
+   "64": 31.4
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_n50",
+  "balance_mode": "rmw",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 28,
+  "raw_edges": 378,
+  "critical_path_speedup": 3.34,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.87,
+   "4": 3.01,
+   "8": 3.34,
+   "16": 3.34,
+   "32": 3.34,
+   "64": 3.34
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.82,
+   "4": 3.03,
+   "8": 3.34,
+   "16": 3.34,
+   "32": 3.34,
+   "64": 3.34
+  },
+  "aborts": {
+   "1": 0,
+   "2": 9,
+   "4": 24,
+   "8": 27,
+   "16": 27,
+   "32": 27,
+   "64": 27
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:LiquidationEngine slot (28 txs)"
+  ]
+ },
+ {
+  "scenario": "final_oracle1",
+  "balance_mode": "delta",
+  "txs": 201,
+  "succeeded": 201,
+  "reverted": 0,
+  "rounds_strict": 2,
+  "raw_edges": 59,
+  "critical_path_speedup": 116.99,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.73,
+   "16": 14.97,
+   "32": 27.43,
+   "64": 48.51
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.97,
+   "8": 7.65,
+   "16": 14.8,
+   "32": 26.56,
+   "64": 45.69
+  },
+  "aborts": {
+   "1": 0,
+   "2": 1,
+   "4": 0,
+   "8": 2,
+   "16": 4,
+   "32": 9,
+   "64": 16
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_oracle3",
+  "balance_mode": "delta",
+  "txs": 203,
+  "succeeded": 203,
+  "reverted": 0,
+  "rounds_strict": 2,
+  "raw_edges": 122,
+  "critical_path_speedup": 117.29,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.74,
+   "16": 14.97,
+   "32": 27.47,
+   "64": 48.55
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.97,
+   "8": 7.66,
+   "16": 14.73,
+   "32": 25.42,
+   "64": 45.65
+  },
+  "aborts": {
+   "1": 0,
+   "2": 1,
+   "4": 0,
+   "8": 2,
+   "16": 4,
+   "32": 15,
+   "64": 20
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "final_oracle6",
+  "balance_mode": "delta",
+  "txs": 206,
+  "succeeded": 206,
+  "reverted": 0,
+  "rounds_strict": 3,
+  "raw_edges": 208,
+  "critical_path_speedup": 109.28,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.72,
+   "16": 15.0,
+   "32": 27.51,
+   "64": 47.25
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.97,
+   "8": 7.67,
+   "16": 14.62,
+   "32": 25.45,
+   "64": 42.34
+  },
+  "aborts": {
+   "1": 0,
+   "2": 1,
+   "4": 0,
+   "8": 4,
+   "16": 8,
+   "32": 18,
+   "64": 27
+  },
+  "keys_written_by_more_than_one_tx": [
+   "PriceFeed:WBTC slot (2 txs)",
+   "PriceFeed:LINK slot (2 txs)",
+   "PriceFeed:ETH slot (2 txs)"
+  ]
+ },
+ {
+  "scenario": "final_single_sender",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 200,
+  "raw_edges": 19900,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.99,
+   "4": 0.99,
+   "8": 0.99,
+   "16": 0.99,
+   "32": 0.99,
+   "64": 0.99
+  },
+  "aborts": {
+   "1": 0,
+   "2": 199,
+   "4": 199,
+   "8": 199,
+   "16": 199,
+   "32": 199,
+   "64": 199
+  },
+  "keys_written_by_more_than_one_tx": [
+   "BAL:account:0x9c80dcb29f98cd0684a9866e901a3b2518a6880c slot (200 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n100",
+  "balance_mode": "delta",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 100,
+  "raw_edges": 4950,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.99,
+   "4": 0.99,
+   "8": 0.99,
+   "16": 0.99,
+   "32": 0.99,
+   "64": 0.99
+  },
+  "aborts": {
+   "1": 0,
+   "2": 99,
+   "4": 99,
+   "8": 99,
+   "16": 99,
+   "32": 99,
+   "64": 99
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (100 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n100",
+  "balance_mode": "rmw",
+  "txs": 100,
+  "succeeded": 100,
+  "reverted": 0,
+  "rounds_strict": 100,
+  "raw_edges": 4950,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.99,
+   "4": 0.99,
+   "8": 0.99,
+   "16": 0.99,
+   "32": 0.99,
+   "64": 0.99
+  },
+  "aborts": {
+   "1": 0,
+   "2": 99,
+   "4": 99,
+   "8": 99,
+   "16": 99,
+   "32": 99,
+   "64": 99
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (100 txs)",
+   "BAL:LiquidationEngine slot (56 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n200",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 200,
+  "raw_edges": 19900,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.99,
+   "4": 0.99,
+   "8": 0.99,
+   "16": 0.99,
+   "32": 0.99,
+   "64": 0.99
+  },
+  "aborts": {
+   "1": 0,
+   "2": 199,
+   "4": 199,
+   "8": 199,
+   "16": 199,
+   "32": 199,
+   "64": 199
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (200 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n200",
+  "balance_mode": "rmw",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 200,
+  "raw_edges": 19900,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.99,
+   "4": 0.99,
+   "8": 0.99,
+   "16": 0.99,
+   "32": 0.99,
+   "64": 0.99
+  },
+  "aborts": {
+   "1": 0,
+   "2": 199,
+   "4": 199,
+   "8": 199,
+   "16": 199,
+   "32": 199,
+   "64": 199
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (200 txs)",
+   "BAL:LiquidationEngine slot (111 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n374",
+  "balance_mode": "delta",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 374,
+  "raw_edges": 69751,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "aborts": {
+   "1": 0,
+   "2": 373,
+   "4": 373,
+   "8": 373,
+   "16": 373,
+   "32": 373,
+   "64": 373
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (374 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n374",
+  "balance_mode": "rmw",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 374,
+  "raw_edges": 69751,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "aborts": {
+   "1": 0,
+   "2": 373,
+   "4": 373,
+   "8": 373,
+   "16": 373,
+   "32": 373,
+   "64": 373
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (374 txs)",
+   "BAL:LiquidationEngine slot (209 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n50",
+  "balance_mode": "delta",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 50,
+  "raw_edges": 1225,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.98,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "aborts": {
+   "1": 0,
+   "2": 49,
+   "4": 49,
+   "8": 49,
+   "16": 49,
+   "32": 49,
+   "64": 49
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (50 txs)"
+  ]
+ },
+ {
+  "scenario": "legacy_n50",
+  "balance_mode": "rmw",
+  "txs": 50,
+  "succeeded": 50,
+  "reverted": 0,
+  "rounds_strict": 50,
+  "raw_edges": 1225,
+  "critical_path_speedup": 1.0,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.0,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 0.98,
+   "4": 1.0,
+   "8": 1.0,
+   "16": 1.0,
+   "32": 1.0,
+   "64": 1.0
+  },
+  "aborts": {
+   "1": 0,
+   "2": 49,
+   "4": 49,
+   "8": 49,
+   "16": 49,
+   "32": 49,
+   "64": 49
+  },
+  "keys_written_by_more_than_one_tx": [
+   "TierAuditLog slot (50 txs)",
+   "BAL:LiquidationEngine slot (28 txs)"
+  ]
+ }
+]

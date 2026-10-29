@@ -35,7 +35,7 @@ class SyntheticPosition:
         }
 
 
-def generate_position_stream(n_positions: int = 12, seed: int = 7) -> list:
+def generate_position_stream(n_positions: int = 12, seed: int = 7, start_id: int = 1000) -> list:
     """
     Generates a stream that deliberately covers the full LTV range (safe,
     watch-band, and critical/breached), rather than a uniform random draw,
@@ -57,7 +57,7 @@ def generate_position_stream(n_positions: int = 12, seed: int = 7) -> list:
     for i, ltv in enumerate(all_ltvs):
         positions.append(
             SyntheticPosition(
-                position_id=1000 + i,
+                position_id=start_id + i,
                 ltv=float(ltv),
                 collateral_volatility_30d=float(rng.uniform(0.05, 0.45)),
                 price_momentum_24h=float(rng.uniform(-0.2, 0.2)),
@@ -66,3 +66,35 @@ def generate_position_stream(n_positions: int = 12, seed: int = 7) -> list:
             )
         )
     return positions
+
+
+@dataclass(frozen=True)
+class DemoPositionSpec:
+    """A position to OPEN in MockLendingPool (demo chain). Volatility and
+    momentum are not chosen here: they come from the market's feeds."""
+    position_id: int
+    market: int
+    ltv: float
+    age_days: int
+    topup_days: int
+
+
+def generate_onchain_stream(markets: list, n_positions: int = 12, seed: int = 7,
+                            start_id: int = 1000) -> list:
+    """Positions spread across the deployed markets and across the safe /
+    watch / critical bands of each market's own liquidation threshold, so
+    every tier is exercised."""
+    rng = np.random.default_rng(seed)
+    bands = [(-0.35, -0.20), (-0.14, -0.06), (-0.04, 0.15)]   # LTV minus threshold
+    specs = []
+    for i in range(n_positions):
+        market = i % len(markets)
+        threshold = markets[market]["thresholdBps"] / 10_000
+        lo, hi = bands[(i // len(markets) + i) % 3]
+        ltv = float(np.clip(threshold + rng.uniform(lo, hi), 0.05, 1.45))
+        specs.append(DemoPositionSpec(
+            position_id=start_id + i, market=market, ltv=round(ltv, 4),
+            age_days=int(rng.integers(10, 1500)), topup_days=int(rng.integers(0, 90)),
+        ))
+    rng.shuffle(specs)
+    return specs

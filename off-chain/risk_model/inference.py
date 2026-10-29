@@ -14,7 +14,7 @@ import os
 import numpy as np
 import onnxruntime as ort
 
-from risk_model.features import features_to_vector
+from risk_model.features import features_to_vector, normalize_vector
 
 _ARTIFACT_DIR = os.path.join(os.path.dirname(__file__), "artifacts")
 _ONNX_PATH = os.path.join(_ARTIFACT_DIR, "risk_model.onnx")
@@ -39,7 +39,7 @@ class RiskModel:
 
     def predict_risk_score(self, features: dict) -> float:
         """Run inference and return a risk score in [0, 1]."""
-        x = np.array([features_to_vector(features)], dtype=np.float32)
+        x = np.array([normalize_vector(features_to_vector(features))], dtype=np.float32)
         outputs = self.session.run(None, {self.input_name: x})
         # With zipmap=False (see risk_model/train.py), skl2onnx exports
         # MLPClassifier as (label, probability_tensor) where
@@ -48,3 +48,16 @@ class RiskModel:
         probabilities = outputs[1]
         risk_score = float(probabilities[0][1])
         return risk_score
+
+    def predict(self, features: dict) -> tuple[int, list[float]]:
+        """Return (label, [P(low risk), P(high risk)]) exactly as the circuit sees it."""
+        x = np.array([normalize_vector(features_to_vector(features))], dtype=np.float32)
+        label, probabilities = self.session.run(None, {self.input_name: x})
+        return int(label[0]), [float(p) for p in probabilities[0]]
+
+    def predict_q(self, q) -> tuple[int, list[float]]:
+        """Same as predict(), from the quantized on-chain feature vector q
+        (integers in [0, 1024]) - exactly the input the circuit proves on."""
+        x = np.array([[v / 1024 for v in q]], dtype=np.float32)
+        label, probabilities = self.session.run(None, {self.input_name: x})
+        return int(label[0]), [float(p) for p in probabilities[0]]

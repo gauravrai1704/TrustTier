@@ -7,7 +7,7 @@ typechain-types
 
 # Hardhat files
 cache
-artifacts
+/artifacts
 deployments
 
 # Off-chain router / EZKL working directories (added in later phases)
@@ -15,15 +15,18 @@ off-chain/__pycache__/
 off-chain/**/__pycache__/
 off-chain/.venv/
 off-chain/.pytest_cache/
-off-chain/risk_model/artifacts/
+# off-chain/risk_model/artifacts/ is tracked: the registered model hash and
+# the deployed verifier are bound to exactly these files.
 *.pyc
 
 # EZKL circuit artifacts (Weeks 3-5): regenerate via circuits/build_circuit.py.
-# pk.key alone is ~375MB and kzg.srs regenerates in under a second, so
+# pk.key alone is ~785 MB (rebuilt from kzg.srs by make_proving_key.py), so
 # neither belongs in version control. network.compiled, vk.key, proof.json,
 # Verifier.sol, and calldata.bytes are small and kept tracked, since they
 # let a reviewer verify the pipeline's output without re-running proving.
 circuits/pk.key
-circuits/kzg.srs
+# circuits/kzg.srs is shipped (8 MB): make_proving_key.py rebuilds pk.key from it
 circuits/risk_model.onnx
 circuits/model_metadata.json
+
+circuits/risk_model_bound.onnx

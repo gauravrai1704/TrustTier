@@ -69,6 +69,13 @@ describe("ModelRegistry", function () {
       ).to.be.revertedWithCustomError(registry, "ModelNotRegistered");
     });
 
+    it("reverts with ModelAlreadyRevoked when revoking a model twice (no duplicate events)", async function () {
+      await registry.revokeModel(MODEL_HASH_A);
+      await expect(registry.revokeModel(MODEL_HASH_A))
+        .to.be.revertedWithCustomError(registry, "ModelAlreadyRevoked")
+        .withArgs(MODEL_HASH_A);
+    });
+
     it("only the owner can revoke a model", async function () {
       await expect(
         registry.connect(other).revokeModel(MODEL_HASH_A)

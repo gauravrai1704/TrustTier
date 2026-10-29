@@ -28,6 +28,7 @@ contract ModelRegistry is Ownable {
 
     error ModelAlreadyRegistered(bytes32 modelHash);
     error ModelNotRegistered(bytes32 modelHash);
+    error ModelAlreadyRevoked(bytes32 modelHash);
 
     constructor() Ownable(msg.sender) {}
 
@@ -52,6 +53,12 @@ contract ModelRegistry is Ownable {
     function revokeModel(bytes32 modelHash) external onlyOwner {
         if (registeredAt[modelHash] == 0) {
             revert ModelNotRegistered(modelHash);
+        }
+        // Revoking twice would emit a duplicate ModelRevoked event and make
+        // the audit trail misleading about when a model actually stopped
+        // being trusted.
+        if (!isAuthorized[modelHash]) {
+            revert ModelAlreadyRevoked(modelHash);
         }
         isAuthorized[modelHash] = false;
         emit ModelRevoked(modelHash, block.timestamp);

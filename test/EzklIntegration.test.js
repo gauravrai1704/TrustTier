@@ -2,118 +2,203 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
+const { deployTrustTier, PAST_ROUND } = require("./helpers/fixture");
 
-// The actual Weeks 3-5 milestone, end to end: LiquidationEngine wired to
-// the REAL EZKL-generated verifier (not MockTier2Verifier), decideZkProof
-// called with a REAL zk-SNARK proof and REAL public instances produced by
-// the actual EZKL pipeline (circuits/build_circuit.py) against our actual
-// risk_model.onnx. If this passes, a real Tier-2 decision has been
-// verified on-chain using genuine zero-knowledge cryptography.
-describe("LiquidationEngine + real EzklVerifier (Weeks 3-5 milestone)", function () {
-  let registry, auditLog, realVerifier, engine;
-  let owner;
-  let proofBytes, instances, modelHash;
+// LiquidationEngine wired to the REAL EZKL-generated Halo2 verifier, driven
+// by REAL proofs from circuits/build_circuit.py (circuits/samples.json).
+//
+// Each sample in samples.json was generated from on-chain parameters
+// (collateral, debt, threshold, price now / 24 h ago, volatility, top-up and
+// position age). Here we recreate exactly those positions in MockLendingPool
+// with mock Chainlink feeds, and the engine computes the five quantized
+// features itself. The proof is accepted only because the contract's
+// features equal the proof's public inputs - nobody "commits" them.
+describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", function () {
+  let samples, modelHash;
+  const BOND = ethers.parseEther("0.01");
+  const POSITION = 1;
 
   before(function () {
-    const calldataPath = path.join(__dirname, "..", "circuits", "calldata.bytes");
-    const metadataPath = path.join(
-      __dirname, "..", "off-chain", "risk_model", "artifacts", "model_metadata.json"
-    );
-    if (!fs.existsSync(calldataPath) || !fs.existsSync(metadataPath)) {
-      this.skip(); // generated artifacts not present - skip gracefully
+    const samplesPath = path.join(__dirname, "..", "circuits", "samples.json");
+    const metadataPath = path.join(__dirname, "..", "off-chain", "risk_model", "artifacts", "model_metadata.json");
+    if (!fs.existsSync(samplesPath) || !fs.existsSync(metadataPath)) this.skip();
+    samples = {};
+    for (const s of JSON.parse(fs.readFileSync(samplesPath, "utf8")).samples) {
+      samples[s.name] = { ...s, inputs: s.public_inputs.map((x) => BigInt(x)) };
     }
-
-    const calldata = "0x" + fs.readFileSync(calldataPath).toString("hex");
-    const payload = "0x" + calldata.slice(10); // strip the 4-byte (8 hex char + 0x) selector
-    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bytes", "uint256[]"], payload);
-    proofBytes = decoded[0];
-    instances = Array.from(decoded[1]); // decoded[1] is an immutable ethers Result - copy to a plain array
-
-    const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-    modelHash = metadata.model_hash_keccak256;
+    modelHash = JSON.parse(fs.readFileSync(metadataPath, "utf8")).model_hash_keccak256;
   });
 
-  beforeEach(async function () {
-    [owner] = await ethers.getSigners();
+  /** Deploy TrustTier with the real verifier and open the sample's position. */
+  async function setup(sample, verifier) {
+    if (!verifier) verifier = await (await ethers.getContractFactory("Halo2Verifier")).deploy();
+    const t = await deployTrustTier({
+      verifier: await verifier.getAddress(),
+      modelHash,
+      price: BigInt(sample.price_now),
+      pricePast: BigInt(sample.price_past),
+      vol: BigInt(sample.vol_answer),
+    });
+    const ltv = (Number(sample.debt_usd) / Number(sample.collateral_usd)).toFixed(4);
+    await t.openPosition(POSITION, ltv, { ageDays: sample.age_days, topupDays: sample.topup_days_ago });
+    return { ...t, verifier };
+  }
 
-    const ModelRegistry = await ethers.getContractFactory("ModelRegistry");
-    registry = await ModelRegistry.deploy();
+  describe("high-risk sample", function () {
+    let t, s;
+    beforeEach(async function () {
+      s = samples.high_risk;
+      t = await setup(s);
+    });
 
-    const TierAuditLog = await ethers.getContractFactory("TierAuditLog");
-    auditLog = await TierAuditLog.deploy();
+    it("the contract computes the same features the proof was made on", async function () {
+      const [q, delta] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
+      expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
+      expect(s.inputs.slice(0, 5)).to.deep.equal(s.q.map(BigInt));
+      expect(s.inputs[5]).to.equal(1n);
+      expect(delta).to.equal(8000n - 9300n);
+    });
 
-    // The REAL verifier this time - not MockTier2Verifier.
-    const RealVerifier = await ethers.getContractFactory("Halo2Verifier");
-    realVerifier = await RealVerifier.deploy();
+    it("accepts the real proof, approves the Tier-2 liquidation and logs keccak256(proof)", async function () {
+      const tx = await t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs);
+      await expect(tx).to.emit(t.engine, "LiquidationApproved").withArgs(POSITION, 2, modelHash);
+      const receipt = await tx.wait();
+      console.log(`      (full Tier-2 decideZkProof gas used: ${receipt.gasUsed})`);
+      const record = await t.auditLog.decisionByPosition(POSITION);
+      expect(record.evidenceRef).to.equal(ethers.keccak256(s.proof));
+    });
 
-    const LiquidationEngine = await ethers.getContractFactory("LiquidationEngine");
-    engine = await LiquidationEngine.deploy(
-      await registry.getAddress(),
-      await auditLog.getAddress(),
-      await realVerifier.getAddress() // <-- the real verifier, wired in at deploy time
-    );
+    it("only Tier 2 is allowed: the chain itself refuses the cheap tiers for this position", async function () {
+      await expect(t.engine.decideHeuristic(POSITION, PAST_ROUND, { value: BOND }))
+        .to.be.revertedWithCustomError(t.engine, "TierNotAllowed");
+      await expect(t.engine.decideCommitment(POSITION, PAST_ROUND, modelHash, ethers.id("c"), { value: BOND }))
+        .to.be.revertedWithCustomError(t.engine, "TierNotAllowed");
+    });
 
-    await auditLog.authorizeLogger(await engine.getAddress());
-    await registry.registerModel(modelHash, "local://risk_model/artifacts/risk_model.onnx");
+    it("rejects the proof once the position changes (a top-up)", async function () {
+      await t.pool.addCollateral(POSITION, 10n ** 17n);
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
+    });
+
+    it("rejects the proof once the price moves", async function () {
+      await t.priceFeed.updateAnswer(BigInt(s.price_now) - 10n ** 8n);
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
+    });
+
+    it("rejects replaying the proof against another position", async function () {
+      await t.openPosition(2, "0.50");
+      await expect(t.engine.decideZkProof(2, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition").withArgs(2);
+    });
+
+    it("the real verifier rejects tampered outputs", async function () {
+      const forged = [...s.inputs];
+      forged[6] = 0n; forged[7] = 1024n;
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, forged))
+        .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
+      const bytes = ethers.getBytes(s.proof);
+      bytes[100] ^= 0xff;
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, bytes, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
+    });
+
+    it("rejects an unregistered model even with a valid proof", async function () {
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, ethers.id("other-model"), s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ModelNotAuthorized");
+    });
+
+    it("hot-swap mock -> real verifier: garbage proofs stop passing, real ones keep passing", async function () {
+      const mock = await (await ethers.getContractFactory("MockTier2Verifier")).deploy();
+      const m = await setup(s, mock);
+      await m.openPosition(2, "0.93", { ageDays: s.age_days, topupDays: s.topup_days_ago });
+      await expect(m.engine.decideZkProof(2, PAST_ROUND, modelHash, "0x1234", s.inputs)).to.not.be.reverted;
+      await m.engine.setTier2Verifier(await t.verifier.getAddress(), modelHash);
+      await expect(m.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, "0x1234", s.inputs))
+        .to.be.revertedWithCustomError(m.engine, "InvalidZkProof");
+      await expect(m.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs)).to.not.be.reverted;
+    });
   });
 
-  it("accepts a real zk-SNARK proof and approves the Tier-2 liquidation decision", async function () {
-    await expect(engine.decideZkProof(9001, modelHash, proofBytes, instances))
-      .to.emit(engine, "LiquidationApproved")
-      .withArgs(9001, 2 /* Tier.ZkProof */, modelHash);
+  describe("low-risk sample", function () {
+    let t, s, claimant, challenger;
+    beforeEach(async function () {
+      [, claimant, challenger] = await ethers.getSigners();
+      s = samples.low_risk;
+      t = await setup(s);
+    });
+
+    it("the contract computes the same features the proof was made on", async function () {
+      const [q] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
+      expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
+      expect(s.inputs[5]).to.equal(0n);
+    });
+
+    it("a real low-risk proof cannot liquidate", async function () {
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofDoesNotShowHighRisk").withArgs(POSITION);
+    });
+
+    it("the label cannot be flipped to high risk", async function () {
+      const forged = [...s.inputs];
+      forged[5] = 1n;
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, forged))
+        .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
+    });
+
+    it("an honest Tier-0 claim is not slashed: the real proof on its snapshot says low risk", async function () {
+      await t.engine.connect(claimant).decideHeuristic(POSITION, PAST_ROUND, { value: BOND });
+      await expect(t.engine.connect(challenger).challengeDecision(POSITION, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ChallengeDidNotContradictClaim");
+      expect(await t.engine.bondOf(POSITION)).to.equal(BOND);
+    });
+
+    it("another position's high-risk proof cannot slash this claim", async function () {
+      await t.engine.connect(claimant).decideHeuristic(POSITION, PAST_ROUND, { value: BOND });
+      const high = samples.high_risk;
+      await expect(t.engine.connect(challenger).challengeDecision(POSITION, modelHash, high.proof, high.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
+    });
   });
 
-  it("logs the decision to the audit trail with the correct model hash", async function () {
-    await engine.decideZkProof(9002, modelHash, proofBytes, instances);
-    const record = await auditLog.decisionByPosition(9002);
-    expect(record.positionId).to.equal(9002);
-    expect(record.tier).to.equal(2); // TierAuditLog.Tier.ZkProof
-    expect(record.modelHash).to.equal(modelHash);
-  });
+  describe("watch-band sample: a cheap claim the model contradicts", function () {
+    let t, s, claimant, challenger;
+    const COMMITMENT = ethers.id("features+score+salt");
+    beforeEach(async function () {
+      [, claimant, challenger] = await ethers.getSigners();
+      s = samples.watch_high;
+      if (!s) this.skip();
+      t = await setup(s);
+    });
 
-  it("reports realistic end-to-end gas cost for a full Tier-2 decision", async function () {
-    const tx = await engine.decideZkProof(9003, modelHash, proofBytes, instances);
-    const receipt = await tx.wait();
-    console.log(`      (full Tier-2 decideZkProof gas used: ${receipt.gasUsed})`);
-    expect(receipt.status).to.equal(1);
-  });
+    it("the chain allows Tier 1 here (delta 8%) but not Tier 0", async function () {
+      const [q, delta] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
+      expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
+      expect(delta).to.equal(800n);
+      await expect(t.engine.decideHeuristic(POSITION, PAST_ROUND, { value: BOND }))
+        .to.be.revertedWithCustomError(t.engine, "TierNotAllowed");
+    });
 
-  it("still rejects an unregistered model even with a valid proof (integrity + authentication both required)", async function () {
-    const unregisteredHash = ethers.keccak256(ethers.toUtf8Bytes("some-other-model"));
-    await expect(
-      engine.decideZkProof(9004, unregisteredHash, proofBytes, instances)
-    ).to.be.revertedWithCustomError(engine, "ModelNotAuthorized");
-  });
+    it("a real proof on the snapshot slashes the Tier-1 claim, and then liquidates at Tier 2", async function () {
+      await t.engine.connect(claimant).decideCommitment(POSITION, PAST_ROUND, modelHash, COMMITMENT, { value: BOND });
+      const tx = await t.engine.connect(challenger).challengeDecision(POSITION, modelHash, s.proof, s.inputs);
+      await expect(tx).to.emit(t.engine, "DecisionChallenged").withArgs(POSITION, challenger.address, BOND);
+      console.log(`      (challengeDecision gas used: ${(await tx.wait()).gasUsed})`);
+      await expect(t.engine.connect(challenger).withdraw()).to.changeEtherBalance(challenger, BOND);
+      await expect(t.engine.connect(challenger).decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.emit(t.engine, "LiquidationApproved").withArgs(POSITION, 2, modelHash);
+    });
 
-  it("demonstrates the mock -> real verifier swap: the same LiquidationEngine instance works with a hot-swapped verifier", async function () {
-    // Deploy fresh with the mock first (as in Weeks 1-2)...
-    const MockTier2Verifier = await ethers.getContractFactory("MockTier2Verifier");
-    const mock = await MockTier2Verifier.deploy();
-
-    const LiquidationEngine = await ethers.getContractFactory("LiquidationEngine");
-    const freshEngine = await LiquidationEngine.deploy(
-      await registry.getAddress(),
-      await auditLog.getAddress(),
-      await mock.getAddress()
-    );
-    await auditLog.authorizeLogger(await freshEngine.getAddress());
-
-    // A garbage "proof" the mock happily accepts by default...
-    await expect(
-      freshEngine.decideZkProof(9005, modelHash, "0x1234", [1, 2, 3])
-    ).to.not.be.reverted;
-
-    // ...now hot-swap in the REAL verifier, exactly as the project plan
-    // describes for this milestone. The garbage proof must now fail,
-    // while our real proof must still succeed.
-    await freshEngine.setTier2Verifier(await realVerifier.getAddress());
-
-    await expect(
-      freshEngine.decideZkProof(9006, modelHash, "0x1234", [1, 2, 3])
-    ).to.be.reverted;
-
-    await expect(
-      freshEngine.decideZkProof(9007, modelHash, proofBytes, instances)
-    ).to.not.be.reverted;
+    it("the snapshot still decides the challenge after the claimant tops up", async function () {
+      await t.engine.connect(claimant).decideCommitment(POSITION, PAST_ROUND, modelHash, COMMITMENT, { value: BOND });
+      await t.pool.addCollateral(POSITION, 10n ** 18n); // the position is now safe...
+      // ...but the claim was false when it was made, so the challenge still succeeds.
+      await expect(t.engine.connect(challenger).challengeDecision(POSITION, modelHash, s.proof, s.inputs))
+        .to.emit(t.engine, "DecisionChallenged");
+      // and the proof no longer matches the live position, so it cannot liquidate it
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
+        .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
+    });
   });
 });

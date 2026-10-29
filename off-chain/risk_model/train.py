@@ -18,6 +18,9 @@ Run from the off-chain/ directory:
 import json
 import os
 
+import numpy as np
+import onnx
+from onnx import helper, numpy_helper
 from web3 import Web3
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -25,7 +28,29 @@ from sklearn.model_selection import train_test_split
 from skl2onnx import to_onnx
 from skl2onnx.common.data_types import FloatTensorType
 
-from risk_model.features import FEATURE_NAMES, N_FEATURES
+from risk_model.features import FEATURE_BOUNDS, FEATURE_NAMES, N_FEATURES, normalize_vector
+
+MODEL_VERSION = "v2"
+# The exported graph clips the output logit to [-LOGIT_CLIP, LOGIT_CLIP]
+# before the sigmoid. sigmoid(8) = 0.99966, so labels are unchanged and
+# probabilities move by < 0.04%, but the Tier-2 circuit's sigmoid lookup
+# table stays small (see circuits/build_circuit.py).
+LOGIT_CLIP = 8.0
+
+
+def _clip_logits(onnx_model, bound: float):
+    graph = onnx_model.graph
+    idx = next(i for i, n in enumerate(graph.node) if n.op_type == "Sigmoid")
+    sigmoid = graph.node[idx]
+    graph.initializer.extend([
+        numpy_helper.from_array(np.array(-bound, dtype=np.float32), "logit_min"),
+        numpy_helper.from_array(np.array(bound, dtype=np.float32), "logit_max"),
+    ])
+    clip = helper.make_node("Clip", [sigmoid.input[0], "logit_min", "logit_max"], ["clipped_logit"], name="clip_logit")
+    sigmoid.input[0] = "clipped_logit"
+    graph.node.insert(idx, clip)
+    onnx.checker.check_model(onnx_model)
+    return onnx_model
 from risk_model.synthetic_data import generate_synthetic_dataset
 
 ARTIFACT_DIR = os.path.join(os.path.dirname(__file__), "artifacts")
@@ -36,7 +61,10 @@ METADATA_PATH = os.path.join(ARTIFACT_DIR, "model_metadata.json")
 def train_and_export():
     os.makedirs(ARTIFACT_DIR, exist_ok=True)
 
-    X, y, _risk_scores = generate_synthetic_dataset(n_samples=4000)
+    X_raw, y, _risk_scores = generate_synthetic_dataset(n_samples=4000)
+    # Train on min-max normalized features (risk_model/features.py): the
+    # Tier-2 circuit proves over the same normalized vector.
+    X = np.array([normalize_vector(row) for row in X_raw])
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -46,7 +74,7 @@ def train_and_export():
         hidden_layer_sizes=(8,),
         activation="relu",
         solver="adam",
-        max_iter=500,
+        max_iter=1000,
         random_state=42,
     )
     model.fit(X_train, y_train)
@@ -71,6 +99,7 @@ def train_and_export():
         target_opset=15,
         options={id(model): {"zipmap": False}},
     )
+    onnx_model = _clip_logits(onnx_model, LOGIT_CLIP)
     with open(ONNX_PATH, "wb") as f:
         f.write(onnx_model.SerializeToString())
     print(f"Wrote ONNX model to {ONNX_PATH}")
@@ -96,6 +125,10 @@ def train_and_export():
         "feature_names": FEATURE_NAMES,
         "n_features": N_FEATURES,
         "hidden_layer_sizes": [8],
+        "model_version": MODEL_VERSION,
+        "input_normalization": {"method": "min-max to [0, 1]", "bounds": FEATURE_BOUNDS},
+        "logit_clip": LOGIT_CLIP,
+        "positive_rate": float(y.mean()),
         "validation_accuracy": acc,
         "validation_roc_auc": auc,
         "onnx_path": os.path.relpath(ONNX_PATH, start=os.path.dirname(__file__)),

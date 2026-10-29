@@ -1,0 +1,6 @@
+{
+  "random_inputs": 200,
+  "label_disagreements": 0,
+  "domain": "q uniform in [0, 1024]^5",
+  "seed": 11
+}

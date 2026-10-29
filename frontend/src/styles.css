@@ -195,7 +195,8 @@ a {
   color: var(--text-secondary);
 }
 
-.field-group input {
+.field-group input,
+.field-group select {
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -205,7 +206,28 @@ a {
   padding: 8px 10px;
 }
 
-.field-group input:focus {
+.field-group.inline {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.field-group.inline input {
+  width: 80px;
+}
+
+.onchain-view {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.onchain-view table {
+  margin: 8px 0 12px;
+}
+
+.field-group input:focus,
+.field-group select:focus {
   outline: none;
   border-color: var(--border-strong);
 }
@@ -438,4 +460,288 @@ tbody tr.row-enter {
   font-size: 13px;
   padding: 20px 0;
   text-align: center;
+}
+
+/* ---- Wallet connect / SIWE auth ---- */
+
+.masthead-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wallet-connect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--tier0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--tier0-dim);
+  border-color: var(--tier0);
+  color: var(--tier0);
+}
+
+.btn-danger {
+  background: var(--tier2-dim);
+  border-color: var(--tier2);
+  color: var(--tier2);
+}
+
+.wallet-badge {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.wallet-missing {
+  color: var(--text-tertiary);
+}
+
+.wallet-connected strong {
+  font-family: var(--font-mono);
+}
+
+.wallet-subtext {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.wallet-error {
+  font-size: 12px;
+  max-width: 260px;
+}
+
+/* ---- Two-column layout for workflow + activity feed ---- */
+
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Live event feed ---- */
+
+.event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  border-left: 2px solid var(--border);
+  animation: fadeInRow 320ms ease-out;
+}
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.event-row.tone-info {
+  border-left-color: var(--tier0);
+}
+
+.event-row.tone-critical {
+  border-left-color: var(--tier2);
+  background: var(--tier2-dim);
+}
+
+.event-row.tone-ok {
+  border-left-color: var(--tier1);
+}
+
+.event-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.event-label {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.event-tx {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+/* ---- Position workflow stepper ---- */
+
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  margin: 8px 0 20px;
+}
+
+.workflow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.workflow-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.workflow-step.done:not(:last-child)::after {
+  background: var(--tier0);
+}
+
+.workflow-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  z-index: 1;
+  color: var(--text-tertiary);
+}
+
+.workflow-step.done .workflow-dot {
+  border-color: var(--tier0);
+  color: var(--tier0);
+  background: var(--tier0-dim);
+}
+
+.workflow-step.active .workflow-dot {
+  border-color: var(--tier1);
+  color: var(--tier1);
+  background: var(--tier1-dim);
+}
+
+.workflow-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.workflow-details {
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.tone-critical-text {
+  color: var(--tier2);
+}
+
+/* ---- Wallet actions ---- */
+
+.wallet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-row label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-row input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---- Selectable audit trail rows ---- */
+
+.row-clickable {
+  cursor: pointer;
+}
+
+.row-clickable:hover {
+  background: var(--surface-raised);
+}
+
+.row-selected {
+  background: var(--tier0-dim) !important;
 }

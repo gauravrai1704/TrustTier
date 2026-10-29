@@ -1,7 +1,12 @@
 import pytest
 
 from evaluation.real_data import load_real_positions
-from evaluation.cost_model import GAS_BY_TIER, TIER0_GAS, TIER1_GAS, TIER2_GAS
+import json
+import os
+
+from evaluation.cost_model import (
+    DECISION_GAS_BY_TIER, GAS_BY_TIER, TIER0_GAS, TIER1_GAS, TIER2_GAS,
+)
 from evaluation.evaluate import summarize
 
 
@@ -68,3 +73,22 @@ class TestCostSimulation:
         summary = summarize(results, "test")
         assert summary["tier0_high_risk_misses"] == 2
         assert summary["miss_rate_pct"] == pytest.approx(50.0)
+
+
+class TestCostModelSource:
+    """The cost model must come from the measured gas file, never hand-typed."""
+
+    def test_constants_match_gas_measurements_json(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "evaluation", "results", "gas_measurements.json")
+        with open(path) as f:
+            measured = json.load(f)
+        assert DECISION_GAS_BY_TIER["HEURISTIC"] == measured["decideHeuristic"]
+        assert DECISION_GAS_BY_TIER["COMMITMENT"] == measured["decideCommitment"]
+        assert DECISION_GAS_BY_TIER["ZK_PROOF"] == measured["decideZkProof"]
+        assert "commitPositionFeatures" not in measured  # no oracle transaction any more
+
+    def test_decision_gas_is_the_full_per_position_cost(self):
+        assert GAS_BY_TIER == DECISION_GAS_BY_TIER
+
+    def test_tiers_are_ordered_by_cost(self):
+        assert TIER0_GAS < TIER1_GAS < TIER2_GAS

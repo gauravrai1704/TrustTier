@@ -33,14 +33,20 @@ def generate_synthetic_dataset(n_samples: int = 4000, seed: int = 42):
     # volatility and adverse momentum amplify risk, while account age and
     # recent top-ups reduce it. Coefficients are illustrative, not fitted
     # to any real dataset.
+    #
+    # Model v2: the latent score is centred near the protocol's liquidation
+    # threshold (LTV 0.80), at LTV ~0.75 for an average position. Model v1
+    # centred it at LTV 0.5, so most positions - including far-from-boundary
+    # Tier-0 ones - were labelled high-risk (84.1% of Tier-0 positions in the
+    # evaluation), which made the label meaningless as a liquidation signal.
     raw_score = (
-        3.2 * (ltv - 0.5)
-        + 1.8 * collateral_volatility_30d
-        - 1.1 * price_momentum_24h
-        + 0.01 * (time_since_last_topup_days / 90.0) * 2.0
-        - 0.4 * np.log1p(account_age_days) / np.log1p(2000)
+        8.0 * (ltv - 0.75)
+        + 2.0 * (collateral_volatility_30d - 0.30)
+        - 1.5 * price_momentum_24h
+        + 0.5 * (time_since_last_topup_days / 90.0)
+        - 0.5 * (np.log1p(account_age_days) / np.log1p(2000) - 0.5)
     )
-    noise = rng.normal(0, 0.15, n_samples)
+    noise = rng.normal(0, 0.3, n_samples)
     risk_score = 1.0 / (1.0 + np.exp(-(raw_score + noise)))  # squashed to [0, 1]
 
     # Binary label for classifier training: "should this be flagged as

@@ -82,14 +82,35 @@ def read_write_sets_old_design(tx):
 
 
 def read_write_sets_new_design(tx):
-    """Storage footprint under the current contracts (per-position mapping + finalization lock)."""
+    """Storage footprint of one decide* call under the current contracts:
+    the position's state in the lending protocol, the shared price and
+    volatility feeds (read only), the per-position lock, and (Tier 0/1) the
+    bond bookkeeping and feature snapshot.
+
+    Global configuration (tier2Verifier, tier2ModelHash, the registry entry)
+    is only read, never written by a decision, so it creates no conflicts.
+    The bond's msg.value raises the engine's ETH balance in every Tier 0/1
+    call; balance increments commute, and parallel engines treat them as
+    commutative deltas (as Block-STM does for aggregators), so they are not
+    modelled as a conflicting write here.
+    """
     position_id = tx["position_id"]
-    reads = {f"ModelRegistry.isAuthorized[*]"} if tx["tier"] != "HEURISTIC" else set()
+    reads = {
+        f"PositionSource.position[{position_id}]",
+        "PriceFeed.latestRound", "PriceFeed.rounds[*]", "VolatilityFeed.latestRound",
+        f"LiquidationEngine.state[{position_id}]",
+    }
+    if tx["tier"] != "HEURISTIC":
+        reads.add("ModelRegistry.isAuthorized[*]")
+    if tx["tier"] == "ZK_PROOF":
+        reads |= {"LiquidationEngine.tier2Verifier", "LiquidationEngine.tier2ModelHash"}
     writes = {
-        f"LiquidationEngine.positionFinalized[{position_id}]",
+        f"LiquidationEngine.state[{position_id}]",
         f"TierAuditLog.decisionByPosition[{position_id}]",
         f"TierAuditLog.hasDecision[{position_id}]",
     }
+    if tx["tier"] in ("HEURISTIC", "COMMITMENT"):
+        writes.add(f"LiquidationEngine.state[{position_id}].bond+snapshot")
     if tx["tier"] == "COMMITMENT":
         writes.add(f"LiquidationEngine.tier1Commitments[{position_id}]")
     return reads, writes
