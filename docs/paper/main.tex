@@ -55,11 +55,11 @@
 \renewcommand{\shortauthors}{Rai, Sharma and Gupta}
 
 \begin{abstract}
-Lending protocols liquidate a borrower when the loan-to-value ratio (LTV) crosses a threshold, and the risk score behind the decision is usually computed by an operator nobody can audit. Zero-knowledge machine learning (zkML) can prove that a score came from a committed model, but a proof-verified decision costs about 0.9\,M gas, too much to spend on every position. TrustTier makes the strength of verification grow with risk. A position far from its liquidation boundary may be decided by a bonded heuristic claim (Tier~0), one approaching it by a bonded, salted commitment to a registered model's output (Tier~1), and one at the boundary only by an on-chain-verified Halo2 zk-SNARK of the model's inference (Tier~2). Cheap claims stay accountable through a one-hour window in which anyone can slash a false claim with a Tier-2 proof.
+Lending protocols liquidate a borrower only once the loan-to-value ratio (LTV) crosses a threshold, which is free to check but acts too late in a crash; acting earlier needs a risk model, and a model's score is usually computed by an operator nobody can audit. Zero-knowledge machine learning (zkML) can prove that a score came from a committed model, but a proof-verified decision costs about 0.9\,M gas, too much to spend on every position. TrustTier makes the strength of verification grow with risk. A position far from its liquidation boundary may be decided by a bonded heuristic claim (Tier~0), one approaching it by a bonded, salted commitment to a registered model's output (Tier~1), and one at the boundary only by an on-chain-verified Halo2 zk-SNARK of the model's inference (Tier~2). Cheap claims stay accountable through a one-hour window in which anyone can slash a false claim with a Tier-2 proof; the bond scales with the base fee so that slashing always pays, challenges are committed before they are revealed so they cannot be front-run, and a Tier-1 claimant must open its commitment or forfeit. A verified Tier-2 approval is the only way the lending protocol's liquidator can execute a (soft) liquidation, once, within 30 minutes.
 
 A tiered design is only as honest as whoever picks the tier and supplies the model's inputs. TrustTier therefore trusts neither: the contract reads every input itself from the lending protocol and Chainlink-style feeds, computes the distance $\delta$ to the boundary, refuses a tier too weak for it, and accepts a proof only if its public inputs equal the features it computed in the same transaction. Cheap claims snapshot their features, so a challenge is judged on the facts at claim time.
 
-The prototype comprises eight Solidity contracts (including an Aave~V3 adapter and multisig-plus-timelock governance), a router, an EZKL proving pipeline, a sentinel and a wallet-signed DApp; 106 contract tests and 81 Python tests pass. On 374 positions (74 real Aave~V2 snapshots and 300 synthetic), tiering costs 205.9\,M gas against 327.4\,M for always proving, a 37.1\% saving; a sweep of 34 band settings shows the deployed bands are Pareto-optimal. Opcode traces of whole blocks show that 374 decisions parallelize to 15.3$\times$ on 16 threads, that bonds paid as \code{msg.value} would cap this at 3.35$\times$ on engines that treat balance updates as read-modify-writes, and that deposit-funded bonds remove that bottleneck.
+The prototype comprises nine Solidity contracts (including the liquidator that consumes approvals, an Aave~V3 adapter and multisig-plus-timelock governance), a router, an EZKL proving pipeline, a sentinel and a wallet-signed DApp that also runs as an in-browser simulation; 126 contract tests and 82 Python tests pass. On 374 positions (74 real Aave~V2 snapshots and 300 synthetic), tiering costs 210.3\,M gas against 328.4\,M for always proving, a 36.0\% saving; a sweep of 34 band settings shows the deployed bands are Pareto-optimal. In a 30-day stress test of 3,000 positions on identical price paths, acting on the proven model cuts forced liquidations by 88\% and insolvencies from 61 to 2 compared with the health-factor rule, at the price of decision gas and 26\% unnecessary soft liquidations; the gas makes daily monitoring affordable for retail positions on a rollup, not on L1. Opcode traces of whole blocks show that 374 decisions parallelize to 15.3$\times$ on 16 threads, that bonds paid as \code{msg.value} would cap this at 3.35$\times$ on engines that treat balance updates as read-modify-writes, and that deposit-funded bonds remove that bottleneck.
 \end{abstract}
 
 \keywords{DeFi, liquidations, zkML, zk-SNARK, EZKL, Halo2, smart contracts, optimistic verification, oracles, parallel execution}
@@ -71,7 +71,9 @@ The prototype comprises eight Solidity contracts (including an Aave~V3 adapter a
 
 Lending protocols such as Aave, Compound and MakerDAO hold billions of dollars of collateral, and a liquidation sells part of it at a discount. In the four largest protocols, 28,138 liquidations sold USD~807.46\,M of collateral~\cite{qin2021liquidations}. Whether a position is truly at risk is increasingly judged by a model that looks beyond the LTV, at volatility, price momentum and account history. Today that model runs on an operator's server. Borrowers, liquidators and auditors see only the outcome, and must trust that the score came from the claimed model, on the real inputs, and that neither the model nor the record was quietly changed.
 
-Recent work shows that such decisions \emph{can} be verified on-chain, either by running a small model inside a contract~\cite{alhaidari2025onchain} or by verifying a zk-SNARK of its inference~\cite{chen2024zkml,kang2022scaling}. The obstacle is cost. In our implementation a proof-verified liquidation decision costs 875,489 gas and about 16\,s of proving, 3.3 times a bonded heuristic decision. Spending that on every position is wasteful, because most positions are nowhere near their liquidation boundary.
+\paragraph{Why a model at all.} Every protocol already has a free, deterministic rule: liquidate once LTV reaches the threshold (Aave's health factor below 1). It acts only at the boundary, so a crash day can carry a position from safe to under water before any keeper moves, and the protocol absorbs bad debt. A model that sees volatility and momentum can act \emph{before} the boundary with a smaller, \emph{soft} liquidation. That is only acceptable if the model's verdict is verifiable, and only affordable if verification is not paid on every position. Section~\ref{sec:eval-hf} measures this trade against the health-factor rule on identical price paths.
+
+Recent work shows that such decisions \emph{can} be verified on-chain, either by running a small model inside a contract~\cite{alhaidari2025onchain} or by verifying a zk-SNARK of its inference~\cite{chen2024zkml,kang2022scaling}. The obstacle is cost. In our implementation a proof-verified liquidation decision costs 878,059 gas and about 16\,s of proving, 3.3 times a bonded heuristic decision. Spending that on every position is wasteful, because most positions are nowhere near their liquidation boundary.
 
 \paragraph{The idea.} TrustTier spends verification where it matters. It borrows the intuition of memory tiering, where hot data gets the expensive fast tier: positions far from the boundary get cheap, bonded claims, and only positions at the boundary must carry a zero-knowledge proof. The cheap tiers are optimistic, as in optimistic rollups~\cite{kalodner2018arbitrum} and optimistic ML~\cite{conway2024opml}, but a dispute is settled by a single zk-SNARK rather than an interactive bisection game.
 
@@ -81,12 +83,13 @@ Recent work shows that such decisions \emph{can} be verified on-chain, either by
 \begin{itemize}
   \item A risk-proportional verification scheme with three tiers whose boundaries are enforced \emph{on-chain}, from inputs the contract reads itself (Sections~\ref{sec:design-tiers}--\ref{sec:design-inputs}).
   \item A bonded challenge window with feature snapshots, a precise position lifecycle in which a Tier-2 proof supersedes any pending cheap claim, and deposit-funded bonds (Sections~\ref{sec:design-challenge}--\ref{sec:design-concurrency}).
-  \item A complete implementation: eight contracts, an EZKL/Halo2 circuit with a 15.6\,KB verifier, an Aave~V3 adapter, multisig-plus-timelock governance, a router, a sentinel and a DApp (Section~\ref{sec:impl}).
-  \item An evaluation with real proofs and measured gas: tiering cost, ablations of every design component, a 34-point band sweep, a threshold sweep, model calibration, and three concurrency studies (modelled scheduling, opcode-traced blocks executed on 1--64 simulated threads, and competing liquidator threads on a live node) (Section~\ref{sec:eval}).
-  \item A security analysis of 23 findings, each with its status (Section~\ref{sec:security}).
+  \item An incentive and execution layer: gas-scaled bonds that make slashing profitable at any gas price, a protocol-funded reward pool for honest claims, Tier-1 commitments that must be opened, commit-reveal challenges, feature anchors for slow proofs, and a liquidator contract that executes each Tier-2 approval exactly once (Sections~\ref{sec:design-incentives}--\ref{sec:design-consumer}).
+  \item A complete implementation: nine contracts, an EZKL/Halo2 circuit with a 15.6\,KB verifier, an Aave~V3 adapter, multisig-plus-timelock governance, a router, a sentinel and a DApp (Section~\ref{sec:impl}).
+  \item An evaluation with real proofs and measured gas: a comparison with the health-factor rule on identical price paths, the economics of the challenge game and of deployment on L1 versus a rollup, an outcome-labelled test on real Aave data, tiering cost, ablations of every design component, a 34-point band sweep, a threshold sweep, model calibration, and three concurrency studies (modelled scheduling, opcode-traced blocks executed on 1--64 simulated threads, and competing liquidator threads on a live node) (Section~\ref{sec:eval}).
+  \item A security analysis of 29 findings, each with its status (Section~\ref{sec:security}).
 \end{itemize}
 
-\paragraph{Scope.} TrustTier governs the \emph{decision} that a liquidation is justified; it does not replace a protocol's liquidation auction. The prototype runs on a local Ethereum chain (Hardhat) with a tested deployment path to the Sepolia testnet.
+\paragraph{Scope.} TrustTier governs the \emph{decision} that a liquidation is justified and gates its execution: in the demo lending pool, only \code{TrustTierLiquidator}, and only on an open Tier-2 approval, can liquidate. It does not replace a protocol's own health-factor liquidations, which remain the fallback. The prototype runs on a local Ethereum chain (Hardhat) with a tested deployment path to the Sepolia testnet.
 
 %% ===================================================================
 \section{Background and Motivation}
@@ -148,6 +151,7 @@ Prior work verifies ML decisions on-chain either completely, running or proving 
   \item[G5 Liveness.] No claim can delay a needed liquidation, and no position can be locked forever.
   \item[G6 Exactly once.] Racing liquidators finalize a position at most once, and a race over one position never delays a decision about another.
   \item[G7 Governed change.] No single key can change what the system trusts.
+  \item[G8 Incentive compatibility.] Slashing a false claim pays for itself at any gas price, a claimant cannot keep its committed score hidden, and a challenge seen in the mempool cannot be stolen.
 \end{description}
 
 %% ===================================================================
@@ -178,7 +182,7 @@ TrustTier sets the evidence a decision must carry by the position's distance fro
 \end{figure}
 
 \begin{table}[t]
-  \caption{Tiers, what each puts on-chain, and measured gas per decision (full transaction, including reading the position, two feeds and the 24-hour price round).}
+  \caption{Tiers, what each puts on-chain, and measured gas per decision (full transaction, including reading the position, two feeds and the 24-hour price round). $^{*}$Claim 340,072 plus the mandatory reveal, 39,089.}
   \label{tab:tiers}
   \footnotesize
   \setlength{\tabcolsep}{3pt}
@@ -186,9 +190,9 @@ TrustTier sets the evidence a decision must carry by the position's distance fro
     \toprule
     \textbf{Tier} & \textbf{Allowed} & \textbf{Evidence on-chain} & \textbf{Gas} \\
     \midrule
-    0 Heuristic & $\delta>0.15$ & Decision record, feature snapshot, 0.01\,ETH bond slashable for 1\,h & 266,202 \\
-    1 Commitment & $\delta>0.05$ & Registered model, salted keccak commitment to (features, score), snapshot, same bond & 336,713 \\
-    2 zk-SNARK & always & Halo2 proof that the model on the position's current on-chain features outputs ``high risk'' & 875,489 \\
+    0 Heuristic & $\delta>0.15$ & Decision record, feature snapshot, gas-scaled bond slashable for 1\,h & 269,534 \\
+    1 Commitment & $\delta>0.05$ & Registered model, salted commitment to (features, score) that must be opened in the window, snapshot, same bond & 379,161$^{*}$ \\
+    2 zk-SNARK & always & Halo2 proof that the model on the position's on-chain features outputs ``high risk''; approves one liquidation & 878,059 \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -218,7 +222,7 @@ TrustTier sets the evidence a decision must carry by the position's distance fro
 
 Each feature is min-max normalized to $[0,1]$ over declared bounds and scaled by $2^{10}$, the circuit's input scale, so the integer $q$ is exactly what the circuit sees ($q/1024$). Out-of-range values are clamped, never rejected, so no position becomes undecidable; a timestamp in the future counts as zero days. A Python mirror (\code{onchain\_features.py}) reproduces the arithmetic bit for bit, and tests check it against the contract and against the public inputs of real proofs.
 
-\paragraph{The 24-hour round.} Momentum needs the price that was in effect 24 hours ago, which a contract cannot search for cheaply. The caller passes \code{pastRoundId}; the contract checks that this round was updated at or before $t-24\text{h}$ and that the next round (if any) was updated after it, so exactly one round is acceptable. The router finds it with an exponential walk back from the latest round followed by binary search over round timestamps. Chainlink proxy round IDs encode a phase in their upper bits and are consecutive only within a phase~\cite{chainlinkhistorical}, so the search stays within the current phase. A wrong round can only make the transaction revert (\code{BadMomentumRound}), never mis-price it. Both feeds must also be fresh (\code{maxPriceAge}, \code{maxVolatilityAge}; 3\,h and 48\,h by default) and positive.
+\paragraph{The 24-hour round.} Momentum needs the price that was in effect 24 hours ago, which a contract cannot search for cheaply. The caller passes \code{pastRoundId}; the contract checks that this round was updated at or before $t-24\text{h}$ and that the next round (if any) was updated after it, so exactly one round is acceptable. The router finds it with an exponential walk back from the latest round followed by binary search over round timestamps. Chainlink proxy round IDs encode a phase in their upper bits and are consecutive only within a phase~\cite{chainlinkhistorical}, so the search stays within the current phase. The last round of a phase has no successor; the contract then accepts it only if it was updated within one heartbeat (\code{maxPriceAge}) of the target, which an older, superseded round cannot be. A wrong round can only make the transaction revert (\code{BadMomentumRound}), never mis-price it. Both feeds must also be fresh (\code{maxPriceAge}, \code{maxVolatilityAge}; 3\,h and 48\,h by default) and positive, and on an L2 an optional Chainlink sequencer-uptime feed must report the sequencer up for at least an hour.
 
 \paragraph{Tier enforcement.} Every \code{decide*} call computes $\delta$ in basis points from the protocol's own collateral, debt and threshold and reverts with \code{TierNotAllowed(positionId, tier, deltaBps)} if the requested tier is too weak. A refused attempt does not consume the position. The router uses the same thresholds (a test reads them from the Solidity source), so it never attempts a tier the chain would refuse; it may choose a stronger tier, which only costs it gas.
 
@@ -227,11 +231,11 @@ Each feature is min-max normalized to $[0,1]$ over declared bounds and scaled by
 \subsection{Bonded challenge window with feature snapshots}
 \label{sec:design-challenge}
 
-Tier~0/1 decisions are optimistic. The claimant posts a bond of at least 0.01\,ETH, which opens a one-hour window. The contract stores $\mathrm{snap} = \mathrm{keccak256}(q_1,\dots,q_5)$, the features the claim was made on, and emits them in \code{FeaturesSnapshotted}. Anyone holding a valid Tier-2 proof whose features hash to $\mathrm{snap}$ and whose label is ``high risk'' can call \code{challengeDecision} within the window and is credited the bond. Otherwise \code{reclaimBond} credits it back to the claimant after the window. Because a zk-SNARK proves the claim wrong in one transaction, no interactive bisection game is needed.
+Tier~0/1 decisions are optimistic. The claimant posts a bond (Section~\ref{sec:design-incentives}), which opens a one-hour window. The contract stores $\mathrm{snap} = \mathrm{keccak256}(q_1,\dots,q_5)$, the features the claim was made on, and emits them in \code{FeaturesSnapshotted}. Anyone holding a valid Tier-2 proof whose features hash to $\mathrm{snap}$ and whose label is ``high risk'' can call \code{challengeDecision} within the window and is credited the bond. Otherwise \code{reclaimBond} credits it back to the claimant after the window. Because a zk-SNARK proves the claim wrong in one transaction, no interactive bisection game is needed.
 
 Judging the challenge on the snapshot gives the two properties goal G4 asks for. An \emph{honest} claimant is not slashed because prices moved after the claim: a proof on later features does not match the snapshot. A \emph{false} claimant is slashed even if they top up the position afterwards: the snapshot still records the facts at claim time. Both are tested with real proofs. Payouts go to \code{pendingWithdrawals} and are pulled with \code{withdraw}, so a hostile recipient can only strand its own funds.
 
-The Tier-1 commitment is $\mathrm{keccak256}(q, \mathrm{score}\cdot10^6, \mathrm{salt})$ with a random 32-byte salt, so the hidden score cannot be brute-forced from the hash; revealing the salt lets an auditor check the claim.
+The Tier-1 commitment is $\mathrm{keccak256}(q, \mathrm{score}\cdot10^6, \mathrm{salt})$ with a random 32-byte salt, so the score cannot be brute-forced from the hash while the claim is fresh. The claimant must open it with \code{revealCommitment} inside the window: the contract recomputes the hash and checks that $q$ is the snapshot. A committed score of 0.5 or more contradicts the claim itself, so the bond is forfeited and the position re-opens; an unopened commitment is forfeited when the window closes. Tier~1 is therefore stronger than Tier~0 on-chain, not only for an auditor: the claimant is bound to a specific score from a registered model and must publish it.
 
 \subsection{Position lifecycle}
 \label{sec:design-lifecycle}
@@ -240,7 +244,7 @@ Figure~\ref{fig:lifecycle} shows the states a position moves through. Three rule
 \begin{itemize}
   \item \textbf{One cheap claim at a time.} While a claim's window is open, further Tier~0/1 claims revert (\code{PositionAlreadyFinalized}). The lock is the first thing every \code{decide*} checks, before any external call, so a losing racer pays only $\approx$26\,k gas.
   \item \textbf{Tier~2 supersedes.} A Tier-2 proof that the position is high risk \emph{now} is accepted even while a cheap claim's window is open (\code{ClaimSuperseded}). The superseded claim keeps its bond, snapshot and window: it is still slashed if it was false when made, and reclaimed if not. A claim therefore cannot delay a needed liquidation.
-  \item \textbf{Re-opening.} A successful challenge re-opens the position so the challenger's proof can liquidate it, unless it has already been liquidated. After an unchallenged window, the next decision re-opens it and credits the old bond. A Tier-2 liquidation is final.
+  \item \textbf{Re-opening.} A successful challenge re-opens the position so the challenger's proof can liquidate it. After an unchallenged window, the next decision re-opens it and settles the old bond. A Tier-2 approval blocks every other decision until the liquidator executes it or \code{APPROVAL\_TTL} (30 minutes) passes; either way the position, partly repaid or not, can then be decided again.
 \end{itemize}
 
 \begin{figure}[t]
@@ -252,18 +256,37 @@ Figure~\ref{fig:lifecycle} shows the states a position moves through. Three rule
       lb/.style={font=\tiny,align=center,text=black!85}]
     \node[st] (open) at (0,0) {\textbf{Open}\\no decision};
     \node[st,fill=tierone!20] (claim) at (3.45,0) {\textbf{Claimed}\\Tier 0/1,\\window open};
-    \node[st,fill=tiertwo!25] (final) at (6.75,0) {\textbf{Liquidated}\\Tier 2, final};
+    \node[st,fill=tiertwo!25] (final) at (6.75,0) {\textbf{Approved}\\Tier 2, 30 min};
     \node[st,fill=tierzero!15] (closed) at (3.45,-2.0) {\textbf{Window closed}\\bond reclaimable};
     \draw[arr] ([yshift=2.2mm]open.east) -- node[above,lb]{Tier 0/1 claim\\(bond, snapshot)} ([yshift=2.2mm]claim.west);
     \draw[arr] ([yshift=-2.2mm]claim.west) -- node[below,lb]{challenge succeeds:\\slash, re-open} ([yshift=-2.2mm]open.east);
     \draw[arr] (claim) -- node[above,lb]{Tier-2 proof\\(supersedes)} (final);
     \draw[arr] (open.north) to[out=35,in=145] node[above,lb]{Tier-2 proof on current features} (final.north);
     \draw[arr] (claim) -- node[right,lb]{1 h passes} (closed);
-    \draw[arr] (closed.west) -| node[below,lb,pos=0.3]{next decision re-opens it,\\credits the bond} (open.south);
+    \draw[arr] (closed.west) -| node[below,lb,pos=0.3]{next decision re-opens it,\\settles the bond} (open.south);
+    \draw[arr] (final.south) |- node[right,lb,pos=0.25]{executed once\\or expired} (closed.east);
   \end{tikzpicture}
-  \caption{Position lifecycle. Cheap claims block only other cheap claims for one window; a Tier-2 proof of current high risk always proceeds; only a Tier-2 liquidation is final.}
+  \caption{Position lifecycle. Cheap claims block only other cheap claims for one window; a Tier-2 proof of current high risk always proceeds and approves one liquidation, executed by the liquidator within 30 minutes or expired.}
   \label{fig:lifecycle}
 \end{figure}
+
+\subsection{Incentives}
+\label{sec:design-incentives}
+
+An optimistic tier is secure only if someone checks it. A watcher slashes a false claim only when the bond it wins exceeds the challenge's cost, about 0.68\,M gas: with a fixed 0.01\,ETH bond that stops being true above 14.7\,gwei (Section~\ref{sec:eval-incentives}), so at ordinary L1 gas prices nobody has a reason to watch, the verifier's dilemma. TrustTier closes the gap in four ways.
+\begin{itemize}
+  \item \textbf{Gas-scaled bonds.} A claim must post $\max(0.01\,\mathrm{ETH},\ 1.5\,\mathrm{M}\cdot\mathrm{basefee})$, read from \code{block.basefee} at the claim. The bond covers a challenge at any gas price and stays profitable while the base fee at challenge time is below 2.2$\times$ the base fee at the claim.
+  \item \textbf{Rewards for honest work.} The lending protocol funds a reward pool; an unchallenged claim earns \code{claimReward} when its bond is settled, at most once per position per day, so attesting to safe positions is paid work and cannot be farmed by re-claiming.
+  \item \textbf{Commit-reveal challenges.} A challenger first commits $\mathrm{keccak256}(\mathrm{challenger}, \mathrm{position}, \mathrm{snap}, \mathrm{keccak256}(\mathrm{proof}))$ and reveals the proof at least one block later. Once any commit exists for a claim, the one-step \code{challengeDecision} is closed for it, so a bot that copies a revealed proof from the mempool has no commit and cannot claim the bond.
+  \item \textbf{Must-open commitments} (Section~\ref{sec:design-challenge}) make a Tier-1 claim self-checking.
+\end{itemize}
+
+\subsection{Executing decisions}
+\label{sec:design-consumer}
+
+A decision nobody acts on is only a record. \code{TrustTierLiquidator} is the lending protocol's one path to liquidation: \code{liquidate(position)} calls \code{consumeApproval}, which only the configured liquidator may call and which succeeds only on an open, unexpired Tier-2 approval, then asks the protocol to execute. The demo pool performs a \emph{soft} liquidation: it closes 50\% of the debt and moves collateral worth the repaid debt plus a 5\% bonus to whoever called, which pays the keeper for the proof. One proof buys exactly one liquidation. Because the model is proven on-chain, the pool may act \emph{before} LTV reaches the threshold, which is the reason to use a model at all; the protocol's own health-factor liquidation stays in force as a fallback.
+
+\paragraph{Slow proofs.} A Tier-2 proof takes about 16\,s, longer than a block, and a feed update in between changes $q$ and invalidates it. Anyone may \code{anchorFeatures(position)}, which stores the hash of the current $q$ and $\delta$. For 10 minutes a proof on the anchored features is accepted, but only while the position has not become safer than at the anchor ($\delta_\mathrm{now}\le\delta_\mathrm{anchor}$). The router anchors only when a feed moved during proving, and then proves once more.
 
 \subsection{Governance and model registry}
 
@@ -274,7 +297,7 @@ Figure~\ref{fig:lifecycle} shows the states a position moves through. Three rule
 
 Parallel execution engines gain only when transactions touch disjoint state~\cite{gelashvili2023blockstm,saraph2020empirical}. TrustTier follows one rule: every storage write is keyed by a single position, account or model. The midterm audit log broke it by appending every decision to one array, whose length slot every transaction wrote; \code{TierAuditLog} now stores one record per position and history is read from events. Per-position engine state is packed into three slots (claimant and bond; deadline and three flags; snapshot), which also saves about 46\,k gas per cheap claim.
 
-Opcode traces of whole blocks (Section~\ref{sec:eval-traces}) exposed one more shared write that storage keys do not show: a bond paid as \code{msg.value} changes the engine's ETH balance. On an engine that treats a balance change as a read-modify-write, every cheap claim in a block then conflicts with every other. We therefore added \emph{deposit-funded bonds}: \code{deposit()} pre-funds the claimant's own balance in \code{pendingWithdrawals}, a claim sent without ETH draws \code{MIN\_BOND} from it, and reclaimed or slashed bonds are recycled the same way. Such a claim touches only its claimant's slot, for 5,238 extra gas.
+Opcode traces of whole blocks (Section~\ref{sec:eval-traces}) exposed one more shared write that storage keys do not show: a bond paid as \code{msg.value} changes the engine's ETH balance. On an engine that treats a balance change as a read-modify-write, every cheap claim in a block then conflicts with every other. We therefore added \emph{deposit-funded bonds}: \code{deposit()} pre-funds the claimant's own balance in \code{pendingWithdrawals}, a claim sent without ETH draws \code{MIN\_BOND} from it, and reclaimed or slashed bonds are recycled the same way. Such a claim touches only its claimant's slot, for 5,238 extra gas. Rewards are paid when a bond is settled, not when a claim is made, so the reward pool's shared balance is never written by a claim.
 
 \subsection{Why a SNARK, not a STARK}
 \label{sec:design-stark}
@@ -344,15 +367,15 @@ Figure~\ref{fig:arch} shows the system.
   \label{fig:arch}
 \end{figure*}
 
-\paragraph{Contracts.} \code{LiquidationEngine} (9,415 bytes deployed), \code{ModelRegistry}, \code{TierAuditLog}, the EZKL-generated \code{Halo2Verifier} (15,612 bytes, under the 24,576-byte EIP-170 limit~\cite{eip170}), \code{AaveV3PositionSource}, \code{MockLendingPool}, \code{TrustTierMultisig} and \code{TrustTierTimelock}, in Solidity 0.8.24 with OpenZeppelin~5. Every revert is a custom error. EZKL's verifier reverts on a bad proof instead of returning false, so the engine wraps it in \code{try/catch}. The Aave adapter cannot read account age or top-up times from Aave, which stores neither; it records registration time and lets anyone \code{poke} an account to record a top-up when its aToken's \emph{scaled} balance (deposits without accrued interest) grows. Both are derived from on-chain state only.
+\paragraph{Contracts.} \code{LiquidationEngine} (14,100 bytes deployed), \code{TrustTierLiquidator}, \code{ModelRegistry}, \code{TierAuditLog}, the EZKL-generated \code{Halo2Verifier} (15,612 bytes, under the 24,576-byte EIP-170 limit~\cite{eip170}), \code{AaveV3PositionSource}, \code{MockLendingPool}, \code{TrustTierMultisig} and \code{TrustTierTimelock}, in Solidity 0.8.24 with OpenZeppelin~5. Every revert is a custom error. EZKL's verifier reverts on a bad proof instead of returning false, so the engine wraps it in \code{try/catch}. The Aave adapter cannot read account age or top-up times from Aave, which stores neither; it records registration time and lets anyone \code{poke} an account to record a top-up when its aToken's \emph{scaled} balance (deposits without accrued interest) grows. Both are derived from on-chain state only.
 
 \paragraph{Risk model.} A 5$\to$8$\to$1 multilayer perceptron (scikit-learn) on the five normalized features, exported to ONNX with logits clipped to $\pm8$ inside the graph. Synthetic labels are centred near LTV~0.75, just below a 0.80 threshold. Validation accuracy is 95.9\% and ROC-AUC 0.995. The model's keccak256 hash is what \code{ModelRegistry} stores.
 
 \paragraph{Circuit.} EZKL~23.0.5 with input and parameter scale $2^{10}$, public inputs, private parameters and public outputs, $2^{16}$ rows, and one inner column (\code{num\_inner\_cols=1}), which keeps the verifier under the EIP-170 limit; a Poseidon-hashed input variant did not fit. EZKL's witness generation hangs on inputs outside its calibrated range, so we calibrate over the whole normalized domain including all corners, and check circuit/ONNX label agreement on 200 random feature vectors (0 disagreements). The 8.4\,MB SRS is self-generated; EZKL's setup is deterministic for a given SRS, so the 575\,MB proving key is not shipped and is rebuilt in 12\,s, with a check that it matches the shipped verification key and verifier.
 
-\paragraph{Router, sentinel and DApp.} The FastAPI router reads the engine's own view of a position, picks the weakest tier the chain accepts, runs the model, and escalates a Tier-1 position to Tier~2 when the model flags it, since a cheap ``safe'' claim on it would be false and slashable. A watcher endpoint builds a Tier-2 proof on a claim's snapshot (read from \code{FeaturesSnapshotted}). The React DApp signs users in with Sign-In with Ethereum (ERC-4361~\cite{eip4361}); users open demo positions, see the contract's features, $\delta$ and allowed tier, push mock prices, and challenge, reclaim, deposit and withdraw from their own wallets. The sentinel polls events and raises a critical alert when a challenge succeeds. There is no database: on-chain events are the history.
+\paragraph{Router, sentinel and DApp.} The FastAPI router reads the engine's own view of a position, picks the weakest tier the chain accepts, runs the model, and escalates a Tier-1 position to Tier~2 when the model flags it, since a cheap ``safe'' claim on it would be false and slashable. A watcher endpoint builds a Tier-2 proof on a claim's snapshot (read from \code{FeaturesSnapshotted}). The React DApp signs users in with Sign-In with Ethereum (ERC-4361~\cite{eip4361}); users open demo positions, see the contract's features, $\delta$, allowed tier and the model's verdict, push mock prices, run a five-step guided demo, watch open claims and pending approvals with live countdowns, and challenge (commit, then reveal), settle bonds, execute liquidations and withdraw from their own wallets. When no router is reachable, for example on the hosted site, it runs the contract's rules, the real model (exported weights, checked against ONNX) and the measured gas in the browser, clearly labelled as a simulation. The sentinel polls events and raises a critical alert when a challenge succeeds. There is no database: on-chain events are the history.
 
-\paragraph{Testing.} 106 Hardhat tests cover every function and custom error, real proofs against the real verifier end to end, the Aave adapter, governance, tier enforcement, snapshots, lifecycle and deposits. 81 Python tests cover the feature mirror against real proof instances, the tier rule, commitments, the 24-hour round search (against brute force on 50 random histories), the cost model and the parallel-execution simulator.
+\paragraph{Testing.} 126 Hardhat tests cover every function and custom error, real proofs against the real verifier end to end, the Aave adapter, governance, tier enforcement, snapshots, lifecycle, deposits, gas-scaled bonds, rewards, reveals, commit-reveal challenges, anchors, the liquidator, the sequencer check and a Chainlink phase boundary. 82 Python tests cover the feature mirror against real proof instances, the tier rule, commitments, the 24-hour round search (against brute force on 50 random histories), the cost model, the parallel-execution simulator and the DApp's exported model.
 
 %% ===================================================================
 \section{Evaluation}
@@ -379,7 +402,7 @@ Table~\ref{tab:proving} summarizes the Tier-2 pipeline. Three sample positions a
     Proving-key rebuild from SRS & 12.1\,s \\
     Proof calldata & 3,584 bytes \\
     Verifier: deployed size / deployment gas & 15,612 B / 3,422,602 \\
-    \code{verifyProof} alone / full \code{decideZkProof} & 621,921 / 875,489 gas \\
+    \code{verifyProof} alone / full \code{decideZkProof} & 621,921 / 878,059 gas \\
     Circuit vs ONNX label agreement & 200 / 200 \\
     \bottomrule
   \end{tabularx}
@@ -387,7 +410,7 @@ Table~\ref{tab:proving} summarizes the Tier-2 pipeline. Three sample positions a
 
 \subsection{Gas of every entry point}
 
-Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a view, costs 90,325 gas including the base cost. It is the price of verified inputs and is included in every \code{decide*} row. A challenge with a real proof costs 676,132 gas, below a full Tier-2 decision because it checks a stored snapshot instead of recomputing features.
+Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a view, costs 92,510 gas including the base cost. It is the price of verified inputs and is included in every \code{decide*} row. A challenge with a real proof costs 678,771 gas, below a full Tier-2 decision because it checks a stored snapshot instead of recomputing features; committing first adds 94,771. Executing an approval costs 96,402 gas.
 
 \begin{table}[t]
   \caption{Measured gas per transaction (real verifier and real proofs for Tier~2 and challenge).}
@@ -395,22 +418,25 @@ Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a
   \footnotesize
   \begin{tabularx}{\columnwidth}{@{}Lr@{}}
     \toprule
-    \code{decideHeuristic} (bond as \code{msg.value} / from deposit) & 266,202 / 271,440 \\
-    \code{decideCommitment} (\code{msg.value} / deposit) & 336,713 / 341,951 \\
-    \code{decideZkProof} & 875,489 \\
-    \code{challengeDecision} & 676,132 \\
-    \code{reclaimBond} / \code{withdraw} / \code{deposit} & 53,214 / 30,048 / 44,957 \\
-    \code{currentFeatures} (view) & 90,325 \\
-    \code{registerModel} / \code{revokeModel} / \code{setTier2Verifier} & 139,257 / 28,150 / 30,540 \\
-    Losing racer (\code{PositionAlreadyFinalized}, live node) & 26,132 \\
-    Deploy: engine / verifier / demo pool & 2,274,401 / 3,422,602 / 569,083 \\
+    \code{decideHeuristic} (bond as \code{msg.value} / from deposit) & 269,534 / 274,772 \\
+    \code{decideCommitment} (\code{msg.value} / deposit) & 340,072 / 345,310 \\
+    \code{revealCommitment} & 39,089 \\
+    \code{decideZkProof} (current / anchored features) & 878,059 / 882,059 \\
+    \code{anchorFeatures} & 140,461 \\
+    \code{challengeDecision} / \code{commitChallenge} + \code{revealChallenge} & 678,771 / 94,771 + 678,838 \\
+    \code{liquidate} (soft liquidation through the liquidator) & 96,402 \\
+    \code{reclaimBond} / \code{withdraw} / \code{deposit} & 55,980 / 30,004 / 45,025 \\
+    \code{currentFeatures} (view) & 92,510 \\
+    \code{registerModel} / \code{revokeModel} / \code{setTier2Verifier} & 139,257 / 28,150 / 30,496 \\
+    Losing racer (\code{PositionAlreadyFinalized}, live node) & 26,149 \\
+    Deploy: engine / verifier / demo pool / liquidator & 3,286,971 / 3,422,602 / 847,742 / 201,232 \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
 \subsection{Cost of tiering}
 
-Table~\ref{tab:cost} applies the measured gas to the evaluation set. Tiering spends 205.9\,M gas where proving every position would spend 327.4\,M, a 37.1\% saving, and needs 165 proofs instead of 374, which cuts off-chain proving from 6,096\,s to 2,690\,s. The figure is conservative: the 9 Tier-2 positions whose proof shows low risk submit no transaction but are charged full gas. Always using Tier~0 would cost 99.6\,M gas but verify nothing.
+Table~\ref{tab:cost} applies the measured gas to the evaluation set, charging every Tier-1 claim its mandatory reveal. Tiering spends 210.3\,M gas where proving every position would spend 328.4\,M, a 36.0\% saving, and needs 165 proofs instead of 374, which cuts off-chain proving from 6,096\,s to 2,690\,s. The figure is conservative: the 9 Tier-2 positions whose proof shows low risk submit no transaction but are charged full gas. Always using Tier~0 would cost 100.8\,M gas but verify nothing.
 
 \begin{table}[t]
   \caption{Gas of TrustTier vs always proving (M = million gas).}
@@ -421,10 +447,10 @@ Table~\ref{tab:cost} applies the measured gas to the evaluation set. Tiering spe
     \toprule
     \textbf{Dataset} & \textbf{N} & \textbf{T0/T1/T2} & \textbf{Tiered} & \textbf{All-zk} & \textbf{Saving} \\
     \midrule
-    Real Aave V2 & 74 & 26/7/41 & 45.2\,M & 64.8\,M & 30.3\% \\
-    Synthetic & 300 & 100/76/124 & 160.8\,M & 262.6\,M & 38.8\% \\
+    Real Aave V2 & 74 & 26/7/41 & 45.7\,M & 65.0\,M & 29.7\% \\
+    Synthetic & 300 & 100/76/124 & 164.6\,M & 263.4\,M & 37.5\% \\
     \midrule
-    \textbf{Combined} & \textbf{374} & \textbf{126/83/165} & \textbf{205.9\,M} & \textbf{327.4\,M} & \textbf{37.1\%} \\
+    \textbf{Combined} & \textbf{374} & \textbf{126/83/165} & \textbf{210.3\,M} & \textbf{328.4\,M} & \textbf{36.0\%} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -443,37 +469,40 @@ Table~\ref{tab:ablation} removes one component at a time on the same 374 positio
     \toprule
     \textbf{Variant} & \textbf{Saving} & \textbf{Cost of the change} \\
     \midrule
-    TrustTier (deployed) & 37.1\% & -- \\
-    No Tier-1 escalation & 40.6\% & 21 false, slashable cheap claims \\
-    No Tier~1 (Tier~0 or Tier~2 only) & 23.4\% & Tier~1 is worth 13.7 points \\
-    Tier-1 band $B_1=0$ & 38.6\% & 7 claims a 5\% drop breaches \\
-    Always Tier~0 & 69.6\% & Nothing verified; 157 model-flagged positions unchecked \\
+    TrustTier (deployed) & 36.0\% & -- \\
+    No Tier-1 escalation & 39.1\% & 21 false, slashable cheap claims \\
+    No Tier~1 (Tier~0 or Tier~2 only) & 23.3\% & Tier~1 is worth 12.7 points \\
+    Tier-1 band $B_1=0$ & 37.3\% & 7 claims a 5\% drop breaches \\
+    Always Tier~0 & 69.3\% & Nothing verified; 157 model-flagged positions unchecked \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-Escalation costs 3.5 points and buys honesty: without it, 21 cheap claims would contradict the router's own model. Removing Tier~1 costs 13.7 points, which shows that the middle tier carries much of the saving. Section~\ref{sec:eval-bands} explains the band rows.
+Escalation costs 3.1 points and buys honesty: without it, 21 cheap claims would contradict the router's own model (and, now that commitments must be opened, forfeit their bonds). Removing Tier~1 costs 12.7 points, which shows that the middle tier carries much of the saving. Section~\ref{sec:eval-bands} explains the band rows.
 
-\paragraph{How the design evolved.} Table~\ref{tab:versions} follows the same measures through three versions. The midterm prototype was cheapest per decision because it checked almost nothing. Binding proofs to positions through an oracle-committed Poseidon hash fixed proof replay but added a 49,682-gas oracle transaction to every position and trusted the oracle. Verified inputs remove the oracle. Cheap tiers now pay for reading two feeds and storing a snapshot, while Tier~2 becomes cheaper: the proof has no in-circuit hash, and normalization shrank the circuit. The saving fell because the always-proving baseline also fell, but TrustTier's absolute cost (205.9\,M) is within 1.5\% of the midterm's (203.0\,M), now with input integrity, tier enforcement, proof binding and escalation.
+\paragraph{How the design evolved.} Table~\ref{tab:versions} follows the same measures through four versions. The midterm prototype was cheapest per decision because it checked almost nothing. Binding proofs to positions through an oracle-committed Poseidon hash fixed proof replay but added a 49,682-gas oracle transaction to every position and trusted the oracle. Verified inputs remove the oracle. Cheap tiers now pay for reading two feeds and storing a snapshot, while Tier~2 becomes cheaper: the proof has no in-circuit hash, and normalization shrank the circuit. The saving fell because the always-proving baseline also fell, but TrustTier's absolute cost is within 3.6\% of the midterm's (210.3\,M against 203.0\,M), now with input integrity, tier enforcement, proof binding, escalation, and the incentive layer, which adds about 3\,k gas per decision plus the Tier-1 reveal.
 
 \begin{table}[t]
-  \caption{Three versions of TrustTier on the same 374 positions.}
+  \caption{Four versions of TrustTier on the same 374 positions.}
   \label{tab:versions}
   \scriptsize
   \setlength{\tabcolsep}{2pt}
-  \begin{tabular}{@{}lrrr@{}}
+  \begin{tabular}{@{}lrrrr@{}}
     \toprule
-    & \textbf{Midterm} & \textbf{Oracle-bound} & \textbf{Verified inputs} \\
+    & \textbf{Midterm} & \textbf{Oracle} & \textbf{Verified} & \textbf{Final} \\
     \midrule
-    Tier 0 gas & 195,869 & 250,098 & 266,202 \\
-    Tier 1 gas & 286,356 & 340,550 & 336,713 \\
-    Tier 2 gas & 1,031,754 & 999,623 & 875,489 \\
-    \code{verifyProof} gas & 849,607 & 741,069 & 621,921 \\
-    Proof bytes / proving & 5,696 / 25\,s & 4,480 / 20\,s & 3,584 / 16\,s \\
-    Tiers (T0/T1/T2) & 126/104/144 & 126/83/165 & 126/83/165 \\
-    Saving & 47.4\% & 39.9\% & 37.1\% \\
-    Who supplies inputs & router & feature oracle & the contract \\
-    Who enforces the tier & nobody & nobody & the contract \\
+    Tier 0 gas & 195,869 & 250,098 & 266,202 & 269,534 \\
+    Tier 1 gas & 286,356 & 340,550 & 336,713 & 379,161 \\
+    Tier 2 gas & 1,031,754 & 999,623 & 875,489 & 878,059 \\
+    \code{verifyProof} gas & 849,607 & 741,069 & 621,921 & 621,921 \\
+    Proof bytes & 5,696 & 4,480 & 3,584 & 3,584 \\
+    Proving & 25\,s & 20\,s & 16\,s & 16\,s \\
+    Tiers (T0/T1/T2) & 126/104/144 & 126/83/165 & 126/83/165 & 126/83/165 \\
+    Saving & 47.4\% & 39.9\% & 37.1\% & 36.0\% \\
+    Inputs from & router & oracle & contract & contract \\
+    Tier enforced by & nobody & nobody & contract & contract \\
+    Slashing pays at & any & $\le$15\,gwei & $\le$15\,gwei & any \\
+    Liquidation executed & no & no & no & once, $\le$30\,min \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -485,15 +514,66 @@ The bands $B_0=0.15$ and $B_1=0.05$ are the two numbers TrustTier's guarantees h
 
 The Tier-1 band is a safety margin. A cheap claim is honest only while the position stays below its threshold for the one-hour window, and a claim made at $\delta > B_1$ survives a sudden collateral price drop $s$ whenever $B_1 \ge \theta s$. For $\theta=0.80$ and a severe 5\% hourly drop this requires $B_1 \ge 0.04$. The replay agrees: with $B_1=0$, seven cheap claims would be pushed past their threshold by such a drop; with $B_1=0.02$, three; with $B_1=0.05$, none.
 
-The Tier-0 band trades gas for model oversight. With $B_1=0.05$, widening it from 0.08 to 0.30 lowers the saving from 39.2\% to 35.7\%, while the Tier-0 claims the model would flag fall from 5 to 2 at $B_0=0.10$, 1 at 0.15 and none from 0.20 (22 at $B_0=0.05$). Most of the safety is bought by 0.10; beyond it each step costs gas for little gain. The deployed $(0.15, 0.05)$ lies on the Pareto front of the grid over saving, flagged claims and exposed claims: no setting is better on all three. $B_0=0.10$ is an equally defensible choice that saves one more point for one more flagged claim.
+The Tier-0 band trades gas for model oversight. With $B_1=0.05$, widening it from 0.08 to 0.30 lowers the saving from 38.7\% to 33.9\%, while the Tier-0 claims the model would flag fall from 5 to 2 at $B_0=0.10$, 1 at 0.15 and none from 0.20 (22 at $B_0=0.05$). Most of the safety is bought by 0.10; beyond it each step costs gas for little gain. The deployed $(0.15, 0.05)$ lies on the Pareto front of the grid over saving, flagged claims and exposed claims: no setting is better on all three. $B_0=0.10$ is an equally defensible choice that saves 1.6 more points for one more flagged claim.
 
-The 0.80 threshold used for the synthetic stream matters less than it might appear. The contract never assumes it, and the real positions keep their own thresholds. Moving the synthetic threshold from 0.70 to 0.85 (Table~\ref{tab:threshold-sensitivity}) changes the saving from 24.3\% to 38.9\%, because the synthetic positions sit closer to or further from their boundary. The safety measures do not change: one flagged Tier-0 claim and no exposed claims at every threshold. Two caveats apply: ``flagged'' is the model's own verdict, not ground truth, and the 5\% drop is a stress assumption, not a measured bound.
+The 0.80 threshold used for the synthetic stream matters less than it might appear. The contract never assumes it, and the real positions keep their own thresholds. Moving the synthetic threshold from 0.70 to 0.85 (Table~\ref{tab:threshold-sensitivity}) changes the saving from 23.9\% to 38.1\%, because the synthetic positions sit closer to or further from their boundary. The safety measures do not change: one flagged Tier-0 claim and no exposed claims at every threshold. Two caveats apply: ``flagged'' is the model's own verdict, not ground truth, and the 5\% drop is a stress assumption, not a measured bound.
 
 \input{figures/band_sensitivity}
 
 \subsection{Model calibration and fidelity}
 
 The midterm model was trained on labels centred at LTV~0.5, below almost every position, so it flagged 84.1\% of Tier-0 positions as high risk and made the Tier-0 check meaningless. Model~v2 centres labels near the threshold and trains on normalized features: it flags 1 of 126 Tier-0 positions (0.8\%), its validation accuracy is 95.9\% (ROC-AUC 0.995), and the circuit agrees with the ONNX model on all 200 random inputs, so the proven label is the model's label. Of the 165 Tier-2 positions, 9 are scored low risk; their proof shows label~0, the engine would reject the liquidation, and the router submits nothing. Proximity to the boundary alone never liquidates a position; the proven model output does.
+
+\subsection{Against the health-factor rule}
+\label{sec:eval-hf}
+
+Is a model worth its gas compared with the rule every protocol already has? \code{evaluation/hf\_baseline.py} simulates 3,000 positions (initial LTV 0.40--0.79, $\theta=0.80$) for 30 days on identical price paths: a daily random walk with each position's own 30-day volatility, a common market factor (correlation 0.6) and a 2\% daily chance of a market-wide crash of 12--30\%. Debt is constant and borrowers never top up, a stress test rather than a forecast. Three policies act on the same paths. The \emph{health-factor rule} liquidates 50\% of the debt with a 5\% bonus once LTV $\ge\theta$. \emph{TrustTier} decides every position daily with its tiers and soft-liquidates (same close factor and bonus) when a proven model says high risk, with the health-factor rule as fallback. \emph{Always zk} proves every position daily. The model runs through the same ONNX file the circuit is compiled from, on the contract's quantized features.
+
+\begin{table}[t]
+  \caption{30-day stress test, 3,000 positions, identical price paths (seed 7). Bad debt and bonus as \% of initial debt; gas is decision gas per position-day.}
+  \label{tab:hf}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{@{}lrrrrrr@{}}
+    \toprule
+    \textbf{Policy} & \textbf{Forced} & \textbf{Insolv.} & \textbf{Bad debt} & \textbf{Bonus} & \textbf{Soft (unnec.)} & \textbf{Gas/day} \\
+    \midrule
+    HF rule & 2,461 & 61 & 0.018\% & 1.35\% & 0 & 0 \\
+    TrustTier & 297 & 2 & 0.001\% & 1.67\% & 2,365 (323) & 322\,k \\
+    Always zk & 297 & 2 & 0.001\% & 1.67\% & 2,368 (323) & 880\,k \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Table~\ref{tab:hf} shows the trade. Acting on the proven model cuts forced liquidations at the boundary by 88\% and insolvencies from 61 to 2; over ten further scenarios the mean bad debt falls from 0.087\% to 0.022\% of debt and insolvencies from 198 to 45. The costs are real. Borrowers pay more liquidation bonus in total (1.67\% against 1.35\% of debt), because soft liquidations are more frequent though smaller, and 323 of the 1,264 soft-liquidated positions (26\%) would never have reached the threshold. TrustTier gives the same protection as proving everything for 63\% less decision gas, because its tiers prove only near the boundary.
+
+\subsection{Incentives and where TrustTier pays}
+\label{sec:eval-incentives}
+
+\code{evaluation/bond\_economics.py} prices the challenge game with measured gas. With the original fixed 0.01\,ETH bond, slashing a false claim loses money above 14.7\,gwei (12.9\,gwei with commit-reveal): the verifier's dilemma at ordinary L1 prices. The gas-scaled bond pays a watcher at every gas price, for example $+0.016$\,ETH at 20\,gwei and $+0.16$\,ETH at 200\,gwei, and stays profitable while the base fee at challenge time is under 1.94$\times$ the claim's.
+
+Decision gas also decides where TrustTier is worth deploying (Table~\ref{tab:viability}). With one decision per position per day and a budget of 0.5\% of the debt per year, daily monitoring on L1 only pays for positions above \$353\,k (5\,gwei) to \$1.4\,M (20\,gwei). On a rollup at an effective 0.05\,gwei it pays from \$3.5\,k, ordinary retail size. TrustTier's natural home is therefore an L2 lending market, or L1 with a slower cadence for Tier-0 positions.
+
+\begin{table}[t]
+  \caption{Cost of daily decisions per position (ETH = \$3,000) and the smallest debt for which a year costs under 0.5\% of it.}
+  \label{tab:viability}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lrrrr@{}}
+    \toprule
+    & \multicolumn{2}{c}{\textbf{TrustTier}} & \multicolumn{2}{c}{\textbf{Always zk}} \\
+    \textbf{Network} & \textbf{\$/yr} & \textbf{Min. debt} & \textbf{\$/yr} & \textbf{Min. debt} \\
+    \midrule
+    L1, 20\,gwei & 7,062 & 1.41\,M & 19,279 & 3.86\,M \\
+    L1, 5\,gwei & 1,766 & 353\,k & 4,820 & 964\,k \\
+    Rollup, 0.05\,gwei & 17.7 & 3.5\,k & 48.2 & 9.6\,k \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Real outcomes}
+
+The model's validation accuracy is measured on synthetic labels that are a formula of its own inputs, so it says little about real risk. \code{evaluation/outcome\_labels.py} instead labels real Aave~V2 snapshots by what happened: 1 if the health factor fell below 1 within 7 days. On the one wallet we hold (73 labelled snapshots, one positive) the deployed model reaches ROC-AUC 0.861 against 0.819 for a health-factor warning at 1.15, both with recall 1 and low precision. One wallet is a case study, not a statistic; the script runs unchanged on Cred Protocol's complete 35,524-wallet dataset and retrains a candidate model on outcome labels with a time-ordered split, which is the evaluation we would cite next.
 
 \subsection{Concurrency}
 \label{sec:eval-concurrency}
@@ -516,17 +596,17 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
     \textbf{Scenario (one block)} & \textbf{Bonds} & \textbf{Txs} & \textbf{Rev.} & \textbf{Rounds} & \textbf{16 thr s/o} & \textbf{64 thr s/o} & \textbf{Ab@16} & \textbf{Ab@64} & \textbf{Hottest shared write} \\
     \midrule
     Final design, 374 decisions & delta & 374 & 0 & 1 & 15.32 / 15.32 & 54.75 / 54.75 & 0 & 0 & none \\
-    Final design, 374 decisions & RMW & 374 & 0 & 209 & 3.35 / 3.35 & 3.35 / 3.35 & 208 & 208 & engine balance (209 txs) \\
-    Deposit-funded bonds, 374 & either & 374 & 0 & 1 & 15.33 / 15.33 & 54.87 / 54.87 & 0 & 0 & none \\
+    Final design, 374 decisions & RMW & 374 & 0 & 209 & 3.33 / 3.33 & 3.33 / 3.33 & 208 & 208 & engine balance (209 txs) \\
+    Deposit-funded bonds, 374 & either & 374 & 0 & 1 & 15.34 / 15.34 & 54.97 / 54.97 & 0 & 0 & none \\
     Midterm array audit log, 374 & either & 374 & 0 & 374 & 1.00 / 1.00 & 1.00 / 1.00 & 373 & 373 & log length slot (374 txs) \\
     \midrule
     Final, 50 / 100 / 200 decisions & delta & -- & 0 & 1 & 13.2--15.0 & 31.4--48.4 & 0 & 0 & none \\
-    Contention 5\% (200 + 10 dups) & delta & 210 & 10 & 2 & 15.01 / 15.01 & 48.67 / 49.60 & 0 & 4 & none \\
-    Contention 20\% (200 + 40) & delta & 240 & 40 & 2 & 15.08 / 15.13 & 48.49 / 52.75 & 2 & 16 & none \\
-    Contention 50\% (200 + 100) & delta & 300 & 100 & 2 & 14.57 / 15.14 & 42.80 / 49.50 & 11 & 49 & none \\
-    Contention 20\% & RMW & 240 & 40 & 138 & 3.35 / 3.35 & 3.35 / 3.35 & 139 & 145 & engine balance \\
-    1 / 3 / 6 oracle heartbeats & delta & 201--206 & 0 & 2--3 & 15.0 / 14.6--14.8 & 47.3--48.6 / 42.3--45.7 & 4--8 & 16--27 & price feeds \\
-    Tier mix 80/15/5, 10/20/70 (s = o) & delta & 200 & 0 & 1 & 15.58, 15.12 & 43.65, 53.82 & 0 & 0 & none \\
+    Contention 5\% (200 + 10 dups) & delta & 210 & 10 & 2 & 15.00 / 15.00 & 48.55 / 49.44 & 0 & 4 & none \\
+    Contention 20\% (200 + 40) & delta & 240 & 40 & 2 & 15.09 / 15.13 & 48.37 / 52.82 & 2 & 17 & none \\
+    Contention 50\% (200 + 100) & delta & 300 & 100 & 2 & 14.57 / 15.15 & 42.78 / 49.35 & 11 & 49 & none \\
+    Contention 20\% & RMW & 240 & 40 & 138 & 3.33 / 3.33 & 3.33 / 3.33 & 138 & 145 & engine balance \\
+    1 / 3 / 6 oracle heartbeats & delta & 201--206 & 0 & 2--3 & 15.0 / 14.6--14.8 & 47.3--48.5 / 42.3--45.7 & 4--6 & 16--27 & price feeds \\
+    Tier mix 80/15/5, 10/20/70 (s = o) & delta & 200 & 0 & 1 & 15.57, 15.12 & 43.58, 53.80 & 0 & 0 & none \\
     One liquidator sends all 200 & delta & 200 & 0 & 200 & 1.00 / 0.99 & 1.00 / 0.99 & 199 & 199 & sender nonce \\
     \bottomrule
   \end{tabular}
@@ -545,11 +625,11 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
         grid=major, grid style={gray!20}]
       \addplot[gray,dashed] coordinates {(1,1) (2,2) (4,4) (8,8) (16,16) (32,32) (64,64)};
       \addlegendentry{ideal}
-      \addplot[tierzero,very thick,mark=*,mark size=1.6pt] coordinates {(1,1) (2,2.0) (4,3.97) (8,7.86) (16,15.33) (32,29.52) (64,54.87)};
+      \addplot[tierzero,very thick,mark=*,mark size=1.6pt] coordinates {(1,1) (2,2.0) (4,3.98) (8,7.86) (16,15.34) (32,29.55) (64,54.97)};
       \addlegendentry{deposit bonds (any balance model)}
       \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(1,1) (2,2.0) (4,3.97) (8,7.85) (16,15.32) (32,29.46) (64,54.75)};
       \addlegendentry{\code{msg.value} bonds, delta}
-      \addplot[tierone,thick,mark=triangle*,mark size=1.8pt] coordinates {(1,1) (2,1.89) (4,2.98) (8,3.34) (16,3.35) (32,3.35) (64,3.35)};
+      \addplot[tierone,thick,mark=triangle*,mark size=1.8pt] coordinates {(1,1) (2,1.89) (4,2.97) (8,3.33) (16,3.33) (32,3.33) (64,3.33)};
       \addlegendentry{\code{msg.value} bonds, RMW}
       \addplot[tiertwo,thick,mark=diamond*,mark size=1.8pt] coordinates {(1,1) (2,1.0) (4,1.0) (8,1.0) (16,1.0) (32,1.0) (64,1.0)};
       \addlegendentry{midterm array log}
@@ -571,9 +651,9 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
         label style={font=\footnotesize}, tick label style={font=\footnotesize},
         legend style={font=\scriptsize,at={(0.02,0.03)},anchor=south west,draw=none,fill=white,fill opacity=0.85,text opacity=1},
         grid=major, grid style={gray!20}]
-      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(0,48.42) (5,48.67) (10,48.65) (20,48.49) (30,47.08) (50,42.80)};
+      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(0,48.44) (5,48.55) (10,48.66) (20,48.37) (30,47.10) (50,42.78)};
       \addlegendentry{pre-computed schedule}
-      \addplot[tierzero,thick,mark=*,mark size=1.6pt] coordinates {(0,48.42) (5,49.60) (10,51.04) (20,52.75) (30,49.11) (50,49.50)};
+      \addplot[tierzero,thick,mark=*,mark size=1.6pt] coordinates {(0,48.44) (5,49.44) (10,50.95) (20,52.82) (30,49.12) (50,49.35)};
       \addlegendentry{optimistic (Block-STM-style)}
 
     \end{axis}
@@ -585,15 +665,15 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
 Five findings stand out.
 \begin{enumerate}
   \item \textbf{Per-position storage parallelizes.} A block of 374 decisions has no shared storage write at all. It needs one strict round and reaches 15.3$\times$ on 16 threads and 54.8$\times$ on 64. Scaling falls short of ideal only because transaction durations differ: one Tier-2 decision costs 3.3 times a Tier-0 one, so the longest transactions bound the makespan. The midterm array log serializes the same block completely, whatever the engine.
-  \item \textbf{The balance is the hidden hot spot.} Storage keys alone would suggest the final design is conflict-free. The traces show that every \code{msg.value} bond also writes the engine's ETH balance. Treated as a read-modify-write, that single location makes the 209 bonded claims a chain: 3.35$\times$ at any thread count, with 208 aborts in the optimistic engine. Deposit-funded bonds (Section~\ref{sec:design-concurrency}) restore 15.3$\times$ under both balance models, for 5,238 gas per claim. As on historical Ethereum, conflicts concentrate on a little popular state~\cite{saraph2020empirical}; tracing found ours where our model had not.
+  \item \textbf{The balance is the hidden hot spot.} Storage keys alone would suggest the final design is conflict-free. The traces show that every \code{msg.value} bond also writes the engine's ETH balance. Treated as a read-modify-write, that single location makes the 209 bonded claims a chain: 3.33$\times$ at any thread count, with 208 aborts in the optimistic engine. Deposit-funded bonds (Section~\ref{sec:design-concurrency}) restore 15.3$\times$ under both balance models, for 5,238 gas per claim. As on historical Ethereum, conflicts concentrate on a little popular state~\cite{saraph2020empirical}; tracing found ours where our model had not.
   \item \textbf{Racing liquidators cost little.} With 5--50\% duplicate attempts, losing attempts revert at the per-position lock, write nothing, and conflict only with the winner. The block still needs only 2 strict rounds, and 64-thread speedup stays at 42.8--52.8$\times$. Optimistic execution even beats the in-order schedule here: the schedule leaves a thread idle while it waits for a dependency, whereas the optimistic engine keeps every thread busy and pays only for a few aborts. The modelled scheduler had predicted 3--6 rounds, since it assumed losers write.
-  \item \textbf{Oracle updates cause little conflict.} Chainlink heartbeat updates inside the block conflict with every later decision on that market, which reads the feed. Six updates raise strict rounds to 3 and cause 8 aborts at 16 threads, costing up to 2\% of optimistic speedup at 16 threads and 13\% at 64.
+  \item \textbf{Oracle updates cause little conflict.} Chainlink heartbeat updates inside the block conflict with every later decision on that market, which reads the feed. Six updates raise strict rounds to 3 and cause 6 aborts at 16 threads, costing up to 2\% of optimistic speedup at 16 threads and 13\% at 64.
   \item \textbf{Parallelism needs many senders.} A single liquidator account submitting all 200 decisions serializes the block through its own nonce (1.0$\times$). Parallel execution helps a market of liquidators, not one bot.
 \end{enumerate}
 
 \paragraph{Competing liquidator threads on a live node.}
 \label{sec:eval-race}
-Finally, we ran $K$ liquidator bots as real concurrent threads, each with its own account and RPC connection, against a Hardhat node mining a block every second. Every bot tries to decide the same 30 positions (half Tier~0, half Tier~2) in its own random order and, like real racing bots, skips gas estimation, so losing transactions are mined and revert. Table~\ref{tab:race} shows that every position was decided exactly once at every $K$ (goal G6). Each losing attempt burns 26,132 gas, about a tenth of a Tier-0 decision, because the lock is checked before any external call; wasted gas grows linearly with the number of racers.
+Finally, we ran $K$ liquidator bots as real concurrent threads, each with its own account and RPC connection, against a Hardhat node mining a block every second. Every bot tries to decide the same 30 positions (half Tier~0, half Tier~2) in its own random order and, like real racing bots, skips gas estimation, so losing transactions are mined and revert. Table~\ref{tab:race} shows that every position was decided exactly once at every $K$ (goal G6). Each losing attempt burns 26,149 gas, about a tenth of a Tier-0 decision, because the lock is checked before any external call; wasted gas grows linearly with the number of racers.
 
 \begin{table}[t]
   \caption{$K$ competing liquidator threads on a live node (30 positions, 1-second blocks).}
@@ -605,10 +685,10 @@ Finally, we ran $K$ liquidator bots as real concurrent threads, each with its ow
     \textbf{Bots} & \textbf{Tries} & \textbf{Won} & \textbf{Reverted} & \textbf{Wasted gas/pos.} & \textbf{Once} & \textbf{Blocks} \\
     \midrule
     1 & 30 & 30 & 0 & 0 & yes & 1 \\
-    2 & 60 & 30 & 30 & 26,132 & yes & 1 \\
-    4 & 120 & 30 & 90 & 78,396 & yes & 2 \\
-    8 & 240 & 30 & 210 & 182,924 & yes & 3 \\
-    16 & 480 & 30 & 450 & 391,980 & yes & 5 \\
+    2 & 60 & 30 & 30 & 26,149 & yes & 1 \\
+    4 & 120 & 30 & 90 & 78,447 & yes & 2 \\
+    8 & 240 & 30 & 210 & 183,043 & yes & 3 \\
+    16 & 480 & 30 & 450 & 392,235 & yes & 6 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -617,15 +697,15 @@ Finally, we ran $K$ liquidator bots as real concurrent threads, each with its ow
 
 \subsection{End-to-end validation}
 
-With the real verifier on a local node, the router opened and routed streams across three markets, producing real Tier-2 decisions at about 875,000 gas and $\approx$16\,s of proving per position. Through the DApp, in a headless browser with an injected wallet, we opened a watch-band position (on-chain $\delta=800$\,bps, allowed tier~1, model: high risk), had the router claim Tier~1 dishonestly, generated a real proof on the claim's snapshot (16.2\,s), and challenged from a second wallet. The bond was credited to the challenger, the position re-opened, and the same proof then liquidated it at Tier~2. Claiming Tier~0 on that position reverted with \code{TierNotAllowed(\dots, 0, 800)}.
+With the real verifier on a local node, the router opened and routed streams across three markets, producing real Tier-2 decisions at about 878,000 gas and $\approx$16\,s of proving per position. Through the DApp, in a headless browser with an injected wallet, we opened a watch-band position (on-chain $\delta=800$\,bps, allowed tier~1, model: high risk), had the router claim Tier~1 dishonestly, generated a real proof on the claim's snapshot (16.2\,s), and challenged from a second wallet. The bond was credited to the challenger, the position re-opened, and the same proof then approved its liquidation at Tier~2. Claiming Tier~0 on that position reverted with \code{TierNotAllowed(\dots, 0, 800)}. With the final contracts, the DApp's five-step guided demo runs the same story on a local node and then executes the soft liquidation through \code{TrustTierLiquidator}, taking $\delta$ from 8.0\% to 22.1\%; a browser test drives it end to end, on-chain and in simulation mode.
 
 %% ===================================================================
 \section{Security Analysis}
 \label{sec:security}
 
-We reviewed the code STRIDE-style and with an independent review pass; Table~\ref{tab:security} condenses the 23 findings. We argue the goals of Section~\ref{sec:threat} as follows.
+We reviewed the code STRIDE-style and with an independent review pass; Table~\ref{tab:security} condenses the 29 findings. We argue the goals of Section~\ref{sec:threat} as follows.
 
-\textbf{G1 Input integrity:} every feature is computed by the contract from the position source and feeds within the transaction that uses it (finding~15). \textbf{G2 Tier soundness:} every cheap \code{decide*} recomputes $\delta$ and reverts below its band (finding~20). \textbf{G3 Proof binding:} \code{decideZkProof} compares the proof's five feature instances with its own computation and requires label~1, a registered model and the verifier's own model (findings 9--11). \textbf{G4 Accountability:} a challenge must prove high risk on the claim's snapshot (finding~15). \textbf{G5 Liveness:} Tier~2 supersedes open claims, windows expire, and future timestamps clamp (finding~17). \textbf{G6 Exactly once:} the lock is set before any external call; tested on a live node with up to 16 racing threads. \textbf{G7 Governed change:} a multisig behind a timelock owns every contract (finding~3).
+\textbf{G1 Input integrity:} every feature is computed by the contract from the position source and feeds within the transaction that uses it (finding~15). \textbf{G2 Tier soundness:} every cheap \code{decide*} recomputes $\delta$ and reverts below its band (finding~20). \textbf{G3 Proof binding:} \code{decideZkProof} compares the proof's five feature instances with its own computation and requires label~1, a registered model and the verifier's own model (findings 9--11). \textbf{G4 Accountability:} a challenge must prove high risk on the claim's snapshot (finding~15). \textbf{G5 Liveness:} Tier~2 supersedes open claims, windows expire, and future timestamps clamp (finding~17). \textbf{G6 Exactly once:} the lock is set before any external call; tested on a live node with up to 16 racing threads. \textbf{G7 Governed change:} a multisig behind a timelock owns every contract (finding~3). \textbf{G8 Incentive compatibility:} gas-scaled bonds, commit-reveal challenges and must-open commitments (findings 8, 24, 25).
 
 \begin{table*}[t]
   \caption{Security findings (STRIDE category) and status. Full write-ups are in \code{docs/SECURITY.md}.}
@@ -642,7 +722,7 @@ We reviewed the code STRIDE-style and with an independent review pass; Table~\re
     5 & Self-generated SRS & Tampering & Medium & Documented: ceremony SRS for production \\
     6 & Public test key usable off local chains & Spoofing & Critical & Fixed: refused off local chains \\
     7 & Reentrancy & Tampering & -- & Confirmed safe (CEI, pull payments) \\
-    8 & Front-running of challenges & Tampering & Low & Accepted: changes who earns the bond, not the outcome \\
+    8 & Front-running of challenges & Tampering & Low & Fixed: commit-reveal challenges \\
     9 & Proof replay across positions & Tampering & Critical & Fixed: public features must equal on-chain $q$ \\
     10 & Valid ``low risk'' proof approved a liquidation & Tampering & High & Fixed: label must be 1 \\
     11 & Verifier not bound to the cited model & Spoofing & Medium & Fixed: \code{tier2ModelHash} \\
@@ -656,8 +736,14 @@ We reviewed the code STRIDE-style and with an independent review pass; Table~\re
     19 & Governance changes affect claims in their window & Tampering & Low & Accepted (timelocked) \\
     20 & The router, not the chain, chose the tier & Elevation of privilege & High & Fixed: $\delta$ and tiers enforced on-chain \\
     21 & Residual trust in protocol, feeds, source pointer & Spoofing & Medium & Accepted: explicit, staleness checks, timelocked \\
-    22 & A proof can go stale while it is generated & DoS & Low & Accepted: liveness only, router re-proves \\
+    22 & A proof can go stale while it is generated & DoS & Low & Fixed: feature anchors (10 min, never safer) \\
     23 & \code{msg.value} bonds share one balance & DoS (throughput) & Low & Fixed: deposit-funded bonds \\
+    24 & Fixed bond: challenging unprofitable above 14.7\,gwei & DoS (incentives) & High & Fixed: bond scales with base fee; reward pool \\
+    25 & Tier-1 commitment never checked on-chain & Repudiation & Medium & Fixed: must be opened in the window \\
+    26 & Approvals had no consumer and never expired & Elevation of privilege & Medium & Fixed: liquidator consumes once, 30-min TTL \\
+    27 & Chainlink phase boundary made a round unusable & DoS & Low & Fixed: heartbeat-bounded fallback \\
+    28 & Stale L2 prices after a sequencer outage & Tampering & Medium & Fixed: optional uptime feed + 1\,h grace \\
+    29 & Cheap claims emitted \code{LiquidationApproved} & Repudiation & Low & Fixed: \code{SafeClaimRecorded} \\
     \bottomrule
   \end{tabularx}
 \end{table*}
@@ -681,10 +767,12 @@ Table~\ref{tab:limits} lists what remains and how each limitation is handled.
     Oracle manipulation~\cite{zhou2023sok} & A manipulated feed moves $q$ and $\delta$; staleness checks only; TWAP or decentralized oracles are the protocol's responsibility \\
     Volatility feeds & Not available on every network; a mock volatility feed is used on testnets \\
     Aave account history & The adapter counts age from registration and records top-ups when poked \\
-    Real data & One Aave~V2 wallet (74 snapshots); the rest is synthetic \\
+    Real data & One Aave~V2 wallet (74 snapshots); the outcome-label pipeline is ready for the full dataset but was not run on it \\
     Model labels & Synthetic; ``flagged'' measures agreement with the model, not ground truth \\
+    Unnecessary liquidations & 26\% of soft-liquidated positions would have recovered in the stress test \\
+    L1 economics & Daily decisions pay only for large positions on L1; the target is a rollup \\
     Concurrency & Simulated parallel engines on traced sets; no parallel EVM client was run \\
-    Proof staleness & A feed update during the 16\,s of proving forces a re-proof \\
+    Base-fee spikes & A bond covers challenges while the base fee stays under 1.94$\times$ its value at the claim \\
     Public deployment & Rehearsed on a local node; the Sepolia broadcast needs a funded key \\
     \bottomrule
   \end{tabularx}
@@ -693,12 +781,12 @@ Table~\ref{tab:limits} lists what remains and how each limitation is handled.
 %% ===================================================================
 \section{Future Work}
 
-Four directions follow from these results. \emph{Batched settlement}: proving many Tier-2 decisions in one periodic proof would let a STARK's transparent setup and amortized verification win. \emph{Round-pinned proofs}: letting a proof name a recent price round, not only the latest answer, would remove proof staleness. \emph{Data}: replaying many Aave accounts through the adapter on a mainnet fork, with liquidation outcomes as labels, would calibrate the bands against ground truth. \emph{Parallel clients}: running the traced blocks on a parallel EVM would turn our simulated speedups into measured ones.
+Four directions follow from these results. \emph{Batched settlement}: proving many Tier-2 decisions in one periodic proof would let a STARK's transparent setup and amortized verification win. \emph{Data}: running the outcome-label evaluation on the full Cred Protocol dataset, and retraining on outcomes, would calibrate the model and the bands against ground truth. \emph{L2 deployment}: measuring the scheme on a rollup, where Table~\ref{tab:viability} says it pays, including the sequencer check. \emph{Parallel clients}: running the traced blocks on a parallel EVM would turn our simulated speedups into measured ones.
 
 %% ===================================================================
 \section{Conclusion}
 
-TrustTier began as a way to spend zero-knowledge proofs only where a liquidation decision is close enough to the boundary to need one. The idea worked: on 374 positions, tiering saves 37.1\% of gas against always proving. Tiering itself, however, created a party to trust, whoever chooses the tier and supplies the inputs. The final design removes that party. The contract reads its own inputs, enforces its own tiers, accepts only proofs about the state it sees, and judges cheap claims on the facts at the moment they were made. All of this costs nearly nothing in absolute terms: 205.9\,M gas against 203.0\,M for the unprotected midterm design. Measuring the system at the opcode level, rather than modelling it, also found the one shared write our model had missed. Deposit-funded bonds removed it, so a block of decisions now parallelizes to 15.3$\times$ on 16 threads. Risk-proportional verification on verified inputs is a pattern that should carry beyond liquidations, to credit scoring, insurance claims or any decision whose stakes vary.
+TrustTier began as a way to spend zero-knowledge proofs only where a liquidation decision is close enough to the boundary to need one. The idea worked: on 374 positions, tiering saves 36.0\% of gas against always proving, and on identical stress paths a proven model prevents most of the forced liquidations and insolvencies the health-factor rule lets through. Tiering itself, however, created a party to trust, whoever chooses the tier and supplies the inputs. The final design removes that party. The contract reads its own inputs, enforces its own tiers, accepts only proofs about the state it sees, and judges cheap claims on the facts at the moment they were made. All of this costs little in absolute terms: 210.3\,M gas against 203.0\,M for the unprotected midterm design. Gas-scaled bonds, rewards, must-open commitments and commit-reveal challenges make watching worth someone's while, and the liquidator turns a verified decision into exactly one action. Measuring the system at the opcode level, rather than modelling it, also found the one shared write our model had missed. Deposit-funded bonds removed it, so a block of decisions now parallelizes to 15.3$\times$ on 16 threads. Risk-proportional verification on verified inputs is a pattern that should carry beyond liquidations, to credit scoring, insurance claims or any decision whose stakes vary.
 
 \begin{acks}
 We thank the CSD436 course staff for review comments that shaped this work, in particular the observation that the chain could not check $\delta$, which led to the verified-inputs design.
@@ -714,7 +802,8 @@ We thank the CSD436 course staff for review comments that shaped this work, in p
 All numbers in this paper are produced by scripts in the project repository.
 
 \begin{itemize}
-  \item Tests: \code{npx hardhat test} (106) and \code{python -m pytest off-chain/tests} (81).
+  \item Tests: \code{npx hardhat test} (126) and \code{python -m pytest off-chain/tests} (82).
+  \item Health-factor baseline, bond economics, real outcomes: \code{python -m evaluation.hf\_baseline}, \code{evaluation.bond\_economics}, \code{evaluation.outcome\_labels}.
   \item Gas: \code{npx hardhat run scripts/measure\_gas.js}.
   \item Circuit and proofs: \code{python3 circuits/build\_circuit.py}; proving key only: \code{circuits/make\_proving\_key.py}.
   \item Cost, ablations, bands: \code{python -m evaluation.evaluate}, \code{evaluation.band\_sensitivity}.

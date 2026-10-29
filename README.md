@@ -4,6 +4,9 @@
 
 CSD436 (Blockchain Technology) course project.
 
+**Live app:** https://gauravrai1704.github.io/TrustTier/ (rebuilt from `main` on every push; runs as an
+in-browser simulation until you connect it to a router, see [The DApp](#the-dapp)).
+
 TrustTier makes the strength of on-chain verification for a liquidation
 decision grow with how close a position is to its liquidation boundary
 (δ = liquidation threshold − LTV). **The chain itself computes δ and the
@@ -12,18 +15,42 @@ a tier that is too weak:
 
 | Tier | Allowed when (enforced on-chain) | Evidence on-chain | Gas per decision* |
 |---|---|---|---|
-| 0 Heuristic | δ > 15% | Decision record + feature snapshot + 0.01 ETH bond, slashable for 1 h | 266,172 |
-| 1 Commitment | δ > 5% | Registered model + salted keccak commitment + snapshot + same bond | 336,683 |
-| 2 zk-SNARK | always | Halo2 proof that the model, run on the position's on-chain features, outputs "high risk"; verified on-chain | 875,489 |
+| 0 Heuristic | δ > 15% | Safe-claim + feature snapshot + gas-scaled bond, slashable for 1 h | 269,534 |
+| 1 Commitment | δ > 5% | Registered model + salted commitment that must be opened in the window + snapshot + same bond | 379,161** |
+| 2 zk-SNARK | always | Halo2 proof that the model, run on the position's on-chain features, outputs "high risk"; verified on-chain; approves one liquidation | 878,059 |
 
 \*Full decision transaction, including reading the position, both feeds and
 the 24-hour price round and computing the features. Measured by
 `scripts/measure_gas.js` with the real EZKL verifier and real proofs
-(`off-chain/evaluation/results/gas_measurements.json`).
+(`off-chain/evaluation/results/gas_measurements.json`). \*\*Claim 340,072 + mandatory reveal 39,089.
 
 Cheap Tier 0/1 claims are optimistic: anyone holding a Tier-2 proof that the
 position was high-risk *when the claim was made* can challenge within the
-hour and take the bond.
+hour and take the bond. A Tier-2 approval is the only way the lending pool's
+`TrustTierLiquidator` can liquidate: once, within 30 minutes, as a soft
+liquidation (50% of the debt, 5% bonus to whoever executes it).
+
+## Why a model, and why verify it
+
+Every lending protocol already has a free rule: liquidate when the health
+factor drops below 1 (LTV reaches the threshold). It acts only at the
+boundary, so a crash day can push a position from safe to under water before
+anyone can act. A model that sees volatility and momentum can act earlier
+with a smaller, soft liquidation - acceptable only if its verdict is
+verifiable, and affordable only if not every position pays for a proof.
+On identical 30-day stress paths for 3,000 positions
+(`evaluation/hf_baseline.py`):
+
+| Policy | Forced liquidations | Insolvencies | Bad debt | Bonus paid by borrowers | Soft liquidations (unnecessary) | Decision gas / position-day |
+|---|---|---|---|---|---|---|
+| Health-factor rule | 2,461 | 61 | 0.018% | 1.35% | 0 | 0 |
+| TrustTier | 297 | 2 | 0.001% | 1.67% | 2,365 (323) | 322 k |
+| Always zk-proof | 297 | 2 | 0.001% | 1.67% | 2,368 (323) | 880 k |
+
+The trade-off is real: borrowers pay more bonus in total and 26% of
+soft-liquidated positions would have recovered. And the gas decides where it
+pays: daily decisions cost under 0.5% of the debt per year from $3.5k on a
+rollup but only from ~$350k-$1.4M on L1 (`evaluation/bond_economics.py`).
 
 ## Verified inputs, not trusted inputs
 
@@ -68,12 +95,25 @@ model weights stay private. See `docs/SECURITY.md` findings 15, 20-22.
   liquidation threshold (validation accuracy 95.9%, ROC-AUC 0.995).
 - **Real proving in the router and the DApp** - Tier-2 decisions and
   challenges use real EZKL proofs (~16 s) against the real verifier.
+- **Incentives** - the bond is `max(0.01 ETH, 1.5M gas x basefee)`, so
+  slashing a false claim pays at any gas price (a fixed 0.01 ETH bond stops
+  paying above 14.7 gwei); a protocol-funded reward pool pays honest claims
+  (once per position per day); Tier-1 commitments must be opened in the
+  window or forfeit; challenges are committed a block before they are
+  revealed, so they cannot be front-run.
+- **Execution** - `TrustTierLiquidator` consumes a Tier-2 approval and the
+  pool performs a soft liquidation; approvals expire after 30 minutes.
+- **Slow proofs** - `anchorFeatures` fixes a position's features for 10
+  minutes; a proof on them is accepted while the position has not become
+  safer, so a feed update during the ~16 s of proving does not force a
+  re-proof.
+- **Feeds** - Chainlink phase boundaries are handled; an optional L2
+  sequencer-uptime feed blocks decisions while the sequencer is down.
 - **Lifecycle** - a cheap claim blocks other cheap claims for its 1-hour
   window but never a needed liquidation: a Tier-2 proof of high risk *now*
   supersedes it (the claim stays challengeable and reclaimable). A
   successful challenge re-opens the position for Tier 2; the next decision
-  after an unchallenged window re-opens it (crediting the honest bond).
-  Tier-2 liquidations are final.
+  after an unchallenged window re-opens it (settling the honest bond).
 - **Parallel-friendly bonds** - a claim sent without ETH draws its bond from the
   claimant's own deposit (`deposit()`), so cheap claims never write the
   engine's shared ETH balance; traced blocks show this is what keeps them
@@ -84,7 +124,7 @@ model weights stay private. See `docs/SECURITY.md` findings 15, 20-22.
   deployment is rehearsed on a local node. The broadcast needs your RPC URL
   and a funded testnet key (see "Deploying to Sepolia").
 
-Tests: **106 contract tests** (Hardhat) and **81 Python tests** pass.
+Tests: **126 contract tests** (Hardhat) and **82 Python tests** pass (CI runs both on every push).
 
 ## Results
 
@@ -93,22 +133,19 @@ Tests: **106 contract tests** (Hardhat) and **81 Python tests** pass.
 | Proving time per Tier-2 proof | ~16 s (EZKL, 2^16-row circuit, 575 MB proving key) |
 | Proof calldata | 3,584 bytes; 8 public instances [5 features, label, P(low), P(high)] |
 | On-chain verification (standalone) | 621,921 gas |
-| Full Tier-2 decision / challenge | 875,489 / 676,132 gas |
-| Gas vs always-zkML, 374 positions (74 real Aave V2 + 300 synthetic) | **37.1% saving** (205.9 M vs 327.4 M); tiers 126 / 83 / 165 |
+| Full Tier-2 decision / challenge / commit-reveal challenge / liquidation | 878,059 / 678,771 / 773,609 / 96,402 gas |
+| Gas vs always-zkML, 374 positions (74 real Aave V2 + 300 synthetic) | **36.0% saving** (210.3 M vs 328.4 M); tiers 126 / 83 / 165 |
+| vs health-factor rule, 3,000-position 30-day stress test | forced liquidations −88%, insolvencies 61 → 2 |
+| Watcher profit at 20 gwei (fixed bond / gas-scaled bond) | −0.0036 / +0.0164 ETH |
 | Tier-1 positions escalated to Tier 2 (model flags high risk) | 21 |
 | Tier-2 positions protected (proof shows low risk, no liquidation) | 9 of 165 |
 | Tier-0 positions the model flags high-risk | 1 of 126 (0.8%) |
 | Scheduling rounds for 374 decisions (old array log → per-position storage) | 374 → 1 |
 | Circuit/ONNX label agreement on 200 random positions | 200/200 (`circuits/fidelity.json`) |
 
-Compared with the oracle version (39.9%): Tier 0 now costs 16k gas more per
-decision (it reads two feeds and stores a snapshot instead of trusting a
-pre-paid commitment), Tier 1 4k less and Tier 2 124k less (no oracle
-transaction, and a smaller proof with no in-circuit hash). Because the
-always-Tier-2 baseline got cheaper too, the relative saving fell; the
-absolute cost of TrustTier fell from 224.7 M to 205.9 M gas. The engine
-packs per-position state into three storage slots, which saved ~46k gas per
-cheap claim. Per dataset: real wallet 30.3%, synthetic 38.8%.
+The incentive layer costs ~3k gas per decision plus the 39k Tier-1 reveal,
+which moved the saving from 37.1% to 36.0%. Per dataset: real wallet 29.7%,
+synthetic 37.5%.
 
 ## Repository layout
 
@@ -117,18 +154,22 @@ contracts/
   ModelRegistry.sol          trusted model hashes (register / revoke)
   TierAuditLog.sol           one record per position (mapping, not an array)
   LiquidationEngine.sol      on-chain features + delta, tier enforcement,
-                             snapshots, bonded challenge window
-  interfaces/                IPositionSource, AggregatorV3Interface (Chainlink), ITier2Verifier
+                             snapshots, gas-scaled bonds, rewards, reveals,
+                             commit-reveal challenges, anchors, approvals
+  consumers/
+    TrustTierLiquidator.sol  executes a Tier-2 approval exactly once
+  interfaces/                IPositionSource, ILiquidationTarget, AggregatorV3Interface, ITier2Verifier
   sources/
     AaveV3PositionSource.sol reads an Aave V3 account (getUserAccountData)
-    MockLendingPool.sol      demo lending protocol valued by price feeds
+    MockLendingPool.sol      demo lending protocol valued by price feeds; soft liquidations
   EzklVerifier.sol           Halo2Verifier generated by EZKL (do not edit)
   governance/
     TrustTierMultisig.sol    minimal M-of-N wallet
     TrustTierTimelock.sol    OpenZeppelin TimelockController
-  mocks/                     MockTier2Verifier, MockV3Aggregator, MockAavePool
-test/                        Hardhat tests (106): engine, Aave adapter, registry,
-                             log, real verifier, real proofs end to end, governance
+  mocks/                     MockTier2Verifier, MockV3Aggregator, MockPhasedAggregator, MockAavePool
+test/                        Hardhat tests (126): engine, incentives + liquidator,
+                             Aave adapter, registry, log, real verifier, real
+                             proofs end to end, governance
 scripts/
   deploy.js                  deploy + wire + register model (+ governance)
   governance.js              propose / confirm / execute timelocked changes
@@ -150,11 +191,14 @@ off-chain/
                              processor, position stream
   sentinel/                  live monitor (alerts on successful challenges)
   evaluation/                cost model (reads measured gas), real-data replay,
-                             concurrency simulation + ablations, reports
-  tests/                     81 tests
-frontend/                    React DApp: SIWE sign-in, routing, audit trail,
-                             position workflow, wallet-signed challenges
-docs/SECURITY.md             23 findings and their status
+                             health-factor baseline, bond economics,
+                             outcome labels, concurrency studies, reports
+  tests/                     82 tests
+frontend/                    React DApp (light/dark): overview + guided demo,
+                             positions, watchtower, economics, activity,
+                             protocol; live mode or in-browser simulation
+.github/workflows/           tests on every push; DApp to GitHub Pages
+docs/SECURITY.md             29 findings, their status, and the trust assumptions
 docs/SNARK_VS_STARK.md       why Tier 2 uses a SNARK
 ```
 
@@ -174,8 +218,9 @@ cd circuits && python3 make_proving_key.py && cd ..
 #     `python3 build_circuit.py` in circuits/ - regenerates everything.)
 
 # 2. Tests
-npx hardhat test                                   # 106 passing
-cd off-chain && python -m pytest tests -q && cd .. # 81 passing
+npx hardhat test                                   # 126 passing
+cd off-chain && python -m pytest tests -q && cd .. # 82 passing
+#    (offline machines: HARDHAT_LOCAL_SOLC=1 compiles with the solc npm package)
 
 # 3. Local chain + contracts (real verifier; use VERIFIER_MODE=mock for instant fake proofs)
 npx hardhat node                                   # terminal 1
@@ -192,24 +237,55 @@ python -m sentinel.watch                           # terminal 3 (in off-chain/)
 cd frontend && npm install && npm run dev          # terminal 4, open http://127.0.0.1:5173
 ```
 
-### The demo flow in the DApp
+## The DApp
 
-1. Connect a wallet (MetaMask on the Hardhat network, chain 31337) and sign in (SIWE).
-2. "Open and route positions" opens a synthetic stream in the lending pool
-   and routes it through all three tiers.
-3. "Open one position": market ETH, LTV 0.72, account age 30, top-up 60 days.
-   The panel shows the contract's own view: five quantized features, δ = 800
-   bps, "weakest tier the chain accepts: Tier 1", and the model's verdict
-   (high risk).
-4. Tick "act as a dishonest liquidator" and route it: the router claims
-   Tier 1 with a bond although the model says high risk. (Claiming Tier 0
-   would simply revert: `TierNotAllowed`.)
-5. Click its row, then "Check this claim with a Tier-2 proof" (~16 s). The
-   proof - computed on the features the claim snapshotted - says HIGH RISK,
-   so "Challenge and slash the bond" appears; your wallet signs and pays.
-6. The bond is credited to you ("Withdraw my pending balance"), the position
-   is re-opened for a Tier-2 liquidation, and the sentinel prints an alert.
-   "Push price" moves a market's mock feed to stage a crash.
+`frontend/` is a React app with light and dark themes (follows the system,
+toggle in the top bar). Pages: **Overview** (the idea, headline results and a
+five-step guided demo), **Positions** (open positions, crash prices, route
+streams; click a row for the position's gauge, features, model verdict,
+lifecycle and actions), **Watchtower** (open claims with countdowns and a
+one-click scan; approvals waiting for execution), **Economics** (every chart
+reads the evaluation results), **Activity** (contract events) and
+**Protocol** (deployment, trust assumptions, connection).
+
+It runs in two modes, shown in the top bar:
+
+- **On-chain** - when a router answers (the dev server proxies `/api`; a built
+  site tries `http://127.0.0.1:8000`, configurable on the Protocol page).
+  Actions are transactions; with a wallet connected, challenges, bond
+  settlements and liquidations are signed by your wallet. On a local chain the
+  clock button fast-forwards time to close windows or expire approvals.
+- **Simulation** - otherwise (for example on GitHub Pages): the contract's
+  rules, the real model (weights exported by `off-chain/scripts/export_model_js.py`
+  and checked against ONNX) and the measured gas run in the browser. Nothing is
+  on-chain and proofs are not generated; the app says so.
+
+To use the hosted site against your own node, start the router with
+`TRUSTTIER_CORS=https://gauravrai1704.github.io` (that origin is allowed by
+default) and pick "Router only" on the Protocol page.
+
+**Hosting.** `.github/workflows/pages.yml` builds and publishes the app on
+every push to `main`, so code changes and re-run evaluation results appear on
+the site automatically. One-time setup: repository **Settings → Pages →
+Source: GitHub Actions**.
+
+### The demo flow
+
+The Overview page's guided demo runs it in five clicks:
+
+1. Open ETH collateral at LTV 0.72, account age 30 days, last top-up 60 days
+   ago: δ = 8%, the chain accepts Tier 1 or 2, the model says high risk.
+2. A dishonest router claims Tier 1 anyway and keeps its commitment closed.
+   (Claiming Tier 0 would revert: `TierNotAllowed`.)
+3. A watcher proves the snapshotted features (~16 s with the real prover):
+   HIGH RISK. It commits, then reveals the challenge; the bond is slashed.
+4. Routed honestly, the position needs Tier 2: the verified proof approves a
+   liquidation.
+5. `TrustTierLiquidator` executes the soft liquidation: half the debt is
+   repaid and δ goes from 8% to ~22%.
+
+The same steps are available per position on the Positions page, signed by
+your wallet when one is connected; "−15%" on a market stages a crash.
 
 ## How proofs are tied to positions
 
@@ -285,7 +361,10 @@ has been rehearsed on a local node with the real verifier and governance.
 
 ```bash
 cd off-chain
-python -m evaluation.evaluate               # cost replay -> results/evaluation_report.md
+python -m evaluation.evaluate               # cost replay -> results/evaluation_report.{md,json}
+python -m evaluation.hf_baseline            # vs the health-factor rule -> results/hf_baseline.{md,json}
+python -m evaluation.bond_economics         # challenge incentives, L1 vs rollup -> results/bond_economics.{md,json}
+python -m evaluation.outcome_labels         # real outcomes; --data <Cred Protocol dataset> for all wallets
 python -m evaluation.concurrency_sim        # 374 -> 1 rounds -> results/concurrency_report.md
 python -m evaluation.concurrency_ablation   # size / contention / tier mix
 python -m evaluation.band_sensitivity       # tier bands + threshold sweep -> results/band_sensitivity.{md,tex}
@@ -308,11 +387,17 @@ panel.
   the Chainlink feeds and the (timelocked) position-source pointer. Aave does
   not store account age or top-up times, so the Aave adapter observes them
   from registration and permissionless `poke`s (finding 21).
-- **Proofs can go stale** if a feed updates during the ~16 s of proving; the
-  router re-proves (finding 22).
 - **Real data is one Aave V2 wallet** (74 snapshots); the rest is synthetic.
+  `evaluation/outcome_labels.py` labels snapshots by real outcomes (health
+  factor below 1 within 7 days) and retrains a candidate model; it is ready
+  for Cred Protocol's full 35,524-wallet dataset (a Dropbox download, see the
+  script) but has only been run on the one wallet.
+- **L1 economics**: daily decisions are affordable only for large positions
+  on L1; the intended deployment is a rollup.
+- **Unnecessary liquidations**: in the stress test 26% of soft-liquidated
+  positions would have recovered.
 - **Concurrency is measured by scheduling simulation**: Ethereum clients
   execute blocks sequentially today; the result bounds what a parallel EVM
   could achieve.
-- **Front-running of challenges** changes who earns the bond, not whether a
-  false claim is slashed.
+- **Base-fee spikes**: a bond covers a challenge while the base fee stays
+  under ~1.9x its value at the claim.

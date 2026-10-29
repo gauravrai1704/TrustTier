@@ -20,7 +20,7 @@ with the reasoning spelled out so it isn't silently forgotten.
 | 5 | Self-generated SRS, not from a real trusted-setup ceremony | Tampering | Medium (N/A locally) | Documented |
 | 6 | Hardcoded fallback test private key in `chain_client.py` | Spoofing | Critical (if misused) | **Fixed** |
 | 7 | Reentrancy | Tampering | — | Confirmed safe |
-| 8 | Front-running on `challengeDecision` | Tampering | Low | Accepted |
+| 8 | Front-running on `challengeDecision` | Tampering | Low | **Fixed** (commit-reveal challenges) |
 | 9 | Proof replay across positions | Tampering | Critical | **Fixed** |
 | 10 | Tier-2 approval from a valid proof that says "low risk" | Tampering | High | **Fixed** |
 | 11 | Verifier not bound to the model hash a decision cites | Spoofing | Medium | **Fixed** |
@@ -34,8 +34,14 @@ with the reasoning spelled out so it isn't silently forgotten.
 | 19 | Governance changes apply to claims already in their window | Tampering | Low | Accepted (timelocked) |
 | 20 | The router, not the chain, chose the tier (δ computed off-chain) | Elevation of Privilege | High | **Fixed** (δ and tier enforced on-chain) |
 | 21 | Residual trust: the lending protocol, Chainlink feeds and the position-source pointer | Spoofing | Medium | Accepted (explicit, timelocked) |
-| 22 | A proof can go stale while it is being generated | Denial of Service | Low | Accepted (liveness, not safety) |
+| 22 | A proof can go stale while it is being generated | Denial of Service | Low | **Fixed** (feature anchors) |
 | 23 | Every msg.value bond writes the engine's shared ETH balance | Denial of Service (throughput) | Low | **Fixed** (deposit-funded bonds) |
+| 24 | Fixed bond: challenging a false claim loses money above ~14.7 gwei | Denial of Service (incentives) | High | **Fixed** (gas-scaled bond, reward pool) |
+| 25 | The Tier-1 commitment was never checked on-chain | Repudiation | Medium | **Fixed** (must be opened in the window) |
+| 26 | Tier-2 approvals had no consumer and never expired | Elevation of Privilege | Medium | **Fixed** (TrustTierLiquidator, 30-minute TTL) |
+| 27 | A Chainlink phase boundary made the 24-hour round unusable | Denial of Service | Low | **Fixed** (heartbeat-bounded fallback) |
+| 28 | Stale prices on an L2 after a sequencer outage | Tampering | Medium | **Fixed** (optional uptime feed, 1 h grace) |
+| 29 | Tier 0/1 safe-claims emitted `LiquidationApproved` | Repudiation | Low | **Fixed** (`SafeClaimRecorded`) |
 
 ---
 
@@ -170,7 +176,7 @@ in particular zeroes `pendingWithdrawals[msg.sender]` before making the
 external call, so a reentrant call from a malicious recipient's fallback
 would see a zero balance and have nothing left to withdraw a second time.
 
-## 8. Front-running on `challengeDecision` (Accepted — Low)
+## 8. Front-running on `challengeDecision` (Fixed — Low)
 
 **The issue:** `challengeDecision` is public — anyone watching the mempool
 could see a pending challenge transaction and submit their own copy with
@@ -180,10 +186,17 @@ higher gas to "steal" the slashed bond instead.
 original false claim still gets challenged and slashed either way, which
 is the property that actually matters (Tier 0/1's economic security is
 restored). It only affects *who* collects the reward, which is a
-MEV/fairness concern, not a safety one. Documented rather than fixed,
-since a real fix (commit-reveal for challenges, or routing through a
-private mempool) adds meaningful complexity for a property this project's
-threat model doesn't prioritize.
+MEV/fairness concern, not a safety one, but an unpaid watcher stops
+watching, so it matters for incentives (finding 24).
+
+**The fix:** commit-reveal. `commitChallenge(position, c)` stores
+`c = keccak256(abi.encode(challenger, position, featureSnapshot, keccak256(proof)))`;
+`revealChallenge` must come at least one block later from the same account
+with the matching proof. Once any commit exists for a claim, the one-step
+`challengeDecision` is closed for that claim (`ChallengeMustBeCommitted`), so
+a bot that copies a revealed proof has no commit and cannot collect. A
+griefer who commits junk only closes the one-step path; honest challengers
+still commit and reveal. Cost: 94,771 gas for the commit.
 
 ## 9. Proof replay across positions (Fixed — Critical)
 
@@ -392,13 +405,18 @@ own accounting and its Chainlink feeds. Three specifics:
   it is, and an un-poked top-up is recorded late. `MockLendingPool` lets
   anyone back-date positions; it is for demos only.
 
-## 22. A proof can go stale while it is generated (Accepted — Low)
+## 22. A proof can go stale while it is generated (Fixed — Low)
 
 Proving takes ~16 s. If the price feed updates in between, the position's
-features change and the proof no longer matches (`ProofNotForPosition`).
-This affects liveness, not safety: the router re-reads and re-proves. On a
-real feed with hourly heartbeats this is rare; a production deployment could
-let a proof name a recent price round instead of the latest answer.
+features change and the proof no longer matches (`ProofNotForPosition`) -
+exactly in a crash, when feeds update often and liquidations matter most.
+
+**The fix:** `anchorFeatures(position, pastRound)` (permissionless) stores
+`keccak256(q)`, the time and δ. For `ANCHOR_TTL` (10 minutes) `decideZkProof`
+also accepts a proof on the anchored features, but only while the position
+has not become safer than at the anchor (`δ_now <= δ_anchor`): a borrower who
+tops up or a price that recovers invalidates the anchor. The router anchors
+only when a feed moved during proving, then proves once more on the anchor.
 
 ## 23. Every msg.value bond writes one shared balance (Fixed — Low)
 
@@ -409,7 +427,7 @@ let a proof name a recent price round instead of the latest answer.
 also changes the engine's ETH balance. On an execution engine that treats a
 balance change as a read-modify-write, every Tier 0/1 claim in a block then
 conflicts with every other: in a traced 374-decision block, 209 claims
-serialize and 16 threads reach only a 3.35x speedup instead of 15.3x.
+serialize and 16 threads reach only a 3.33x speedup instead of 15.3x.
 
 **The fix:** `deposit()` pre-funds a claimant's balance in
 `pendingWithdrawals`; a claim sent without ETH draws `MIN_BOND` from it (and
@@ -417,6 +435,96 @@ reclaimed or slashed bonds are recycled the same way). Such claims touch only
 the claimant's own slot, and the traced block parallelizes to 15.3x at 16
 threads under either balance model. It costs about 5,200 gas more per claim.
 `msg.value` bonds still work for occasional claimants.
+
+## 24. Fixed bond: challenging is unprofitable at ordinary gas prices (Fixed — High)
+
+**The issue:** a challenge costs ~679k gas (774k with commit-reveal). With a
+fixed 0.01 ETH bond, slashing a false claim loses money above 14.7 gwei, so
+at ordinary L1 prices no rational watcher checks cheap claims - the
+verifier's dilemma - and the optimistic tiers' security argument fails
+(`evaluation/bond_economics.py`).
+
+**The fix:** `requiredBond() = max(MIN_BOND, BOND_GAS_COVER * block.basefee)`
+with `BOND_GAS_COVER = 1.5M` gas, about 2.2x a challenge, enforced for both
+`msg.value` and deposit-funded bonds. Slashing stays profitable while the
+base fee at challenge time is below 2.21x (1.94x with commit-reveal) the base
+fee at the claim. A protocol-funded reward pool (`fundRewards`,
+`claimReward`) pays honest claims when their bonds are settled, at most once
+per position per day, so attesting to safe positions is paid and not
+farmable; rewards are paid at settlement, so claims still never write a
+shared slot (finding 23).
+
+## 25. The Tier-1 commitment was never checked on-chain (Fixed — Medium)
+
+**The issue:** the salted commitment was stored but only an off-chain
+auditor could ever check it, so on-chain Tier 1 was Tier 0 plus an opaque
+hash.
+
+**The fix:** `revealCommitment(position, q, score, salt)` must be called
+inside the window; the contract recomputes the hash and checks `q` against
+the snapshot. A committed score >= 0.5 contradicts the claim itself: the
+bond is forfeited to the reward pool and the position re-opens. An unopened
+commitment is forfeited when the window closes (on `reclaimBond` or the next
+decision). The router opens honest commitments immediately (39,089 gas).
+
+## 26. Tier-2 approvals had no consumer and never expired (Fixed — Medium)
+
+**The issue:** `decideZkProof` set a flag nobody read, and it was permanent:
+a stale approval could be acted on much later, and the position could never
+be decided again.
+
+**The fix:** `TrustTierLiquidator.liquidate(position)` calls
+`consumeApproval`, which only the configured liquidator may call and which
+needs an open approval younger than `APPROVAL_TTL` (30 minutes); then the
+lending protocol executes a soft liquidation (`ILiquidationTarget`). One
+proof buys exactly one liquidation. An unexecuted approval expires and the
+position can be decided again.
+
+## 27. A Chainlink phase boundary made the 24-hour round unusable (Fixed — Low)
+
+**The issue:** proxy round IDs are `phaseId << 64 | aggregatorRoundId`; the
+last round of a phase has no `roundId + 1`, so the "next round" check
+reverted and the position could not be decided while that round was the one
+in effect 24 hours ago.
+
+**The fix:** `getRoundData(roundId + 1)` is wrapped in `try`; when there is no
+next round, the round is accepted only if it was updated within one
+heartbeat (`maxPriceAge`) before the target, which a superseded old round
+cannot be. Tested with `MockPhasedAggregator`.
+
+## 28. Stale prices on an L2 after a sequencer outage (Fixed — Medium)
+
+**The fix:** `setSequencerUptimeFeed` (governed) enables Chainlink's L2
+sequencer uptime check: features revert (`SequencerDown`) while the
+sequencer is down and for one hour after it restarts. Zero on L1.
+
+## 29. Safe-claims emitted `LiquidationApproved` (Fixed — Low)
+
+A Tier 0/1 claim asserts that a position is NOT liquidation-worthy, yet it
+emitted the same event as a Tier-2 approval, so indexers and the audit trail
+read safe-claims as liquidations. Cheap claims now emit
+`SafeClaimRecorded(position, tier, model, claimant, bond)`;
+`LiquidationApproved` is emitted only by Tier 2.
+
+---
+
+## Trust assumptions in one place
+
+What a user of TrustTier still trusts, and nothing else:
+
+1. **The lending protocol's accounting** (collateral, debt, threshold) - what
+   the protocol already trusts. Read through `IPositionSource`.
+2. **Chainlink feeds** for price, the 24-hour round and realized volatility,
+   subject to staleness, round, phase-boundary and sequencer checks.
+3. **Governance**: the verifier, position source, liquidator, sequencer feed,
+   feed ages and claim reward are owner-settable, behind an M-of-N multisig and
+   a timelock in a governed deployment.
+4. **The proving setup**: the KZG SRS is self-generated for the demo
+   (finding 5).
+5. **The Halo2/KZG proof system's soundness.**
+
+Not trusted: the router, any liquidator or watcher, any off-chain feature or
+δ computation, and the timing of challenges (commit-reveal).
 
 ---
 

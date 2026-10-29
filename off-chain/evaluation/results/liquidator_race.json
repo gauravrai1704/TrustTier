@@ -10,7 +10,7 @@
   "exactly_once": true,
   "blocks": 1,
   "decisions_per_block": 30.0,
-  "wall_seconds": 1.2
+  "wall_seconds": 1.5
  },
  {
   "bots": 2,
@@ -18,12 +18,12 @@
   "attempts": 60,
   "succeeded": 30,
   "reverted": 30,
-  "wasted_gas": 783960,
-  "wasted_gas_per_position": 26132,
+  "wasted_gas": 784470,
+  "wasted_gas_per_position": 26149,
   "exactly_once": true,
   "blocks": 1,
   "decisions_per_block": 30.0,
-  "wall_seconds": 1.2
+  "wall_seconds": 1.5
  },
  {
   "bots": 4,
@@ -31,12 +31,12 @@
   "attempts": 120,
   "succeeded": 30,
   "reverted": 90,
-  "wasted_gas": 2351880,
-  "wasted_gas_per_position": 78396,
+  "wasted_gas": 2353410,
+  "wasted_gas_per_position": 78447,
   "exactly_once": true,
   "blocks": 2,
   "decisions_per_block": 15.0,
-  "wall_seconds": 2.1
+  "wall_seconds": 2.2
  },
  {
   "bots": 8,
@@ -44,12 +44,12 @@
   "attempts": 240,
   "succeeded": 30,
   "reverted": 210,
-  "wasted_gas": 5487720,
-  "wasted_gas_per_position": 182924,
+  "wasted_gas": 5491290,
+  "wasted_gas_per_position": 183043,
   "exactly_once": true,
   "blocks": 3,
   "decisions_per_block": 10.0,
-  "wall_seconds": 3.1
+  "wall_seconds": 3.3
  },
  {
   "bots": 16,
@@ -57,11 +57,11 @@
   "attempts": 480,
   "succeeded": 30,
   "reverted": 450,
-  "wasted_gas": 11759400,
-  "wasted_gas_per_position": 391980,
+  "wasted_gas": 11767050,
+  "wasted_gas_per_position": 392235,
   "exactly_once": true,
-  "blocks": 5,
-  "decisions_per_block": 6.0,
-  "wall_seconds": 5.3
+  "blocks": 6,
+  "decisions_per_block": 5.0,
+  "wall_seconds": 6.7
  }
 ]

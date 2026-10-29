@@ -1,80 +1,44 @@
-# TrustTier Dashboard (Weeks 7-8)
+# TrustTier DApp
 
-A live console for the tiered verification pipeline: route positions
-through Tier 0/1/2, watch the on-chain audit trail fill in with real
-transaction hashes and gas costs, and see the cost-comparison story
-(TrustTier vs. always-Tier-0 vs. always-Tier-2) update live.
-
-## Prerequisites
-
-The off-chain router must be running first (see `../off-chain/README.md`
-or the main repo README's "Running the off-chain router" section):
-1. `npx hardhat node` (in one terminal)
-2. `npx hardhat run scripts/deploy.js --network localhost`
-3. From `off-chain/`: `python -m scripts.setup_chain`
-4. From `off-chain/`: `uvicorn main:app --reload --port 8000`
-
-## Running the dashboard
+React + Vite, no UI framework. Light and dark themes (system by default,
+toggle in the top bar), responsive down to phone width.
 
 ```bash
-cd frontend
 npm install
-npm run dev
+npm run dev      # http://127.0.0.1:5173 - proxies /api to the router on :8000
+npm run build    # static site in dist/ (VITE_BASE sets the public path)
 ```
 
-Open the URL Vite prints (`http://127.0.0.1:5173` by default). The dev
-server proxies `/api/*` straight to the FastAPI backend on port 8000 (see
-`vite.config.js`) - no CORS configuration needed for local development.
+## Modes
 
-## What's on the page
+- **On-chain**: when the router (`off-chain/main.py`) answers. Every action is
+  a transaction; a connected wallet (MetaMask) signs challenges (commit, then
+  reveal), bond settlements and liquidations itself, and can sign in with
+  Ethereum.
+- **Simulation**: when no router answers (e.g. the GitHub Pages build).
+  `src/sim/engine.js` ports the contract's rules and runs the real model
+  (`src/sim/model.json`, exported by `off-chain/scripts/export_model_js.py`
+  and checked against ONNX by `off-chain/tests/test_export_model.py`) with
+  the measured gas. State is kept in the browser and can be reset on the
+  Protocol page.
 
-- **Verification pipeline** — a live tier-distribution view, updating as
-  positions get routed.
-- **Run a position stream** — triggers `/simulate`: opens a synthetic batch
-  of positions in the demo lending pool and routes every one through the
-  real on-chain pipeline.
-- **Markets** — each market's live feed price, volatility and liquidation
-  threshold, with "Push price" to stage a move on a mock feed.
-- **Open one position** — opens a position and shows the contract's own
-  features, δ and allowed tier before you route it.
-- **On-chain audit trail** — every routed position with its tier, on-chain δ and features, risk
-  score, gas used, and transaction hash (all real values from the local
-  chain, not mocked in the frontend).
-- **Cost comparison** — TrustTier's actual gas spend vs. what
-  always-Tier-0 or always-Tier-2 would have cost, computed from the same
-  measured constants `evaluation/cost_model.py` uses (via the backend's
-  `/cost-model` endpoint - the frontend never hardcodes these numbers).
+The Protocol page switches between Auto / Router only / Simulation and sets
+the router URL.
 
-## Design notes
+## Layout
 
-Deliberately built as an instrument console rather than a marketing
-dashboard: deep indigo base, three semantic tier colors (teal/amber/coral)
-reused consistently across every badge, table row, and chart bar, hairline
-borders instead of card shadows, and Space Grotesk + IBM Plex Mono as the
-only two typefaces (the latter for all numeric/data content, since this is
-a data-dense monitoring tool where monospace numerals aid scanning).
+```
+src/
+  App.jsx               shell: sidebar, top bar (mode, chain clock, theme, wallet)
+  pages/                Overview (guided demo), Positions, Watchtower,
+                        Economics, Activity, Protocol
+  ui/                   kit (badges, gauge, drawer, toasts), charts, wallet,
+                        PositionDrawer (one position's view and actions)
+  api/                  live client and backend selection
+  sim/                  in-browser protocol simulation and model
+  lib/                  formatting, theme, hash routing
+```
 
-## Challenging a decision from your wallet
-
-Clicking a decided Tier 0/1 position opens its workflow. "Check this claim
-with a Tier-2 proof" asks the backend's watcher endpoint
-(`POST /positions/{id}/challenge-proof`) for a proof on the features the
-contract snapshotted when the claim was made - a real EZKL proof against the
-real verifier, ~16 s. If the proof shows high risk, "Challenge and slash the
-bond" sends `challengeDecision` from the connected wallet, which signs and
-pays for it.
-
-"Open one position" opens a position in the demo lending pool (market, LTV,
-account age, days since top-up) and shows the engine's own view of it: the
-five quantized features, δ, the weakest tier the chain accepts, and the
-model's verdict. The "dishonest liquidator" checkbox then claims the cheapest
-allowed tier whatever the model says, so the challenge flow can be
-demonstrated. The DApp never supplies features: the contract reads them.
-
-## Verification
-
-The rendered UI and the full wallet flow (SIWE sign-in, staged dishonest
-claim on a chain-computed position, Tier-2 proof, wallet-signed challenge, slashed bond in the activity
-feed) were checked end to end in headless Chromium against a local Hardhat
-node with the real verifier, using an injected EIP-1193 provider in place
-of MetaMask.
+The Economics and Overview pages import the evaluation results from
+`../off-chain/evaluation/results/*.json` at build time: re-run an evaluation,
+push, and the hosted site updates.
