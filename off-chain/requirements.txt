@@ -10,3 +10,4 @@ python-dotenv>=1.0,<2.0
 pandas>=2.2,<3.0
 ezkl>=23.0,<24.0   # Tier-2 proving
 onnx>=1.15,<2.0
+requests>=2.31,<3.0

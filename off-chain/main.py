@@ -46,9 +46,23 @@ Endpoints:
     POST /positions/{id}/liquidate - execute an open Tier-2 approval through
                                   TrustTierLiquidator (soft liquidation)
     POST /chain/advance        - local chains only: fast-forward block time
+    POST /rpc                  - allow-listed JSON-RPC proxy to the chain, so a
+                                  wallet generated in the browser can read state
+                                  and send its own signed transactions
+    POST /faucet               - local chains only: fund an address with test ETH
+    POST /positions/{id}/proof - a Tier-2 proof on the CURRENT features, for a
+                                  user to submit decideZkProof from their wallet
+    GET  /auth/me, POST /auth/logout
+    GET  /db/summary, /db/events, /db/events.csv, /db/leaderboard,
+        /db/accounts/{address}, /db/actions, /db/deployments
+                                - the ledger database (see ledger/db.py)
+    POST /actions              - record an action a user signed in the browser
 
-On authentication / sessions / a database (see docs/SECURITY.md and the
-frontend README for the fuller reasoning): this project deliberately has
+On authentication / sessions / the database: the chain is the source of
+truth, and the ledger database (ledger/db.py, SQLite) is an index of it -
+every contract event, decoded, plus every action requested through this API
+and the SIWE users and sessions. It is rebuilt from the chain at any time.
+The original reasoning, kept for context: this project deliberately had
 no database. "Authentication" here is Sign-In-With-Ethereum (SIWE) - the
 user's wallet signature over a server-issued nonce IS the credential, same
 as real DApps (Uniswap, OpenSea, etc.) - and SIWE sessions are tracked in a
@@ -62,15 +76,21 @@ is an indexer (e.g. The Graph) rather than a hand-rolled database synced
 from events - not something this project's scope calls for.
 """
 
+import csv
+import io
 import os
+import re
 import secrets
+import threading
 import time
 from typing import Literal, Optional
 
 from eth_account import Account
 from eth_account.messages import encode_defunct
-from fastapi import FastAPI, HTTPException
+import requests as http
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from evaluation.cost_model import GAS_BY_TIER, TIER2_PROVING_SECONDS
@@ -79,6 +99,8 @@ from router.chain_client import ChainClient, DEFAULT_NETWORK, DEPLOYMENTS_DIR
 from router.position_stream import generate_onchain_stream
 from router.tiering import decide_tier_bps
 from router.processor import PositionProcessor
+from ledger.db import LedgerDB
+from ledger.indexer import Indexer
 
 app = FastAPI(title="TrustTier Off-Chain Router", version="0.1.0")
 
@@ -95,6 +117,102 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# Ledger database: an index of the chain plus the API's own action log.
+# ---------------------------------------------------------------------------
+
+ledger = LedgerDB()
+_indexer: Optional[Indexer] = None
+_indexer_lock = threading.Lock()
+
+
+def get_indexer() -> Optional[Indexer]:
+    """The indexer for the current deployment (None until the chain is up)."""
+    global _indexer
+    try:
+        chain = get_processor().chain
+    except HTTPException:
+        return None
+    with _indexer_lock:
+        if _indexer is None or _indexer.chain is not chain:
+            _indexer = Indexer(chain, ledger)
+    return _indexer
+
+
+def sync_ledger() -> Optional[Indexer]:
+    idx = get_indexer()
+    if idx is not None:
+        with _indexer_lock:
+            try:
+                idx.sync()
+            except Exception:
+                pass
+    return idx
+
+
+def _sync_loop():
+    while True:
+        sync_ledger()
+        time.sleep(3)
+
+
+@app.on_event("startup")
+def _start_indexer():
+    if os.environ.get("TRUSTTIER_INDEXER", "1") != "0":
+        threading.Thread(target=_sync_loop, daemon=True).start()
+
+
+def _session_address(request: Request) -> Optional[str]:
+    return ledger.session_address(request.headers.get("x-session"))
+
+
+# POST paths that are actions, and what to call them in the log.
+_ACTIONS = [
+    (re.compile(r"^/positions/open$"), "open_position"),
+    (re.compile(r"^/positions/evaluate$"), "route"),
+    (re.compile(r"^/positions/(\d+)/challenge$"), "challenge"),
+    (re.compile(r"^/positions/(\d+)/challenge-proof$"), "prove_snapshot"),
+    (re.compile(r"^/positions/(\d+)/proof$"), "prove_current"),
+    (re.compile(r"^/positions/(\d+)/reclaim$"), "settle_bond"),
+    (re.compile(r"^/positions/(\d+)/liquidate$"), "liquidate"),
+    (re.compile(r"^/markets/(\d+)/price$"), "set_price"),
+    (re.compile(r"^/simulate$"), "route_stream"),
+    (re.compile(r"^/chain/advance$"), "advance_time"),
+    (re.compile(r"^/faucet$"), "faucet"),
+]
+
+
+@app.middleware("http")
+async def _log_actions(request: Request, call_next):
+    """Every action requested through the API goes into the ledger's action
+    log with the signed-in address (X-Session header), outcome and gas."""
+    response = await call_next(request)
+    if request.method != "POST":
+        return response
+    for pattern, name in _ACTIONS:
+        m = pattern.match(request.url.path)
+        if not m:
+            continue
+        body = b"".join([chunk async for chunk in response.body_iterator])
+        try:
+            import json as _json
+            data = _json.loads(body or b"{}")
+        except ValueError:
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+        pid = m.group(1) if m.groups() and name != "set_price" else data.get("position_id")
+        detail = data.get("detail") or data.get("tier_reason") or data.get("outcome")
+        if name == "set_price":
+            detail = f"market {m.group(1)}"
+        idx = _indexer
+        ledger.log_action(name, deployment=idx.deployment if idx else None, address=_session_address(request),
+                          position_id=pid, ok=response.status_code < 400, detail=str(detail) if detail else None,
+                          tx_hash=data.get("tx_hash"), gas_used=data.get("gas_used"))
+        return Response(content=body, status_code=response.status_code, headers=dict(response.headers),
+                        media_type=response.media_type)
+    return response
 
 # Initialized lazily so `uvicorn main:app` fails fast with a clear error if
 # contracts aren't deployed / the model isn't trained yet, rather than at
@@ -362,7 +480,6 @@ def deployment():
 
 _NONCE_TTL_SECONDS = 300
 _pending_nonces: dict[str, tuple[str, float]] = {}  # address -> (nonce, issued_at)
-_sessions: dict[str, str] = {}  # session_token -> address
 
 
 class NonceRequest(BaseModel):
@@ -415,8 +532,24 @@ def auth_verify(request: VerifyRequest):
 
     del _pending_nonces[address]  # one-time use
     session_token = secrets.token_hex(24)
-    _sessions[session_token] = address
-    return {"session_token": session_token, "address": address}
+    user = ledger.record_sign_in(address, session_token)
+    return {"session_token": session_token, "address": address, "user": user}
+
+
+@app.get("/auth/me")
+def auth_me(request: Request):
+    address = _session_address(request)
+    if address is None:
+        raise HTTPException(status_code=401, detail="Not signed in.")
+    return {"address": address, "user": ledger.user(address)}
+
+
+@app.post("/auth/logout")
+def auth_logout(request: Request):
+    token = request.headers.get("x-session")
+    if token:
+        ledger.end_session(token)
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
@@ -679,3 +812,174 @@ def advance(request: AdvanceRequest):
     except RuntimeError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"block_time": t}
+
+
+# ---------------------------------------------------------------------------
+# Wallets generated in the browser: a JSON-RPC proxy, a local faucet, and
+# proofs on current features for user-submitted Tier-2 decisions.
+# ---------------------------------------------------------------------------
+
+# Read methods plus eth_sendRawTransaction (already signed in the browser).
+# Never eth_sendTransaction or eth_sign*: a Hardhat node holds unlocked
+# accounts, and they must not be reachable through this proxy. Never evm_* /
+# hardhat_* either.
+RPC_ALLOWED = {
+    "eth_chainId", "net_version", "eth_blockNumber", "eth_getBalance", "eth_getTransactionCount",
+    "eth_getCode", "eth_call", "eth_estimateGas", "eth_gasPrice", "eth_maxPriorityFeePerGas",
+    "eth_feeHistory", "eth_getBlockByNumber", "eth_getBlockByHash", "eth_getTransactionByHash",
+    "eth_getTransactionReceipt", "eth_getLogs", "eth_sendRawTransaction", "eth_getStorageAt",
+}
+RPC_URL = os.environ.get("TRUSTTIER_RPC_URL", "http://127.0.0.1:8545")
+
+
+def _rpc_allowed(payload) -> bool:
+    calls = payload if isinstance(payload, list) else [payload]
+    return bool(calls) and all(isinstance(c, dict) and c.get("method") in RPC_ALLOWED for c in calls)
+
+
+@app.post("/rpc")
+async def rpc(request: Request):
+    payload = await request.json()
+    if not _rpc_allowed(payload):
+        raise HTTPException(status_code=403, detail="JSON-RPC method not allowed through this proxy.")
+    r = http.post(RPC_URL, json=payload, timeout=30)
+    return Response(content=r.content, status_code=r.status_code, media_type="application/json")
+
+
+class FaucetRequest(BaseModel):
+    address: str
+
+
+FAUCET_WEI = 10 * 10**18
+
+
+@app.post("/faucet")
+def faucet(request: FaucetRequest):
+    """Local chains only: send 10 test ETH from the router's account."""
+    from router.chain_client import LOCAL_CHAIN_IDS
+    from web3 import Web3
+    chain = get_processor().chain
+    if chain.chain_id not in LOCAL_CHAIN_IDS:
+        raise HTTPException(status_code=400, detail="The faucet only runs on a local chain; use a Sepolia faucet.")
+    try:
+        to = Web3.to_checksum_address(request.address)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Not an Ethereum address.")
+    w3 = chain.w3
+    tx = {"from": chain.account.address, "to": to, "value": FAUCET_WEI,
+          "nonce": w3.eth.get_transaction_count(chain.account.address), "gas": 21_000,
+          "maxFeePerGas": w3.eth.gas_price * 2, "maxPriorityFeePerGas": w3.eth.max_priority_fee,
+          "chainId": chain.chain_id}
+    signed = w3.eth.account.sign_transaction(tx, private_key=chain.account.key)
+    raw = getattr(signed, "raw_transaction", None) or signed.rawTransaction
+    receipt = w3.eth.wait_for_transaction_receipt(w3.eth.send_raw_transaction(raw))
+    return {"address": to, "amount_wei": str(FAUCET_WEI), "balance_wei": str(w3.eth.get_balance(to)),
+            "tx_hash": "0x" + receipt.transactionHash.hex().removeprefix("0x"), "gas_used": receipt.gasUsed}
+
+
+@app.post("/positions/{position_id}/proof")
+def current_proof(position_id: int):
+    """A Tier-2 proof on the position's CURRENT on-chain features plus the
+    24-hour round, for a user to submit decideZkProof from their own wallet.
+    The proof is public data; whoever submits it pays and is recorded."""
+    processor = get_processor()
+    chain = processor.chain
+    try:
+        chain.refresh_mock_feeds()
+        view = chain.current_features(position_id)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=_revert_reason(e))
+    proof, public_inputs, label, kind, seconds = processor.tier2_proof(view["q"])
+    return {"position_id": position_id, "past_round": view["past_round"], "model_hash": chain.tier2_model_hash(),
+            "proof": "0x" + bytes(proof).hex(), "public_inputs": [str(x) for x in public_inputs],
+            "features_q": view["q"], "label": label, "high_risk": label == 1, "proof_kind": kind,
+            "proving_seconds": round(seconds, 2)}
+
+
+# ---------------------------------------------------------------------------
+# The ledger database, queried.
+# ---------------------------------------------------------------------------
+
+def _deployment_or_404(all_deployments: bool = False) -> Optional[str]:
+    idx = sync_ledger()
+    if all_deployments:
+        return None
+    if idx is None:
+        raise HTTPException(status_code=503, detail="Router not connected to a chain yet.")
+    return idx.deployment
+
+
+@app.get("/db/summary")
+def db_summary():
+    return ledger.summary(_deployment_or_404())
+
+
+@app.get("/db/deployments")
+def db_deployments():
+    idx = sync_ledger()
+    return {"current": idx.deployment if idx else None, "deployments": ledger.deployments()}
+
+
+@app.get("/db/events")
+def db_events(type: Optional[str] = None, position_id: Optional[str] = None, actor: Optional[str] = None,
+              limit: int = 100, offset: int = 0, all_deployments: bool = False):
+    dep = _deployment_or_404(all_deployments)
+    rows = ledger.events(dep, type_=type, position_id=position_id, actor=actor, limit=min(limit, 1000), offset=offset)
+    total = ledger.count_events(dep, type_=type, position_id=position_id, actor=actor)
+    return {"deployment": dep, "total": total, "events": rows}
+
+
+@app.get("/db/events.csv")
+def db_events_csv(type: Optional[str] = None, position_id: Optional[str] = None, actor: Optional[str] = None,
+                  all_deployments: bool = False):
+    dep = _deployment_or_404(all_deployments)
+    rows = ledger.events(dep, type_=type, position_id=position_id, actor=actor, limit=10**6)
+    buf = io.StringIO()
+    cols = ["deployment", "block_number", "block_time", "tx_hash", "log_index", "contract", "type",
+            "position_id", "actor", "tier", "amount_wei", "data"]
+    w = csv.DictWriter(buf, fieldnames=cols, extrasaction="ignore")
+    w.writeheader()
+    for r in rows:
+        w.writerow({**r, "data": __import__("json").dumps(r["data"])})
+    return Response(content=buf.getvalue(), media_type="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=trusttier-events.csv"})
+
+
+@app.get("/db/leaderboard")
+def db_leaderboard():
+    return ledger.leaderboard(_deployment_or_404())
+
+
+@app.get("/db/accounts/{address}")
+def db_account(address: str):
+    dep = _deployment_or_404()
+    return {"address": address.lower(), "user": ledger.user(address),
+            "events": ledger.events(dep, actor=address, limit=200),
+            "actions": ledger.actions(address, limit=200)}
+
+
+@app.get("/db/actions")
+def db_actions(limit: int = 100):
+    return {"actions": ledger.actions(limit=min(limit, 1000))}
+
+
+class ClientAction(BaseModel):
+    action: str = Field(..., max_length=64)
+    position_id: Optional[int] = None
+    tx_hash: Optional[str] = Field(None, max_length=80)
+    gas_used: Optional[int] = None
+    detail: Optional[str] = Field(None, max_length=300)
+
+
+@app.post("/actions")
+def record_client_action(body: ClientAction, request: Request):
+    """Record an action the user signed in the browser (the transaction itself
+    is indexed from the chain; this links it to the signed-in account)."""
+    address = _session_address(request)
+    if address is None:
+        raise HTTPException(status_code=401, detail="Sign in to record actions.")
+    idx = _indexer
+    ledger.log_action(f"wallet:{body.action}", deployment=idx.deployment if idx else None, address=address,
+                      position_id=body.position_id, ok=True, detail=body.detail, tx_hash=body.tx_hash,
+                      gas_used=body.gas_used)
+    return {"ok": True}

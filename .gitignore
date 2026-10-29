@@ -30,3 +30,6 @@ circuits/risk_model.onnx
 circuits/model_metadata.json
 
 circuits/risk_model_bound.onnx
+
+# Ledger database (rebuildable from the chain)
+off-chain/data/
