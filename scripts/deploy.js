@@ -44,6 +44,9 @@ const path = require("path");
 
 const METADATA_PATH = path.join(__dirname, "..", "off-chain", "risk_model", "artifacts", "model_metadata.json");
 
+// Constructor arguments of every deployed contract, for Etherscan verification.
+const constructorArgs = {};
+
 function writeDeploymentManifest(networkName, contracts, extra) {
   const outDir = path.join(__dirname, "..", "deployments");
   fs.mkdirSync(outDir, { recursive: true });
@@ -51,7 +54,10 @@ function writeDeploymentManifest(networkName, contracts, extra) {
   const manifest = { network: networkName, ...extra, contracts: {} };
   for (const [name, { address, artifactName }] of Object.entries(contracts)) {
     const artifact = hre.artifacts.readArtifactSync(artifactName);
-    manifest.contracts[name] = { address, abi: artifact.abi };
+    manifest.contracts[name] = {
+      address, abi: artifact.abi, artifactName,
+      sourceName: artifact.sourceName, constructorArgs: constructorArgs[address] ?? [],
+    };
   }
   fs.writeFileSync(outPath, JSON.stringify(manifest, null, 2));
   console.log(`\nWrote deployment manifest to ${outPath}`);
@@ -60,7 +66,9 @@ function writeDeploymentManifest(networkName, contracts, extra) {
 async function deployed(name, ...args) {
   const c = await (await hre.ethers.getContractFactory(name)).deploy(...args);
   await c.waitForDeployment();
-  console.log(`${name} deployed to:`, await c.getAddress());
+  const address = await c.getAddress();
+  constructorArgs[address] = args.map((a) => (typeof a === "bigint" ? a.toString() : a));
+  console.log(`${name} deployed to:`, address);
   return c;
 }
 
@@ -95,6 +103,7 @@ async function main() {
 
   // 1. Position source and feeds
   const H = 3600;
+  const startBlock = await hre.ethers.provider.getBlockNumber();
   const now = (await hre.ethers.provider.getBlock("latest")).timestamp;
   const MARKETS = [
     // name, price now, price 24 h ago (8 dp), realized volatility %, liquidation threshold (bps)
@@ -188,7 +197,10 @@ async function main() {
   if (liquidatorContract) {
     contracts.TrustTierLiquidator = { address: await liquidatorContract.getAddress(), artifactName: "TrustTierLiquidator" };
   }
+  const { chainId } = await hre.ethers.provider.getNetwork();
   const extra = {
+    chainId: Number(chainId), deployBlock: startBlock, deployedAt: new Date().toISOString(),
+    deployer: deployer.address,
     verifierMode, modelHash, positionSource: sourceArtifact, markets,
     maxPriceAge, maxVolatilityAge: maxVolAge,
     aggregatorAbi: hre.artifacts.readArtifactSync("MockV3Aggregator").abi,
@@ -218,21 +230,7 @@ async function main() {
   writeDeploymentManifest(networkName, contracts, extra);
 
   if (!localNetworks.has(networkName)) {
-    const a = Object.fromEntries(Object.entries(contracts).map(([k, v]) => [k, v.address]));
-    console.log("\nVerify the sources on Etherscan:");
-    console.log(`  npx hardhat verify --network ${networkName} ${a.ModelRegistry}`);
-    console.log(`  npx hardhat verify --network ${networkName} ${a.TierAuditLog}`);
-    console.log(`  npx hardhat verify --network ${networkName} ${a.Tier2Verifier}`);
-    console.log(`  npx hardhat verify --network ${networkName} ${a.LiquidationEngine} ${a.ModelRegistry} ${a.TierAuditLog} ${a.Tier2Verifier} ${modelHash} ${a.PositionSource} ${maxPriceAge} ${maxVolAge}`);
-    if (a.TrustTierLiquidator) {
-      console.log(`  npx hardhat verify --network ${networkName} ${a.TrustTierLiquidator} ${a.LiquidationEngine} ${a.PositionSource}`);
-      console.log(`  npx hardhat verify --network ${networkName} ${a.MockLendingPool}`);
-    }
-    if (extra.governance) {
-      const g = extra.governance;
-      console.log(`  npx hardhat verify --network ${networkName} ${a.TrustTierMultisig} '[${g.owners.map((o) => `"${o}"`).join(",")}]' ${g.threshold}`);
-      console.log(`  (TrustTierTimelock takes array arguments: use --constructor-args with a JS file, see README)`);
-    }
+    console.log(`\nVerify every contract on Etherscan:\n  npx hardhat run scripts/verify.js --network ${networkName}`);
   }
 }
 

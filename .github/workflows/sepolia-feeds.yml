@@ -1,0 +1,34 @@
+# Keeps the Sepolia demo usable: re-posts the latest answer of each MOCK feed
+# (volatility, and prices that are not real Chainlink feeds) before it goes
+# stale. Runs only once deployments/sepolia.json exists. ~0.0003 Sepolia ETH a run.
+name: Refresh Sepolia demo feeds
+
+on:
+  schedule:
+    - cron: "17 */12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip until deployed
+        id: check
+        run: |
+          if [ -f deployments/sepolia.json ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "No Sepolia deployment yet."; fi
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.go == '1'
+        with:
+          node-version: 20
+          cache: npm
+      - if: steps.check.outputs.go == '1'
+        run: npm ci
+      - if: steps.check.outputs.go == '1'
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: npx hardhat run scripts/refresh_feeds.js --network sepolia

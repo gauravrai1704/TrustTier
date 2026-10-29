@@ -1,0 +1,94 @@
+# Deploys TrustTier to the Sepolia testnet, verifies every contract on
+# Etherscan, commits the deployment manifest (deployments/sepolia.json) and
+# rebuilds the DApp so the hosted site talks to the new contracts.
+#
+# One-time setup (Settings -> Secrets and variables -> Actions -> New secret):
+#   SEPOLIA_RPC_URL    an RPC endpoint (Infura, Alchemy, ...)
+#   PRIVATE_KEY        a TESTNET-ONLY key holding ~0.2 Sepolia ETH
+#   ETHERSCAN_API_KEY  for source verification (optional)
+# Then: Actions -> "Deploy to Sepolia" -> Run workflow.
+name: Deploy to Sepolia
+
+on:
+  workflow_dispatch:
+    inputs:
+      verifier:
+        description: "Tier-2 verifier: real (EZKL Halo2) or mock"
+        default: real
+        type: choice
+        options: [real, mock]
+      real_eth_feed:
+        description: "Use Chainlink's real ETH/USD feed on Sepolia for market 0"
+        default: true
+        type: boolean
+      governance_owners:
+        description: "Optional: comma-separated multisig owners (hands every contract to multisig + timelock)"
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: deploy-sepolia
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Check secrets
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: |
+          if [ -z "$SEPOLIA_RPC_URL" ] || [ -z "$PRIVATE_KEY" ]; then
+            echo "::error::Add the SEPOLIA_RPC_URL and PRIVATE_KEY repository secrets first (see the top of this workflow file)."
+            exit 1
+          fi
+      - name: Deploy
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          VERIFIER_MODE: ${{ inputs.verifier }}
+          PRICE_FEED: ${{ inputs.real_eth_feed && '0x694AA1769357215DE4FAC081bf1f309aDC325306' || '' }}
+          GOVERNANCE_OWNERS: ${{ inputs.governance_owners }}
+          CLAIM_REWARD_ETH: "0.0005"
+          REWARD_FUND_ETH: "0.01"
+        run: npx hardhat run scripts/deploy.js --network sepolia
+      - name: Verify on Etherscan
+        if: ${{ env.ETHERSCAN_API_KEY != '' }}
+        continue-on-error: true
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: |
+          sleep 30   # let Etherscan index the new bytecode
+          npx hardhat run scripts/verify.js --network sepolia
+      - name: Commit the deployment manifest
+        run: |
+          git config user.name "Gaurav Rai"
+          git config user.email "gauravrai2114@gmail.com"
+          git add -f deployments/sepolia.json
+          git commit -m "Deploy TrustTier to Sepolia"
+          git push
+      - name: Rebuild the DApp
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
+      - name: Summary
+        run: |
+          node -e '
+            const m = require("./deployments/sepolia.json");
+            const rows = Object.entries(m.contracts).map(([k, c]) => `| ${k} | [${c.address}](https://sepolia.etherscan.io/address/${c.address}) |`);
+            console.log(["## TrustTier on Sepolia", "", "| Contract | Address |", "|---|---|", ...rows].join("\n"));
+          ' >> "$GITHUB_STEP_SUMMARY"

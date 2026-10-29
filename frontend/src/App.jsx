@@ -24,8 +24,9 @@ const PAGES = {
 };
 
 function ModePill() {
-  const { status } = useBackend();
+  const { status, backend } = useBackend();
   if (status === "live") return <span className="pill pill-good"><span className="live-dot" />On-chain</span>;
+  if (status === "chain") return <a href="#/protocol" className="pill pill-good" style={{ textDecoration: "none" }}><span className="live-dot" />{backend.network === "sepolia" ? "Sepolia" : backend.network} · direct</a>;
   if (status === "sim") return <a href="#/protocol" className="pill pill-accent" style={{ textDecoration: "none" }}><Icon name="cpu" />Simulation</a>;
   if (status === "unreachable") return <a href="#/protocol" className="pill pill-crit" style={{ textDecoration: "none" }}><Icon name="alert" />Router unreachable</a>;
   return <span className="pill"><Icon name="refresh" className="spin" />Connecting</span>;
@@ -42,7 +43,7 @@ function TimeTravel() {
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
-  const local = backend?.mode === "sim" || [31337, 1337].includes(data?.protocol?.chain_id);
+  const local = backend?.mode === "sim" || (backend?.mode === "live" && [31337, 1337].includes(data?.protocol?.chain_id));
   if (!local) return null;
   const t = data?.protocol?.block_time;
   const go = async (s, label) => {
@@ -74,7 +75,7 @@ function Shell() {
   const route = useRoute();
   const theme = useTheme();
   const page = PAGES[route.page] || PAGES.overview;
-  const { status } = useBackend();
+  const { status, backend } = useBackend();
   const P = page.C;
   return (
     <div className="shell">
@@ -95,6 +96,8 @@ function Shell() {
           <div className="mode-card">
             {status === "live" ? (
               <><strong>On-chain mode.</strong> Every action is a transaction on the connected chain.</>
+            ) : status === "chain" ? (
+              <><strong>Direct mode.</strong> Reading TrustTier on {backend?.network} from your browser; your account signs every transaction.</>
             ) : (
               <><strong>Simulation mode.</strong> The contract's rules and the real model, in your browser. <a href="#/protocol">Go on-chain</a>.</>
             )}

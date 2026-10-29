@@ -124,7 +124,7 @@ model weights stay private. See `docs/SECURITY.md` findings 15, 20-22.
   deployment is rehearsed on a local node. The broadcast needs your RPC URL
   and a funded testnet key (see "Deploying to Sepolia").
 
-Tests: **126 contract tests** (Hardhat) and **82 Python tests** pass (CI runs both on every push).
+Tests: **126 contract tests** (Hardhat) and **87 Python tests** pass (CI runs both on every push).
 
 ## Results
 
@@ -193,12 +193,13 @@ off-chain/
   evaluation/                cost model (reads measured gas), real-data replay,
                              health-factor baseline, bond economics,
                              outcome labels, concurrency studies, reports
-  tests/                     82 tests
+  ledger/                    SQLite database: event indexer, action log, users, sessions
+  tests/                     87 tests
 frontend/                    React DApp (light/dark): overview + guided demo,
                              positions, watchtower, economics, activity,
                              protocol; live mode or in-browser simulation
 .github/workflows/           tests on every push; DApp to GitHub Pages
-docs/SECURITY.md             29 findings, their status, and the trust assumptions
+docs/SECURITY.md             31 findings, their status, and the trust assumptions
 docs/SNARK_VS_STARK.md       why Tier 2 uses a SNARK
 ```
 
@@ -219,7 +220,7 @@ cd circuits && python3 make_proving_key.py && cd ..
 
 # 2. Tests
 npx hardhat test                                   # 126 passing
-cd off-chain && python -m pytest tests -q && cd .. # 82 passing
+cd off-chain && python -m pytest tests -q && cd .. # 87 passing
 #    (offline machines: HARDHAT_LOCAL_SOLC=1 compiles with the solc npm package)
 
 # 3. Local chain + contracts (real verifier; use VERIFIER_MODE=mock for instant fake proofs)
@@ -237,6 +238,55 @@ python -m sentinel.watch                           # terminal 3 (in off-chain/)
 cd frontend && npm install && npm run dev          # terminal 4, open http://127.0.0.1:5173
 ```
 
+## Accounts, the database and Sepolia
+
+**Sign in with a key generated in your browser.** "Sign in → Create account"
+generates an Ethereum key with a 12-word recovery phrase, encrypts it with your
+password into a standard keystore (scrypt, the format MetaMask and geth import)
+and keeps it in this browser only. You can also import a key or phrase, or use
+MetaMask. The account signs in with Ethereum (SIWE) and then signs its own
+transactions: claims (with its own bond), commit-reveal challenges, Tier-2
+decisions with a proof from the router, liquidations and withdrawals. On a
+local chain, "Get 10 test ETH" funds it. The router never sees the key: its
+`/rpc` proxy forwards only read calls and already-signed transactions, never
+`eth_sendTransaction` (the node's unlocked accounts stay unreachable).
+
+**The ledger database** (`off-chain/ledger/`, SQLite at `off-chain/data/trusttier.db`):
+
+| Table | What it holds |
+|---|---|
+| `events` | every event the TrustTier contracts emitted, decoded, with the transaction's sender and block time, indexed continuously from the chain |
+| `actions` | every action requested through the router's API, with the signed-in address, outcome and gas, plus wallet-signed actions the app reports |
+| `users`, `sessions` | SIWE sign-ins |
+| `sync_state` | indexing progress; a restarted local chain opens a new epoch, so earlier runs are kept separately |
+
+The chain stays the source of truth: `python -m ledger.indexer` rebuilds the
+event table from it at any time. The **Ledger** page shows totals, leaderboards
+(watchers, claimants, liquidators), a filterable event table with CSV export,
+the action log and a history page per account. API: `/db/summary`,
+`/db/events`, `/db/events.csv`, `/db/leaderboard`, `/db/accounts/{address}`,
+`/db/actions`, `/db/deployments`.
+
+**Deploying to Ethereum (Sepolia).** Once, add three repository secrets
+(Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `SEPOLIA_RPC_URL` | an RPC endpoint (Infura, Alchemy, ...) |
+| `PRIVATE_KEY` | a **testnet-only** key holding ~0.2 Sepolia ETH (a key generated in the app works: download its keystore, or import its phrase into MetaMask to export the key) |
+| `ETHERSCAN_API_KEY` | optional, for source verification |
+
+Then Actions → **Deploy to Sepolia** → Run workflow. It deploys the contracts
+(real EZKL verifier, Chainlink's real ETH/USD feed for market 0, mock feeds for
+the rest), verifies them on Etherscan (`scripts/verify.js`), commits
+`deployments/sepolia.json` and rebuilds the site. From then on the hosted app
+talks to Sepolia **directly from the browser** (no server): it reads the
+contracts over a public RPC, shows Etherscan links for every transaction, and
+your signed-in account makes Tier 0/1 claims, settles bonds and executes
+approvals. Tier-2 proofs need the router's prover: run the router against
+Sepolia (`TRUSTTIER_NETWORK=sepolia`, see below) and connect it. A scheduled
+workflow (`sepolia-feeds.yml`) keeps the demo's mock feeds fresh.
+
 ## The DApp
 
 `frontend/` is a React app with light and dark themes (follows the system,
@@ -248,14 +298,17 @@ one-click scan; approvals waiting for execution), **Economics** (every chart
 reads the evaluation results), **Activity** (contract events) and
 **Protocol** (deployment, trust assumptions, connection).
 
-It runs in two modes, shown in the top bar:
+It runs in three modes, shown in the top bar:
 
 - **On-chain** - when a router answers (the dev server proxies `/api`; a built
   site tries `http://127.0.0.1:8000`, configurable on the Protocol page).
   Actions are transactions; with a wallet connected, challenges, bond
   settlements and liquidations are signed by your wallet. On a local chain the
   clock button fast-forwards time to close windows or expire approvals.
-- **Simulation** - otherwise (for example on GitHub Pages): the contract's
+- **Direct** - when a Sepolia deployment is bundled (after the deploy
+  workflow): reads the contracts straight from a public RPC; your account
+  signs every transaction. No server.
+- **Simulation** - otherwise: the contract's
   rules, the real model (weights exported by `off-chain/scripts/export_model_js.py`
   and checked against ONNX) and the measured gas run in the browser. Nothing is
   on-chain and proofs are not generated; the app says so.

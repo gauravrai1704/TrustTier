@@ -111,7 +111,8 @@ export function useAction() {
         if (ok) toast({ kind: "good", title: ok, text: typeof okText === "function" ? okText(r) : okText });
         return r;
       } catch (e) {
-        toast({ kind: "bad", title: "Transaction reverted", text: cleanError(e.message), ms: 8000 });
+        const reverted = /revert|custom error|CALL_EXCEPTION/i.test(e.message || "");
+        toast({ kind: "bad", title: reverted ? "Transaction reverted" : "Not completed", text: cleanError(e.shortMessage || e.message), ms: 8000 });
         return null;
       } finally {
         setBusy(null);

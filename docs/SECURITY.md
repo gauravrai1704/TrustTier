@@ -42,6 +42,8 @@ with the reasoning spelled out so it isn't silently forgotten.
 | 27 | A Chainlink phase boundary made the 24-hour round unusable | Denial of Service | Low | **Fixed** (heartbeat-bounded fallback) |
 | 28 | Stale prices on an L2 after a sequencer outage | Tampering | Medium | **Fixed** (optional uptime feed, 1 h grace) |
 | 29 | Tier 0/1 safe-claims emitted `LiquidationApproved` | Repudiation | Low | **Fixed** (`SafeClaimRecorded`) |
+| 30 | A JSON-RPC proxy would expose the node's unlocked accounts | Elevation of Privilege | Critical | **Fixed** (method allow-list) |
+| 31 | Keys generated in the browser live in browser storage | Information Disclosure | Medium | Mitigated (encrypted keystore; testnet only) |
 
 ---
 
@@ -505,6 +507,26 @@ emitted the same event as a Tier-2 approval, so indexers and the audit trail
 read safe-claims as liquidations. Cheap claims now emit
 `SafeClaimRecorded(position, tier, model, claimant, bond)`;
 `LiquidationApproved` is emitted only by Tier 2.
+
+## 30. A JSON-RPC proxy would expose the node's unlocked accounts (Fixed — Critical)
+
+The router's `/rpc` lets accounts generated in the browser reach the chain.
+A Hardhat node holds unlocked, funded accounts, so forwarding
+`eth_sendTransaction`, `eth_sign`, `personal_*`, `evm_*` or `hardhat_*` would
+let any visitor spend them or rewrite the chain. The proxy forwards only an
+allow-list of read methods plus `eth_sendRawTransaction` (already signed in
+the browser); batches are refused if any call is not on it. Tested in
+`tests/test_ledger.py`.
+
+## 31. Keys generated in the browser live in browser storage (Mitigated — Medium)
+
+The key never leaves the browser and is stored only as a password-encrypted
+keystore (scrypt + AES-128-CTR, the standard Web3 Secret Storage format), and
+the decrypted key is held in memory only while signed in. A script injected
+into the page (XSS) while the account is unlocked could still use it. The app
+renders no HTML from user data and loads scripts only from its own bundle;
+the generated accounts are intended for testnets. Users can export the
+keystore and should keep the recovery phrase offline.
 
 ---
 

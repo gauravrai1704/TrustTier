@@ -1,10 +1,14 @@
 // Chooses the backend the app talks to and shares it through context:
-//   live - the off-chain router + a real chain (local Hardhat node or Sepolia)
-//   sim  - the in-browser simulation (src/sim/engine.js), used automatically
-//          when no router answers, e.g. on the hosted GitHub Pages site.
+//   live  - the off-chain router + a chain (local Hardhat node or Sepolia):
+//           everything, including Tier-2 proofs and the SQLite ledger;
+//   chain - no server: the browser reads a deployed TrustTier (Sepolia) over
+//           a public RPC and the signed-in account sends transactions;
+//   sim   - the in-browser simulation (src/sim/engine.js).
+// "auto" tries them in that order.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { LiveBackend } from "./live";
 import { SimEngine } from "../sim/engine";
+import { ChainBackend, DEFAULT_RPC, MANIFESTS } from "./chain";
 
 const KEY = "trusttier.backend";
 const DEFAULT_URL = import.meta.env.VITE_ROUTER_URL || (import.meta.env.DEV ? "/api" : "http://127.0.0.1:8000");
@@ -28,7 +32,7 @@ function writePref(p) {
 const Ctx = createContext(null);
 
 export function BackendProvider({ children }) {
-  const [pref, setPref] = useState(() => ({ mode: "auto", url: DEFAULT_URL, ...readPref() }));
+  const [pref, setPref] = useState(() => ({ mode: "auto", url: DEFAULT_URL, network: MANIFESTS.sepolia ? "sepolia" : Object.keys(MANIFESTS)[0] || null, ...readPref() }));
   const [backend, setBackend] = useState(null);
   const [status, setStatus] = useState("connecting");
   const [version, setVersion] = useState(0); // bump to make views refetch
@@ -37,7 +41,7 @@ export function BackendProvider({ children }) {
     let cancelled = false;
     async function pick() {
       setStatus("connecting");
-      if (pref.mode !== "sim") {
+      if (pref.mode === "auto" || pref.mode === "live") {
         const live = new LiveBackend(pref.url);
         try {
           await live.health();
@@ -54,6 +58,24 @@ export function BackendProvider({ children }) {
           }
         }
       }
+      const manifest = MANIFESTS[pref.network];
+      if ((pref.mode === "auto" || pref.mode === "chain") && manifest && (pref.mode === "chain" || pref.network === "sepolia")) {
+        const chain = new ChainBackend(manifest, pref.rpc || DEFAULT_RPC[pref.network] || DEFAULT_RPC.sepolia);
+        try {
+          await chain.health();
+          if (!cancelled) {
+            setBackend(chain);
+            setStatus("chain");
+          }
+          return;
+        } catch {
+          if (pref.mode === "chain" && !cancelled) {
+            setBackend(null);
+            setStatus("unreachable");
+            return;
+          }
+        }
+      }
       if (!cancelled) {
         setBackend(new SimEngine());
         setStatus("sim");
@@ -63,7 +85,7 @@ export function BackendProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [pref.mode, pref.url]);
+  }, [pref.mode, pref.url, pref.network, pref.rpc]);
 
   const update = useCallback((next) => {
     setPref((p) => {

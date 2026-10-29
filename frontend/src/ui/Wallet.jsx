@@ -31,7 +31,7 @@ export function WalletProvider({ children }) {
     setDeployment(null);
     setState(null);
     setSession(null);
-    if (backend?.mode === "live") backend.deployment().then(setDeployment).catch(() => {});
+    if (backend?.mode === "live" || backend?.mode === "chain") backend.deployment().then(setDeployment).catch(() => {});
   }, [backend]);
 
   useEffect(() => onWalletChange(() => {
@@ -44,7 +44,8 @@ export function WalletProvider({ children }) {
     if (!backend) return;
     if (backend.mode === "live") backend.session = session?.session_token || null;
     else backend.actor = session?.address || null;
-  }, [backend, session]);
+    if (backend.mode === "chain") backend.signer = session ? state?.signer || null : null;
+  }, [backend, session, state]);
 
   const signIn = useCallback(async (acct) => {
     const { message } = await backend.authNonce(acct.address);
@@ -60,7 +61,7 @@ export function WalletProvider({ children }) {
   const signInWithWallet = useCallback(async (wallet, label) => {
     let signer = wallet;
     let chainId = null;
-    if (backend.mode === "live") {
+    if (backend.mode === "live" || backend.mode === "chain") {
       // No request cache: back-to-back transactions (commit, then reveal) must
       // each read a fresh nonce.
       const provider = new JsonRpcProvider(backend.rpcUrl, undefined, { cacheTimeout: -1 });
@@ -73,10 +74,18 @@ export function WalletProvider({ children }) {
   }, [backend, signIn, toast]);
 
   const signInWithBrowserWallet = useCallback(async () => {
+    if (backend.mode === "chain" && window.ethereum) {
+      const want = `0x${Number(backend.manifest.chainId).toString(16)}`;
+      try {
+        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: want }] });
+      } catch {
+        throw new Error(`Switch your browser wallet to ${backend.network} (chain ${backend.manifest.chainId}) and try again.`);
+      }
+    }
     const w = await connectWallet();
     await signIn({ kind: "injected", address: w.address, signer: w.signer, chainId: w.chainId, label: "Browser wallet" });
     toast({ kind: "good", title: "Signed in with your browser wallet" });
-  }, [signIn, toast]);
+  }, [backend, signIn, toast]);
 
   const signOut = useCallback(async () => {
     try {
@@ -306,7 +315,7 @@ export function WalletButton() {
   const loadBalances = useCallback(async () => {
     if (!addr || !backend) return;
     try {
-      if (backend.mode === "live") {
+      if (backend.mode === "live" || backend.mode === "chain") {
         const provider = w.state.signer.provider;
         setBalance((await provider.getBalance(addr)).toString());
         if (w.deployment) setPending((await engineContract(provider, w.deployment).pendingWithdrawals(addr)).toString());
@@ -361,8 +370,8 @@ export function WalletButton() {
     }
   }
 
-  const live = backend?.mode === "live";
-  const local = live && [31337, 1337].includes(w.state.chainId);
+  const live = backend?.mode === "live" || backend?.mode === "chain";
+  const local = backend?.mode === "live" && [31337, 1337].includes(w.state.chainId);
   const wrongChain = w.deployment?.chainId && w.state.chainId && w.state.chainId !== w.deployment.chainId;
   const explorer = explorerAddress(w.state.chainId, addr);
   return (
@@ -395,7 +404,7 @@ export function WalletButton() {
             <button className="btn btn-sm" onClick={() => { go(`ledger/account/${addr}`); setOpen(false); }}><Icon name="doc" />My history</button>
             {explorer && <a className="btn btn-sm" href={explorer} target="_blank" rel="noreferrer"><Icon name="external" />Etherscan</a>}
           </div>
-          {live && !local && <div className="small muted">Fund this address from a Sepolia faucet to send transactions.</div>}
+          {live && !local && <div className="small muted">Fund this address from a Sepolia faucet (Google Cloud, Alchemy or Infura) to send transactions.</div>}
           <div className="divider" />
           <div className="row-wrap">
             {w.state.kind === "local" && <button className="btn btn-sm btn-ghost" onClick={() => downloadKeystore(addr)}><Icon name="doc" />Keystore file</button>}

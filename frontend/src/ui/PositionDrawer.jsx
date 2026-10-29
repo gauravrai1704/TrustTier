@@ -205,6 +205,12 @@ export default function PositionDrawer({ id, onClose }) {
               </Callout>
             )}
 
+            {backend?.mode === "chain" && (p.allowed_tier === "ZK_PROOF" || p.state === "CLAIM_OPEN") && (
+              <Callout icon="cpu">
+                {p.allowed_tier === "ZK_PROOF" ? "This position needs a Tier-2 proof." : "Challenging needs a Tier-2 proof."} Proofs come from the
+                EZKL prover in the TrustTier router; in direct mode you can make Tier 0/1 claims, settle bonds and execute approvals.
+              </Callout>
+            )}
             {["UNDECIDED", "SETTLED", "AWAITING_SETTLEMENT", "SLASHED", "APPROVAL_EXPIRED"].includes(p.state) && (
               <div className="stack" style={{ gap: 10 }}>
                 <label className="check">
