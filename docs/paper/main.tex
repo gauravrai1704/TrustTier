@@ -6,6 +6,12 @@
 \usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc,shapes.geometric}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.17}
+% Every TikZ/pgfplots figure is pre-rendered once into figures/ext/*.pdf and
+% included from there, which keeps compiles short (Overleaf's free plan has a
+% tight compile-time limit). After editing a figure, delete its PDF in
+% figures/ext/ and compile with shell escape (Overleaf allows it) to re-render.
+\usetikzlibrary{external}
+\tikzexternalize[prefix=figures/ext/]
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{multirow}
@@ -264,7 +270,7 @@ Figure~\ref{fig:lifecycle} shows the states a position moves through. Three rule
     \draw[arr] (open.north) to[out=35,in=145] node[above,lb]{Tier-2 proof on current features} (final.north);
     \draw[arr] (claim) -- node[right,lb]{1 h passes} (closed);
     \draw[arr] (closed.west) -| node[below,lb,pos=0.3]{next decision re-opens it,\\settles the bond} (open.south);
-    \draw[arr] (final.south) |- node[right,lb,pos=0.25]{executed once\\or expired} (closed.east);
+    \draw[arr] (final.south) |- node[left,lb,pos=0.25]{executed once\\or expired} (closed.east);
   \end{tikzpicture}
   \caption{Position lifecycle. Cheap claims block only other cheap claims for one window; a Tier-2 proof of current high risk always proceeds and approves one liquidation, executed by the liquidator within 30 minutes or expired.}
   \label{fig:lifecycle}

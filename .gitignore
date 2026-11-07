@@ -33,3 +33,15 @@ circuits/risk_model_bound.onnx
 
 # Ledger database (rebuildable from the chain)
 off-chain/data/
+
+# LaTeX build files (docs/paper keeps preview.pdf and figures/ext/*.pdf|md5|dpth)
+docs/paper/*.aux
+docs/paper/*.log
+docs/paper/*.bbl
+docs/paper/*.blg
+docs/paper/*.out
+docs/paper/*.fls
+docs/paper/*.fdb_latexmk
+docs/paper/*.auxlock
+docs/paper/main.pdf
+docs/paper/figures/ext/*.log
