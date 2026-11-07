@@ -45,3 +45,4 @@ docs/paper/*.fdb_latexmk
 docs/paper/*.auxlock
 docs/paper/main.pdf
 docs/paper/figures/ext/*.log
+docs/paper/comment.cut
