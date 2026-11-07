@@ -83,6 +83,20 @@ export class SimEngine {
       this.s = null;
     }
     if (!this.s) this.s = fresh();
+    this._migrate();
+  }
+
+  /** Bring simulation state saved by an older version of the app up to date. */
+  _migrate() {
+    const s = this.s;
+    s.actions ||= [];
+    s.users ||= {};
+    s.balances ||= {};
+    s.pending ||= {};
+    s.events ||= [];
+    for (const e of s.events) {
+      if (!e.actor) e.actor = String(e.claimant || e.challenger || e.liquidator || ROUTER).toLowerCase();
+    }
   }
 
   _save() {

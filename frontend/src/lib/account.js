@@ -79,8 +79,8 @@ export function downloadKeystore(address) {
 }
 
 /** Deterministic two-color avatar for an address. */
-export function avatarColors(address = "") {
-  const h = parseInt(address.slice(2, 8) || "0", 16);
+export function avatarColors(address) {
+  const h = parseInt(String(address || "").slice(2, 8) || "0", 16) || 0;
   return [`hsl(${h % 360} 70% 55%)`, `hsl(${(h >> 9) % 360} 70% 45%)`];
 }
 
