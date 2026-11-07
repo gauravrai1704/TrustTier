@@ -416,17 +416,22 @@ def simulate(n_positions: int = 12):
     specs = generate_onchain_stream(chain.markets, n_positions=n_positions, seed=_next_stream_id % 2**32,
                                     start_id=_next_stream_id + 1)
     _next_stream_id += n_positions + 1
-    results = []
     for s in specs:
         chain.open_demo_position(s.position_id, s.market, s.ltv, s.age_days, s.topup_days)
-        r = processor.process(s.position_id).to_dict()
+    # One batch: with a prover pool, the Tier-2 proofs are generated in parallel.
+    t0 = time.time()
+    results = []
+    for s, r in zip(specs, processor.process_batch([s.position_id for s in specs])):
+        r = r.to_dict()
         r["market"] = chain.markets[s.market]["name"]
         results.append(r)
+    batch_seconds = round(time.time() - t0, 2)
 
     tier_counts = {}
     for r in results:
         tier_counts[r["tier"]] = tier_counts.get(r["tier"], 0) + 1
-    return {"results": results, "tier_counts": tier_counts, "all_tiers_exercised": len(tier_counts) == 3}
+    return {"results": results, "tier_counts": tier_counts, "all_tiers_exercised": len(tier_counts) == 3,
+            "batch_seconds": batch_seconds, "prover_pool": processor.pool.describe() if processor.pool else None}
 
 
 # ---------------------------------------------------------------------------

@@ -124,7 +124,7 @@ model weights stay private. See `docs/SECURITY.md` findings 15, 20-22.
   deployment is rehearsed on a local node. The broadcast needs your RPC URL
   and a funded testnet key (see "Deploying to Sepolia").
 
-Tests: **126 contract tests** (Hardhat) and **87 Python tests** pass (CI runs both on every push).
+Tests: **126 contract tests** (Hardhat) and **92 Python tests** pass (CI runs both on every push).
 
 ## Results
 
@@ -194,7 +194,7 @@ off-chain/
                              health-factor baseline, bond economics,
                              outcome labels, concurrency studies, reports
   ledger/                    SQLite database: event indexer, action log, users, sessions
-  tests/                     87 tests
+  tests/                     92 tests
 frontend/                    React DApp (light/dark): overview + guided demo,
                              positions, watchtower, economics, activity,
                              protocol; live mode or in-browser simulation
@@ -220,7 +220,7 @@ cd circuits && python3 make_proving_key.py && cd ..
 
 # 2. Tests
 npx hardhat test                                   # 126 passing
-cd off-chain && python -m pytest tests -q && cd .. # 87 passing
+cd off-chain && python -m pytest tests -q && cd .. # 92 passing
 #    (offline machines: HARDHAT_LOCAL_SOLC=1 compiles with the solc npm package)
 
 # 3. Local chain + contracts (real verifier; use VERIFIER_MODE=mock for instant fake proofs)
@@ -286,6 +286,29 @@ your signed-in account makes Tier 0/1 claims, settles bonds and executes
 approvals. Tier-2 proofs need the router's prover: run the router against
 Sepolia (`TRUSTTIER_NETWORK=sepolia`, see below) and connect it. A scheduled
 workflow (`sepolia-feeds.yml`) keeps the demo's mock feeds fresh.
+
+## Parallel proving (prover pool)
+
+Tier-2 proving (~16 s on 2 vCPUs, 6.4 s on 4 cores) is the bottleneck, and it
+peaks in a crash, when many positions need a proof at once. Borrowing the
+leader/worker shape of BlockRaFT (Piduguralla et al., ICSA 2026), the router
+can hand proofs to a pool of workers - local processes, or prover workers on
+other machines - and submits the cheap claims while the proofs run:
+
+```bash
+# local workers: split this machine's cores
+TRUSTTIER_PROVER_WORKERS=2 TRUSTTIER_PROVER_THREADS=2 uvicorn main:app --port 8000
+# remote workers: on each extra machine (needs circuits/pk.key), then point the router at them
+uvicorn router.prover_worker:app --host 0.0.0.0 --port 8100
+TRUSTTIER_PROVER_REMOTES=http://worker-1:8100,http://worker-2:8100 uvicorn main:app --port 8000
+```
+
+Measured by `python -m evaluation.prover_pool` (12 real proofs per setting,
+4-core machine; `results/prover_pool.md`): one EZKL proof already uses the
+cores well (23.0 s on 1 thread, 6.4 s on 4), so splitting one machine gains
+only 13% throughput and makes each proof 3.5x slower. Scaling out is what
+works: two remote workers on separate 2-core sets prove 1.93x faster than one,
+at the same latency. Keep remote workers on a private network.
 
 ## The DApp
 

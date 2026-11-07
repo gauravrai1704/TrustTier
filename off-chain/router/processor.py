@@ -37,6 +37,7 @@ from risk_model.inference import RiskModel
 from router.chain_client import ChainClient
 from router.commitment import _to_fixed_point, compute_commitment_hash, new_salt
 from router.prover import EzklProver
+from router.prover_pool import ProverPool
 from router.tiering import Tier, TierDecision, decide_tier_bps
 
 # "auto": real EZKL proofs when the deployed verifier is real, placeholders
@@ -70,11 +71,25 @@ class ProcessingResult:
         return asdict(self)
 
 
+@dataclass
+class _Plan:
+    """A routing decision for one position, before anything is submitted."""
+    result: ProcessingResult
+    tier: Tier
+    q: list
+    past_round: int
+    probs: list
+    force_tier: Optional[str]
+
+
 class PositionProcessor:
-    def __init__(self, chain_client: ChainClient, risk_model: RiskModel, prover: Optional[EzklProver] = None):
+    def __init__(self, chain_client: ChainClient, risk_model: RiskModel, prover: Optional[EzklProver] = None,
+                 pool: Optional[ProverPool] = None):
         self.chain = chain_client
         self.risk_model = risk_model
         self.prover = prover or EzklProver()
+        # Parallel Tier-2 proving (router/prover_pool.py); None = prove inline.
+        self.pool = pool if pool is not None else ProverPool.from_env()
 
     def _use_real_prover(self) -> bool:
         if PROVER_MODE == "ezkl":
@@ -86,7 +101,7 @@ class PositionProcessor:
     def tier2_proof(self, q: list[int]):
         """(proof bytes, public inputs, proven label, kind, seconds) for features q."""
         if self._use_real_prover():
-            p = self.prover.prove(q)
+            p = self.pool.prove(q) if self.pool else self.prover.prove(q)
             return p.proof, p.public_inputs, p.label, "ezkl", p.seconds
         # Placeholder for the mock verifier, with the real circuit's layout:
         # [q_ltv, q_vol, q_mom, q_topup, q_age, label, P(low), P(high)].
@@ -122,6 +137,35 @@ class PositionProcessor:
         tier too weak for the position's delta, and the challenge window
         punishes a cheap claim the model contradicts."""
         self.chain.refresh_mock_feeds()
+        return self._execute(self._plan(position_id, force_tier))
+
+    def process_batch(self, position_ids: list[int]) -> list[ProcessingResult]:
+        """Route many positions at once, as in a crash. With a prover pool,
+        every Tier-2 proof starts immediately and runs in parallel while the
+        cheap Tier 0/1 claims are submitted; Tier-2 decisions are then
+        submitted in order as their proofs finish. Transactions always go out
+        one at a time from the router's account (one nonce sequence)."""
+        self.chain.refresh_mock_feeds()
+        plans = [self._plan(pid, None) for pid in position_ids]
+        futures = {}
+        if self.pool and self._use_real_prover():
+            for i, plan in enumerate(plans):
+                if plan.tier == Tier.ZK_PROOF:
+                    futures[i] = self.pool.submit(plan.q)
+        results: list[Optional[ProcessingResult]] = [None] * len(plans)
+        for i, plan in enumerate(plans):
+            if plan.tier != Tier.ZK_PROOF:
+                results[i] = self._execute(plan)
+        for i, plan in enumerate(plans):
+            if plan.tier == Tier.ZK_PROOF:
+                pre = None
+                if i in futures:
+                    p = futures[i].result()
+                    pre = (p.proof, p.public_inputs, p.label, "ezkl", p.seconds)
+                results[i] = self._execute(plan, pre)
+        return results
+
+    def _plan(self, position_id: int, force_tier: Optional[str]) -> _Plan:
         view = self.chain.current_features(position_id)
         q, delta_bps, past_round, pos = view["q"], view["delta_bps"], view["past_round"], view["position"]
         decision = decide_tier_bps(delta_bps)
@@ -141,11 +185,19 @@ class PositionProcessor:
                                   "high risk (a cheap 'safe' claim would be false and slashable)")
             decision = TierDecision(Tier.ZK_PROOF, decision.delta, result.tier_reason)
             result.tier = Tier.ZK_PROOF.name
+        return _Plan(result, decision.tier, q, past_round, probs, force_tier)
 
-        if decision.tier == Tier.HEURISTIC:
+    def _execute(self, plan: _Plan, proved=None) -> ProcessingResult:
+        """Submit a planned decision. `proved` is a Tier-2 proof made ahead
+        (by the pool); otherwise it is generated here."""
+        result, q, past_round, probs, force_tier = plan.result, plan.q, plan.past_round, plan.probs, plan.force_tier
+        position_id = result.position_id
+        decision_tier = plan.tier
+
+        if decision_tier == Tier.HEURISTIC:
             receipt = self.chain.decide_heuristic(position_id, past_round)
 
-        elif decision.tier == Tier.COMMITMENT:
+        elif decision_tier == Tier.COMMITMENT:
             result.risk_score = probs[1]
             result.model_hash = self.risk_model.model_hash
             salt = new_salt()
@@ -164,7 +216,7 @@ class PositionProcessor:
         else:  # Tier.ZK_PROOF
             result.risk_score = probs[1]
             result.model_hash = self.risk_model.model_hash
-            proof, public_inputs, proven_label, kind, seconds = self.tier2_proof(q)
+            proof, public_inputs, proven_label, kind, seconds = proved or self.tier2_proof(q)
             result.proof_kind, result.proving_seconds = kind, round(seconds, 2)
             if proven_label != 1:
                 # A valid proof that the position is NOT high risk approves
@@ -190,5 +242,5 @@ class PositionProcessor:
         tx = receipt.transactionHash.hex()
         result.tx_hash = tx if tx.startswith("0x") else "0x" + tx
         if result.gas_used is None:
-            result.gas_used = receipt_gas if decision.tier == Tier.ZK_PROOF else receipt.gasUsed
+            result.gas_used = receipt_gas if decision_tier == Tier.ZK_PROOF else receipt.gasUsed
         return result

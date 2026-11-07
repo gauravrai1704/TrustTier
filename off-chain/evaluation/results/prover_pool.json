@@ -1,0 +1,117 @@
+{
+  "machine": {
+    "cores": 4,
+    "python": "3.11.17",
+    "cpu": "x86_64"
+  },
+  "proofs_per_config": 12,
+  "configs": [
+    {
+      "workers": 1,
+      "threads_per_worker": 4,
+      "threads_total": 4,
+      "proofs": 12,
+      "wall_s": 77.8,
+      "proofs_per_min": 9.25,
+      "latency_mean_s": 6.48,
+      "latency_max_s": 6.7,
+      "peak_rss_mb_per_worker": 1761,
+      "speedup_vs_one_worker": 1.0
+    },
+    {
+      "workers": 2,
+      "threads_per_worker": 2,
+      "threads_total": 4,
+      "proofs": 12,
+      "wall_s": 72.2,
+      "proofs_per_min": 9.97,
+      "latency_mean_s": 12.03,
+      "latency_max_s": 12.23,
+      "peak_rss_mb_per_worker": 1590,
+      "speedup_vs_one_worker": 1.08
+    },
+    {
+      "workers": 4,
+      "threads_per_worker": 1,
+      "threads_total": 4,
+      "proofs": 12,
+      "wall_s": 68.84,
+      "proofs_per_min": 10.46,
+      "latency_mean_s": 22.83,
+      "latency_max_s": 23.12,
+      "peak_rss_mb_per_worker": 1514,
+      "speedup_vs_one_worker": 1.13
+    },
+    {
+      "workers": 2,
+      "threads_per_worker": 4,
+      "threads_total": 8,
+      "proofs": 12,
+      "wall_s": 71.98,
+      "proofs_per_min": 10.0,
+      "latency_mean_s": 11.99,
+      "latency_max_s": 12.19,
+      "peak_rss_mb_per_worker": 1620,
+      "speedup_vs_one_worker": 1.08
+    },
+    {
+      "workers": 4,
+      "threads_per_worker": 4,
+      "threads_total": 16,
+      "proofs": 12,
+      "wall_s": 70.45,
+      "proofs_per_min": 10.22,
+      "latency_mean_s": 23.42,
+      "latency_max_s": 23.84,
+      "peak_rss_mb_per_worker": 1750,
+      "speedup_vs_one_worker": 1.1
+    }
+  ],
+  "best": {
+    "workers": 4,
+    "threads_per_worker": 1,
+    "threads_total": 4,
+    "proofs": 12,
+    "wall_s": 68.84,
+    "proofs_per_min": 10.46,
+    "latency_mean_s": 22.83,
+    "latency_max_s": 23.12,
+    "peak_rss_mb_per_worker": 1514,
+    "speedup_vs_one_worker": 1.13
+  },
+  "remote_worker": {
+    "ok": true,
+    "seconds": 6.9
+  },
+  "crash_backlog": {
+    "tier2_positions": 165,
+    "minutes_one_worker": 17.8,
+    "minutes_best_local": 15.8,
+    "minutes_projected_by_machines": {
+      "1": 15.8,
+      "2": 7.9,
+      "4": 3.9,
+      "8": 2.0
+    }
+  },
+  "scale_out": [
+    {
+      "machines": 1,
+      "cores_per_machine": 2,
+      "proofs": 12,
+      "wall_s": 142.6,
+      "proofs_per_min": 5.05,
+      "latency_mean_s": 11.88,
+      "speedup_vs_one_machine": 1.0
+    },
+    {
+      "machines": 2,
+      "cores_per_machine": 2,
+      "proofs": 12,
+      "wall_s": 73.89,
+      "proofs_per_min": 9.74,
+      "latency_mean_s": 12.28,
+      "speedup_vs_one_machine": 1.93
+    }
+  ]
+}

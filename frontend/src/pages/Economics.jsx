@@ -7,6 +7,7 @@ import EVAL from "../../../off-chain/evaluation/results/evaluation_report.json";
 import HF from "../../../off-chain/evaluation/results/hf_baseline.json";
 import BOND from "../../../off-chain/evaluation/results/bond_economics.json";
 import OUT from "../../../off-chain/evaluation/results/outcome_labels.json";
+import POOL from "../../../off-chain/evaluation/results/prover_pool.json";
 
 const POLICY = { hf_rule: "Health-factor rule", trusttier: "TrustTier", always_zk: "Always zk-proof" };
 const policyColor = (k) => (k === "trusttier" ? "var(--accent)" : "var(--axis)");
@@ -156,6 +157,23 @@ export default function Economics() {
           <div className="small muted" style={{ marginTop: 10 }}>On L1 only large positions justify daily decisions; on a rollup ordinary retail positions do — the intended deployment target.</div>
         </Card>
       </section>
+
+      <Card title="Proving throughput" sub={`Real EZKL proofs, ${POOL.proofs_per_config} per setting, ${POOL.machine.cores}-core machine · inspired by BlockRaFT's leader/worker nodes`}>
+        <div className="grid g2">
+          <BarChart labelWidth={150} format={(v) => v.toFixed(1)} unit="/min"
+            rows={[
+              ...POOL.configs.slice(0, 3).map((c) => ({ label: `${c.workers} worker${c.workers > 1 ? "s" : ""} × ${c.threads_per_worker} thr`, value: c.proofs_per_min,
+                color: "var(--axis)", note: `${c.latency_mean_s} s per proof · ${c.peak_rss_mb_per_worker} MB each` })),
+              ...(POOL.scale_out || []).map((x) => ({ label: `${x.machines} machine${x.machines > 1 ? "s" : ""} × ${x.cores_per_machine} cores`, value: x.proofs_per_min,
+                color: x.machines > 1 ? "var(--accent)" : "var(--axis)", note: `over HTTP · ${x.latency_mean_s} s per proof` })),
+            ]} />
+          <div className="stack small ink2">
+            <p>One proof already uses every core (23.0 s on 1 thread, 6.4 s on 4), so splitting one machine into more workers buys little throughput and makes each proof slower.</p>
+            <p><b style={{ color: "var(--ink)" }}>Scaling out works:</b> two prover workers on separate core sets prove {POOL.scale_out?.[1]?.speedup_vs_one_machine}× faster than one, at the same latency.</p>
+            <p>A crash backlog of {POOL.crash_backlog.tier2_positions} Tier-2 proofs: {POOL.crash_backlog.minutes_one_worker} min on one machine, about {POOL.crash_backlog.minutes_projected_by_machines["4"]} min on four (projected).</p>
+          </div>
+        </div>
+      </Card>
 
       <Card title="Real outcomes (case study)" sub={`${OUT.wallets} real Aave V2 wallet, ${OUT.snapshots} snapshots; label = health factor below 1 within ${OUT.horizon_days} days`}>
         <div className="table-wrap">
