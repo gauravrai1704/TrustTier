@@ -168,7 +168,6 @@ export default function Overview() {
     <>
       <section className="hero">
         <div>
-          <span className="hero-eyebrow"><Icon name="shield" />CSD436 · Blockchain Technology</span>
           <h2>Verification that <em>scales with risk</em>.</h2>
           <p className="lead">
             TrustTier asks the chain for stronger evidence the closer a DeFi position gets to liquidation: a bonded claim
