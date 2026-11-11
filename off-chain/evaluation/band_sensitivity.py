@@ -162,6 +162,7 @@ def write_latex(grid, thresholds, chosen):
 % Needs pgfplots, booktabs and the paper's tierzero/tierone/tiertwo/accent/muted colors.
 \\begin{{figure}}[t]
 \\centering
+\\tikzsetnextfilename{{band-sensitivity}}
 \\begin{{tikzpicture}}
 \\begin{{axis}}[
   width=0.92\\columnwidth, height=5.4cm,

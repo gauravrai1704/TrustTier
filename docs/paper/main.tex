@@ -39,24 +39,18 @@
 
 \author{Gaurav Rai}
 \affiliation{%
-  \institution{Shiv Nadar University}
-  \city{Delhi NCR}
-  \country{India}}
-\email{2410110133}
+  \institution{2410110133}
+  \country{}}
 
 \author{Shaurya Sharma}
 \affiliation{%
-  \institution{Shiv Nadar University}
-  \city{Delhi NCR}
-  \country{India}}
-\email{2410110317}
+  \institution{2410110317}
+  \country{}}
 
 \author{Sharanya Gupta}
 \affiliation{%
-  \institution{Shiv Nadar University}
-  \city{Delhi NCR}
-  \country{India}}
-\email{2410110315}
+  \institution{2410110315}
+  \country{}}
 
 \renewcommand{\shortauthors}{Rai, Sharma and Gupta}
 
@@ -171,6 +165,7 @@ TrustTier sets the evidence a decision must carry by the position's distance fro
 
 \begin{figure}[t]
   \centering
+  \tikzsetnextfilename{bands}
   \begin{tikzpicture}[x=10cm,y=1cm,font=\footnotesize]
     \fill[tierzero!25] (0.20,0) rectangle (0.65,0.9);
     \fill[tierone!35]  (0.65,0) rectangle (0.75,0.9);
@@ -255,6 +250,7 @@ Figure~\ref{fig:lifecycle} shows the states a position moves through. Three rule
 
 \begin{figure}[t]
   \centering
+  \tikzsetnextfilename{lifecycle}
   \begin{tikzpicture}[
       font=\scriptsize,
       st/.style={draw=muted,rounded corners=3pt,align=center,inner sep=2pt,minimum height=0.85cm,text width=1.3cm},
@@ -337,6 +333,7 @@ Figure~\ref{fig:arch} shows the system.
 
 \begin{figure*}[t]
   \centering
+  \tikzsetnextfilename{architecture}
   \begin{tikzpicture}[
       font=\small,
       box/.style={draw=muted,rounded corners=3pt,align=left,inner sep=5pt,text width=#1},
@@ -622,6 +619,7 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
 
 \begin{figure}[t]
   \centering
+  \tikzsetnextfilename{speedup}
   \begin{tikzpicture}
     \begin{axis}[
         width=\columnwidth, height=5.4cm,
@@ -649,6 +647,7 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
 
 \begin{figure}[t]
   \centering
+  \tikzsetnextfilename{contention}
   \begin{tikzpicture}
     \begin{axis}[
         width=\columnwidth, height=4.9cm,
