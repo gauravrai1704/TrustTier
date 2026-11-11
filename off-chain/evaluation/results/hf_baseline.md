@@ -9,8 +9,8 @@ correlation 0.6, crash probability 0.02/day
 | policy | forced liquidations (LTV >= LT) | insolvencies | bad debt (% of debt) | bonus paid by borrowers (% of debt) | pre-emptive soft liquidations | decision gas | gas / position-day |
 |---|---|---|---|---|---|---|---|
 | hf_rule | 2461 | 61 | 0.018% | 1.353% | 0 (0 unnecessary) | 0.0 M | 0 |
-| trusttier | 297 | 2 | 0.001% | 1.669% | 2365 (323 unnecessary) | 29,022.1 M | 322,467 |
-| always_zk | 297 | 2 | 0.001% | 1.669% | 2368 (323 unnecessary) | 79,229.9 M | 880,332 |
+| trusttier | 297 | 2 | 0.001% | 1.669% | 2365 (323 unnecessary) | 29,022.5 M | 322,472 |
+| always_zk | 297 | 2 | 0.001% | 1.669% | 2368 (323 unnecessary) | 79,229.6 M | 880,328 |
 
 TrustTier's decision gas is 63.4% below proving every position
 every day, for the same pre-emptive protection near the boundary.

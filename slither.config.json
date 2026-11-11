@@ -1,0 +1,8 @@
+{
+  "filter_paths": "node_modules|contracts/mocks|contracts/echidna|contracts/EzklVerifier.sol",
+  "hardhat_ignore_compile": true,
+  "exclude_informational": true,
+  "exclude_optimization": true,
+  "detectors_to_exclude": "timestamp,unused-return,missing-zero-check,reentrancy-events,reentrancy-benign",
+  "fail_low": true
+}

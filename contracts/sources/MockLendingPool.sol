@@ -124,7 +124,9 @@ contract MockLendingPool is IPositionSource, ILiquidationTarget {
         (, int256 price, , , ) = AggregatorV3Interface(m.priceFeed).latestRoundData();
         if (price <= 0) revert BadPrice(m.priceFeed);
         debtRepaidUsd = (a.debtUsd * CLOSE_FACTOR_BPS) / 10_000;
-        collateralSeized = (debtRepaidUsd * (10_000 + LIQUIDATION_BONUS_BPS) * 1e18) / (10_000 * uint256(price));
+        // From the full debt, so no precision is lost to the division above.
+        collateralSeized = (a.debtUsd * CLOSE_FACTOR_BPS * (10_000 + LIQUIDATION_BONUS_BPS) * 1e18)
+            / (10_000 * 10_000 * uint256(price));
         if (collateralSeized > a.collateralAmount) collateralSeized = a.collateralAmount;
         a.debtUsd -= debtRepaidUsd;
         a.collateralAmount -= collateralSeized;

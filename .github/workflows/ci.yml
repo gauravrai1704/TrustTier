@@ -30,3 +30,41 @@ jobs:
       - run: pip install -r off-chain/requirements.txt pytest
       - working-directory: off-chain
         run: python -m pytest tests -q
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: npm ci
+      - run: npx hardhat compile
+      - run: pip install slither-analyzer==0.11.6
+      # slither.config.json lists the excluded detectors and why; anything else fails the build.
+      - run: slither .
+
+  fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: npm ci
+      - run: npx hardhat compile
+      - run: pip install crytic-compile==0.4.2
+      - name: Install Echidna
+        run: |
+          curl -sSL -o echidna.tgz https://github.com/crytic/echidna/releases/download/v2.2.6/echidna-2.2.6-x86_64-linux.tar.gz
+          tar -xzf echidna.tgz && sudo mv echidna /usr/local/bin/
+      # Six invariants over 50,000 random calls (see docs/FUZZING.md); a broken one fails the build.
+      - run: echidna . --contract EngineInvariants --config echidna.yaml --test-limit 50000 --format text

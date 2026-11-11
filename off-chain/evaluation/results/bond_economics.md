@@ -1,7 +1,7 @@
 # Bond economics
 
-`python -m evaluation.bond_economics` - measured gas: a challenge costs 678,771 gas
-(773,609 through commit-reveal).
+`python -m evaluation.bond_economics` - measured gas: a challenge costs 678,774 gas
+(773,612 through commit-reveal).
 
 **Fixed 0.01 ETH bond.** Challenging a false claim loses money above
 **14.73 gwei** (12.93 gwei with commit-reveal), so at
@@ -30,14 +30,14 @@ challenge time is under **2.21x** the base fee at the claim
 ## When is daily monitoring affordable?
 
 TrustTier's decision gas per position-day comes from `hf_baseline.json`
-(322,467 gas, vs 880,332 for always-zk). At
+(322,472 gas, vs 880,328 for always-zk). At
 ETH = $3,000, the smallest debt for which a year of daily decisions costs
 under 0.5% of the debt:
 
 | network | TrustTier $/position/year | min. debt | always-zk $/position/year | min. debt |
 |---|---|---|---|---|
-| Ethereum L1 (20 gwei) | $7,062.03 | $1,412,405 | $19,279.27 | $3,855,854 |
-| Ethereum L1 (5 gwei) | $1,765.51 | $353,101 | $4,819.82 | $963,964 |
+| Ethereum L1 (20 gwei) | $7,062.14 | $1,412,427 | $19,279.18 | $3,855,837 |
+| Ethereum L1 (5 gwei) | $1,765.53 | $353,107 | $4,819.80 | $963,959 |
 | Rollup (0.05 gwei effective) | $17.66 | $3,531 | $48.20 | $9,640 |
 
 On L1 the scheme only pays for large positions (or a slower cadence, e.g.

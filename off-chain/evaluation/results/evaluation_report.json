@@ -7,10 +7,10 @@
       "COMMITMENT": 7,
       "ZK_PROOF": 41
     },
-    "total_gas_trusttier": 45662430,
+    "total_gas_trusttier": 45662061,
     "total_gas_always_tier0": 19945516,
-    "total_gas_always_tier2": 64976366,
-    "gas_savings_vs_always_tier2_pct": 29.72455554070229,
+    "total_gas_always_tier2": 64975700,
+    "gas_savings_vs_always_tier2_pct": 29.724403123013676,
     "tier0_count": 26,
     "tier0_high_risk_misses": 1,
     "miss_rate_pct": 3.8461538461538463,
@@ -27,10 +27,10 @@
       "COMMITMENT": 76,
       "ZK_PROOF": 124
     },
-    "total_gas_trusttier": 164648952,
+    "total_gas_trusttier": 164647836,
     "total_gas_always_tier0": 80860200,
-    "total_gas_always_tier2": 263417700,
-    "gas_savings_vs_always_tier2_pct": 37.495106820840064,
+    "total_gas_always_tier2": 263415000,
+    "gas_savings_vs_always_tier2_pct": 37.49488981265304,
     "tier0_count": 100,
     "tier0_high_risk_misses": 0,
     "miss_rate_pct": 0.0,
@@ -47,10 +47,10 @@
       "COMMITMENT": 83,
       "ZK_PROOF": 165
     },
-    "total_gas_trusttier": 210311382,
+    "total_gas_trusttier": 210309897,
     "total_gas_always_tier0": 100805716,
-    "total_gas_always_tier2": 328394066,
-    "gas_savings_vs_always_tier2_pct": 35.957618064876975,
+    "total_gas_always_tier2": 328390700,
+    "gas_savings_vs_always_tier2_pct": 35.957413836628135,
     "tier0_count": 126,
     "tier0_high_risk_misses": 1,
     "miss_rate_pct": 0.7936507936507936,
@@ -62,6 +62,6 @@
   "gas_by_tier": {
     "HEURISTIC": 269534,
     "COMMITMENT": 379161,
-    "ZK_PROOF": 878059
+    "ZK_PROOF": 878050
   }
 }

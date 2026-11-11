@@ -58,7 +58,12 @@ contract AaveV3PositionSource is IPositionSource {
     error AlreadyRegistered(address user);
     error NoCollateral(address user);
 
+    error ZeroAddress();
+
     constructor(address _pool, address _aToken, address _priceFeed, address _volatilityFeed) {
+        if (_pool == address(0) || _aToken == address(0) || _priceFeed == address(0) || _volatilityFeed == address(0)) {
+            revert ZeroAddress();
+        }
         pool = IAaveV3Pool(_pool);
         aToken = IScaledBalanceToken(_aToken);
         priceFeed = _priceFeed;

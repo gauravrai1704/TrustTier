@@ -1,0 +1,13 @@
+# Echidna (Trail of Bits) property fuzzing of the engine, liquidator and pool.
+#   npx hardhat compile && echidna . --contract EngineInvariants --config echidna.yaml
+testMode: property
+testLimit: 100000
+seqLen: 100
+shrinkLimit: 2000
+balanceContract: 1000000000000000000000   # 1,000 ETH for the harness and its actors
+maxTimeDelay: 3600                          # jumps of up to 1 h: windows (1 h) and approvals (30 min) both open and expire
+maxBlockDelay: 300
+cryticArgs: ["--hardhat-ignore-compile"]
+filterFunctions: []
+coverage: true
+corpusDir: echidna-corpus

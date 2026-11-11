@@ -421,6 +421,8 @@ contract LiquidationEngine is Ownable {
     }
 
     function _proofFeatureHash(uint256[] calldata publicInputs) internal pure returns (bytes32) {
+        // A fixed-size memory array starts zeroed and the loop sets every slot.
+        // slither-disable-next-line uninitialized-local
         uint256[5] memory q;
         for (uint256 i = 0; i < N_FEATURES; i++) {
             q[i] = publicInputs[i];
@@ -546,6 +548,9 @@ contract LiquidationEngine is Ownable {
     }
 
     /// @dev EZKL's verifier reverts on a bad proof instead of returning false.
+    ///      Callers write their state BEFORE verifying and revert if the proof
+    ///      fails (checks-effects-interactions): the revert undoes the writes,
+    ///      and a re-entrant call from the verifier would only see final state.
     function _verify(bytes calldata proof, uint256[] calldata publicInputs) internal returns (bool) {
         try tier2Verifier.verifyProof(proof, publicInputs) returns (bool ok) {
             return ok;
@@ -638,10 +643,10 @@ contract LiquidationEngine is Ownable {
             ) revert ProofNotForPosition(positionId);
         }
         if (publicInputs[INSTANCE_LABEL] != HIGH_RISK) revert ProofDoesNotShowHighRisk(positionId);
-        if (!_verify(proof, publicInputs)) revert InvalidZkProof(positionId);
         PositionState storage st = _state[positionId];
         st.liquidationFinal = true;
         st.approvedAt = uint64(block.timestamp);
+        if (!_verify(proof, publicInputs)) revert InvalidZkProof(positionId); // undoes the writes above
 
         bytes32 proofHash = keccak256(proof);
         auditLog.logDecision(positionId, TierAuditLog.Tier.ZkProof, modelHash, proofHash);
@@ -735,12 +740,12 @@ contract LiquidationEngine is Ownable {
             revert ProofNotForPosition(positionId);
         }
         if (publicInputs[INSTANCE_LABEL] != HIGH_RISK) revert ChallengeDidNotContradictClaim(positionId);
-        if (!_verify(proof, publicInputs)) revert InvalidZkProof(positionId);
 
         st.challenged = true;
         st.bond = 0;
         if (!st.liquidationFinal) st.decided = false; // the claim was false: re-open for Tier 2
         pendingWithdrawals[msg.sender] += bond;
+        if (!_verify(proof, publicInputs)) revert InvalidZkProof(positionId); // undoes the writes above
 
         emit DecisionChallenged(positionId, msg.sender, bond);
     }

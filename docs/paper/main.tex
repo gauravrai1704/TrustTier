@@ -79,7 +79,7 @@ Lending protocols such as Aave, Compound and MakerDAO hold billions of dollars o
 
 \paragraph{Why a model at all.} Every protocol already has a free, deterministic rule: liquidate once LTV reaches the threshold (Aave's health factor below 1). It acts only at the boundary, so a crash day can carry a position from safe to under water before any keeper moves, and the protocol absorbs bad debt. A model that sees volatility and momentum can act \emph{before} the boundary with a smaller, \emph{soft} liquidation. That is only acceptable if the model's verdict is verifiable, and only affordable if verification is not paid on every position. Section~\ref{sec:eval-hf} measures this trade against the health-factor rule on identical price paths.
 
-Recent work shows that such decisions \emph{can} be verified on-chain, either by running a small model inside a contract~\cite{alhaidari2025onchain} or by verifying a zk-SNARK of its inference~\cite{chen2024zkml,kang2022scaling}. The obstacle is cost. In our implementation a proof-verified liquidation decision costs 878,059 gas and about 16\,s of proving, 3.3 times a bonded heuristic decision. Spending that on every position is wasteful, because most positions are nowhere near their liquidation boundary.
+Recent work shows that such decisions \emph{can} be verified on-chain, either by running a small model inside a contract~\cite{alhaidari2025onchain} or by verifying a zk-SNARK of its inference~\cite{chen2024zkml,kang2022scaling}. The obstacle is cost. In our implementation a proof-verified liquidation decision costs 878,050 gas and about 16\,s of proving, 3.3 times a bonded heuristic decision. Spending that on every position is wasteful, because most positions are nowhere near their liquidation boundary.
 
 \paragraph{The idea.} TrustTier spends verification where it matters. It borrows the intuition of memory tiering, where hot data gets the expensive fast tier: positions far from the boundary get cheap, bonded claims, and only positions at the boundary must carry a zero-knowledge proof. The cheap tiers are optimistic, as in optimistic rollups~\cite{kalodner2018arbitrum} and optimistic ML~\cite{conway2024opml}, but a dispute is settled by a single zk-SNARK rather than an interactive bisection game.
 
@@ -198,7 +198,7 @@ TrustTier sets the evidence a decision must carry by the position's distance fro
     \midrule
     0 Heuristic & $\delta>0.15$ & Decision record, feature snapshot, gas-scaled bond slashable for 1\,h & 269,534 \\
     1 Commitment & $\delta>0.05$ & Registered model, salted commitment to (features, score) that must be opened in the window, snapshot, same bond & 379,161$^{*}$ \\
-    2 zk-SNARK & always & Halo2 proof that the model on the position's on-chain features outputs ``high risk''; approves one liquidation & 878,059 \\
+    2 zk-SNARK & always & Halo2 proof that the model on the position's on-chain features outputs ``high risk''; approves one liquidation & 878,050 \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -410,7 +410,7 @@ Table~\ref{tab:proving} summarizes the Tier-2 pipeline. Three sample positions a
     Proving-key rebuild from SRS & 12.1\,s \\
     Proof calldata & 3,584 bytes \\
     Verifier: deployed size / deployment gas & 15,612 B / 3,422,602 \\
-    \code{verifyProof} alone / full \code{decideZkProof} & 621,921 / 878,059 gas \\
+    \code{verifyProof} alone / full \code{decideZkProof} & 621,921 / 878,050 gas \\
     Circuit vs ONNX label agreement & 200 / 200 \\
     \bottomrule
   \end{tabularx}
@@ -418,7 +418,7 @@ Table~\ref{tab:proving} summarizes the Tier-2 pipeline. Three sample positions a
 
 \subsection{Gas of every entry point}
 
-Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a view, costs 92,510 gas including the base cost. It is the price of verified inputs and is included in every \code{decide*} row. A challenge with a real proof costs 678,771 gas, below a full Tier-2 decision because it checks a stored snapshot instead of recomputing features; committing first adds 94,771. Executing an approval costs 96,402 gas.
+Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a view, costs 92,510 gas including the base cost. It is the price of verified inputs and is included in every \code{decide*} row. A challenge with a real proof costs 678,774 gas, below a full Tier-2 decision because it checks a stored snapshot instead of recomputing features; committing first adds 94,771. Executing an approval costs 96,605 gas.
 
 \begin{table}[t]
   \caption{Measured gas per transaction (real verifier and real proofs for Tier~2 and challenge).}
@@ -429,15 +429,15 @@ Table~\ref{tab:gas} lists every entry point. \code{currentFeatures}, called as a
     \code{decideHeuristic} (bond as \code{msg.value} / from deposit) & 269,534 / 274,772 \\
     \code{decideCommitment} (\code{msg.value} / deposit) & 340,072 / 345,310 \\
     \code{revealCommitment} & 39,089 \\
-    \code{decideZkProof} (current / anchored features) & 878,059 / 882,059 \\
+    \code{decideZkProof} (current / anchored features) & 878,050 / 882,050 \\
     \code{anchorFeatures} & 140,461 \\
-    \code{challengeDecision} / \code{commitChallenge} + \code{revealChallenge} & 678,771 / 94,771 + 678,838 \\
-    \code{liquidate} (soft liquidation through the liquidator) & 96,402 \\
+    \code{challengeDecision} / \code{commitChallenge} + \code{revealChallenge} & 678,774 / 94,771 + 678,841 \\
+    \code{liquidate} (soft liquidation through the liquidator) & 96,605 \\
     \code{reclaimBond} / \code{withdraw} / \code{deposit} & 55,980 / 30,004 / 45,025 \\
     \code{currentFeatures} (view) & 92,510 \\
     \code{registerModel} / \code{revokeModel} / \code{setTier2Verifier} & 139,257 / 28,150 / 30,496 \\
     Losing racer (\code{PositionAlreadyFinalized}, live node) & 26,149 \\
-    Deploy: engine / verifier / demo pool / liquidator & 3,286,971 / 3,422,602 / 847,742 / 201,232 \\
+    Deploy: engine / verifier / demo pool / liquidator & 3,286,971 / 3,422,602 / 852,056 / 201,220 \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -501,7 +501,7 @@ Escalation costs 3.1 points and buys honesty: without it, 21 cheap claims would 
     \midrule
     Tier 0 gas & 195,869 & 250,098 & 266,202 & 269,534 \\
     Tier 1 gas & 286,356 & 340,550 & 336,713 & 379,161 \\
-    Tier 2 gas & 1,031,754 & 999,623 & 875,489 & 878,059 \\
+    Tier 2 gas & 1,031,754 & 999,623 & 875,489 & 878,050 \\
     \code{verifyProof} gas & 849,607 & 741,069 & 621,921 & 621,921 \\
     Proof bytes & 5,696 & 4,480 & 3,584 & 3,584 \\
     Proving & 25\,s & 20\,s & 16\,s & 16\,s \\

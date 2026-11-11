@@ -296,7 +296,7 @@ export default function PositionDrawer({ id, onClose }) {
                 })}
               </ul>
             )}
-            <div className="small muted">Gas figures are measured on the real contracts; Tier 2 uses the real EZKL verifier ({gas(878059)} gas).</div>
+            <div className="small muted">Gas figures are measured on the real contracts; Tier 2 uses the real EZKL verifier ({gas(878050)} gas).</div>
           </section>
         </>
       )}

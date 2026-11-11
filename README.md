@@ -17,7 +17,7 @@ a tier that is too weak:
 |---|---|---|---|
 | 0 Heuristic | δ > 15% | Safe-claim + feature snapshot + gas-scaled bond, slashable for 1 h | 269,534 |
 | 1 Commitment | δ > 5% | Registered model + salted commitment that must be opened in the window + snapshot + same bond | 379,161** |
-| 2 zk-SNARK | always | Halo2 proof that the model, run on the position's on-chain features, outputs "high risk"; verified on-chain; approves one liquidation | 878,059 |
+| 2 zk-SNARK | always | Halo2 proof that the model, run on the position's on-chain features, outputs "high risk"; verified on-chain; approves one liquidation | 878,050 |
 
 \*Full decision transaction, including reading the position, both feeds and
 the 24-hour price round and computing the features. Measured by
@@ -133,7 +133,7 @@ Tests: **126 contract tests** (Hardhat) and **92 Python tests** pass (CI runs bo
 | Proving time per Tier-2 proof | ~16 s (EZKL, 2^16-row circuit, 575 MB proving key) |
 | Proof calldata | 3,584 bytes; 8 public instances [5 features, label, P(low), P(high)] |
 | On-chain verification (standalone) | 621,921 gas |
-| Full Tier-2 decision / challenge / commit-reveal challenge / liquidation | 878,059 / 678,771 / 773,609 / 96,402 gas |
+| Full Tier-2 decision / challenge / commit-reveal challenge / liquidation | 878,050 / 678,774 / 773,612 / 96,605 gas |
 | Gas vs always-zkML, 374 positions (74 real Aave V2 + 300 synthetic) | **36.0% saving** (210.3 M vs 328.4 M); tiers 126 / 83 / 165 |
 | vs health-factor rule, 3,000-position 30-day stress test | forced liquidations −88%, insolvencies 61 → 2 |
 | Watcher profit at 20 gwei (fixed bond / gas-scaled bond) | −0.0036 / +0.0164 ETH |

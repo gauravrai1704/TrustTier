@@ -46,3 +46,7 @@ docs/paper/*.auxlock
 docs/paper/main.pdf
 docs/paper/figures/ext/*.log
 docs/paper/comment.cut
+
+# Echidna working files
+echidna-corpus/
+crytic-export/

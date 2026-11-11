@@ -40,7 +40,7 @@
       "bad_debt": 0.023,
       "borrower_bonus_paid": 29.8462,
       "soft_liquidations": 2365,
-      "gas": 29022060587,
+      "gas": 29022500848,
       "tier_counts": {
         "HEURISTIC": 68672,
         "COMMITMENT": 16875,
@@ -51,7 +51,7 @@
       "borrower_bonus_paid_pct_of_debt": 1.669,
       "positions_soft_liquidated": 1264,
       "unnecessary_soft_liquidations": 323,
-      "gas_per_position_day": 322467
+      "gas_per_position_day": 322472
     },
     "always_zk": {
       "forced_liquidations": 297,
@@ -59,7 +59,7 @@
       "bad_debt": 0.023,
       "borrower_bonus_paid": 29.8519,
       "soft_liquidations": 2368,
-      "gas": 79229882343,
+      "gas": 79229553290,
       "tier_counts": {
         "HEURISTIC": 0,
         "COMMITMENT": 0,
@@ -70,7 +70,7 @@
       "borrower_bonus_paid_pct_of_debt": 1.669,
       "positions_soft_liquidated": 1264,
       "unnecessary_soft_liquidations": 323,
-      "gas_per_position_day": 880332
+      "gas_per_position_day": 880328
     }
   },
   "trusttier_gas_saving_vs_always_zk_pct": 63.4,
