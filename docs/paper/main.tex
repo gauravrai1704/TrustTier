@@ -769,16 +769,17 @@ TrustTier began as a way to spend zero-knowledge proofs only where a liquidation
 \bibliography{references}
 
 \appendix
+\twocolumn[{%
+\section*{Appendix}
 
 \section{Security Findings}
 \label{app:stride}
 
-Table~\ref{tab:security} lists every finding of the STRIDE-style review of Section~\ref{sec:security}.
+Table~\ref{tab:security} lists every finding of the STRIDE review of Section~\ref{sec:security}.
 
-\begin{table*}[t]
-  \caption{Security findings (STRIDE category) and status. Full write-ups are in \code{docs/SECURITY.md}.}
-  \label{tab:security}
-  \footnotesize
+\begin{center}
+\captionof{table}{Security findings (STRIDE category) and status. Full write-ups are in \code{docs/SECURITY.md}.}\label{tab:security}
+\footnotesize
   \begin{tabularx}{\textwidth}{@{}rLllL@{}}
     \toprule
     \textbf{\#} & \textbf{Finding} & \textbf{Category} & \textbf{Severity} & \textbf{Status / fix} \\
@@ -816,12 +817,15 @@ Table~\ref{tab:security} lists every finding of the STRIDE-style review of Secti
     31 & Browser-generated keys live in browser storage & Info.\ disclosure & Medium & Mitigated: encrypted keystore, testnet only \\
     \bottomrule
   \end{tabularx}
-\end{table*}
+\end{center}
+\vspace{1em}
+}]
 
 \section{Reproducing the Results}
 
 All numbers in this paper are produced by scripts in the project repository. \code{docker build -t trusttier . \&\& docker run --rm trusttier} (or \code{make reproduce}) runs the whole chain below except proving throughput and the live race, and checks that every deterministic result file matches the committed one.
 
+{\raggedright
 \begin{itemize}
   \item Tests: \code{npx hardhat test} (126) and \code{python -m pytest off-chain/tests} (92).
   \item Prover pool: \code{python -m evaluation.prover\_pool} (needs \code{circuits/pk.key}).
@@ -832,6 +836,6 @@ All numbers in this paper are produced by scripts in the project repository. \co
   \item Modelled concurrency: \code{evaluation.concurrency\_sim}, \code{evaluation.concurrency\_ablation}.
   \item Traced concurrency: \code{npx hardhat run scripts/concurrency\_trace.js}, then \code{python -m evaluation.parallel\_exec}.
   \item Liquidator race: \code{npx hardhat node}, a mock-verifier deployment, then \code{python -m evaluation.liquidator\_race}.
-\end{itemize}
+\end{itemize}\par}
 
 \end{document}
