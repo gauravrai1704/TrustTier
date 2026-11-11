@@ -738,6 +738,8 @@ We reviewed the code STRIDE-style and with an independent review pass; Table~\re
 
 \textbf{G1 Input integrity:} every feature is computed by the contract from the position source and feeds within the transaction that uses it (finding~15). \textbf{G2 Tier soundness:} every cheap \code{decide*} recomputes $\delta$ and reverts below its band (finding~20). \textbf{G3 Proof binding:} \code{decideZkProof} compares the proof's five feature instances with its own computation and requires label~1, a registered model and the verifier's own model (findings 9--11). \textbf{G4 Accountability:} a challenge must prove high risk on the claim's snapshot (finding~15). \textbf{G5 Liveness:} Tier~2 supersedes open claims, windows expire, and future timestamps clamp (finding~17). \textbf{G6 Exactly once:} the lock is set before any external call; tested on a live node with up to 16 racing threads. \textbf{G7 Governed change:} a multisig behind a timelock owns every contract (finding~3). \textbf{G8 Incentive compatibility:} gas-scaled bonds, commit-reveal challenges and must-open commitments (findings 8, 24, 25).
 
+\paragraph{Automated analysis.} Slither~\cite{feist2019slither} initially reported 13 medium and 32 low findings; we fixed the substantive ones (the verifier was called before the decision's state was written, now reordered as checks-effects-interactions at no gas cost; a division before a multiplication; missing zero-address checks) and documented the rest as intended, leaving 0 findings, enforced in CI. Echidna~\cite{grieco2020echidna} fuzzes the whole system through random sequences of every action by three accounts with random time jumps, and checks six invariants after each call: the engine's ETH equals exactly what it owes, tier bands hold, Tier~2 needs a valid high-risk proof, a slash needs a valid high-risk proof on the claim's snapshot, every liquidation consumes a fresh approval at most once, and bond bookkeeping is consistent. All six hold over 100,139 calls, with coverage reaching every outcome; and each of four planted bugs (no Tier-0 band, approvals that never expire, a challenge that ignores the snapshot, a bond paid twice) is caught by the property meant to catch it.
+
 \begin{table*}[t]
   \caption{Security findings (STRIDE category) and status. Full write-ups are in \code{docs/SECURITY.md}.}
   \label{tab:security}
@@ -832,7 +834,7 @@ We thank the CSD436 course staff for review comments that shaped this work, in p
 
 \section{Reproducing the Results}
 
-All numbers in this paper are produced by scripts in the project repository.
+All numbers in this paper are produced by scripts in the project repository. \code{docker build -t trusttier . \&\& docker run --rm trusttier} (or \code{make reproduce}) runs the whole chain below except proving throughput and the live race, and checks that every deterministic result file matches the committed one.
 
 \begin{itemize}
   \item Tests: \code{npx hardhat test} (126) and \code{python -m pytest off-chain/tests} (92).

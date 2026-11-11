@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use TrustTier, please cite the paper below."
+title: "TrustTier"
+abstract: >-
+  Cost-tiered zero-knowledge verification of DeFi liquidation decisions on
+  verified on-chain inputs: Solidity contracts, an EZKL/Halo2 proving
+  pipeline, a router, an evaluation suite and a DApp.
+type: software
+license: MIT
+repository-code: "https://github.com/gauravrai1704/TrustTier"
+url: "https://gauravrai1704.github.io/TrustTier/"
+keywords: [DeFi, liquidations, zkML, zk-SNARK, EZKL, Halo2, smart contracts, optimistic verification]
+authors:
+  - family-names: Rai
+    given-names: Gaurav
+    affiliation: Shiv Nadar University
+  - family-names: Sharma
+    given-names: Shaurya
+    affiliation: Shiv Nadar University
+  - family-names: Gupta
+    given-names: Sharanya
+    affiliation: Shiv Nadar University
+preferred-citation:
+  type: report
+  title: "TrustTier: Cost-Tiered Zero-Knowledge Verification of DeFi Liquidation Decisions on Verified On-Chain Inputs"
+  authors:
+    - family-names: Rai
+      given-names: Gaurav
+    - family-names: Sharma
+      given-names: Shaurya
+    - family-names: Gupta
+      given-names: Sharanya
+  institution:
+    name: Shiv Nadar University
+  year: 2026
+  notes: "CSD436 Blockchain Technology, final project paper"

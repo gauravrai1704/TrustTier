@@ -104,7 +104,9 @@ def run(path: str) -> dict:
     p_high = np.asarray(probs)[:, 1]
     y = data["label"].to_numpy()
     report = {
-        "data": path, "wallets": int(data["wallet"].nunique()), "snapshots": int(len(data)),
+        # Relative to off-chain/, so the report is identical on every machine.
+        "data": os.path.relpath(os.path.abspath(path), os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "wallets": int(data["wallet"].nunique()), "snapshots": int(len(data)),
         "horizon_days": HORIZON_DAYS,
         "deployed_model_v2": _metrics(y, p_high, np.asarray(labels).reshape(-1)),
         f"hf_rule_warn_below_{HF_WARN}": _metrics(y, -data["hf"].to_numpy(), (data["hf"] < HF_WARN).astype(int)),
@@ -154,7 +156,7 @@ def _markdown(r: dict) -> str:
         cand_note = f"Candidate model: {cand}."
     return f"""# Outcome-labelled evaluation
 
-`python -m evaluation.outcome_labels` on `{os.path.relpath(r['data'], os.path.dirname(os.path.dirname(__file__)))}`:
+`python -m evaluation.outcome_labels` on `{r['data']}`:
 {r['wallets']} wallet(s), {r['snapshots']} snapshots. Label = health factor below 1 within
 {r['horizon_days']} days (the snapshot became liquidatable).
 

@@ -50,3 +50,9 @@ docs/paper/comment.cut
 # Echidna working files
 echidna-corpus/
 crytic-export/
+
+# make reproduce scratch + local venv
+.reproduce/
+.venv/
+docker/extra-ca.crt
+.venv-tools/

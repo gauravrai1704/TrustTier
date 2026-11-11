@@ -1,0 +1,18 @@
+# Full reproduction in Docker: rebuilds the proving key, runs every test,
+# Slither and Echidna, re-measures gas, regenerates every evaluation and fails
+# if any deterministic result differs from the committed one.
+name: Reproduce (Docker)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 4 * * 1"   # weekly
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t trusttier .
+      - run: docker run --rm trusttier | tee reproduce.log
+      - run: grep -q "All deterministic results reproduce exactly." reproduce.log

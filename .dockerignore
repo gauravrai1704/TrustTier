@@ -1,0 +1,17 @@
+node_modules
+frontend/node_modules
+frontend/dist
+artifacts
+cache
+.venv
+.reproduce
+echidna-corpus
+crytic-export
+circuits/pk.key
+off-chain/data
+off-chain/**/__pycache__
+docs/paper/*.aux
+docs/paper/*.log
+docs/paper/main.pdf
+deployments/localhost.json
+.git

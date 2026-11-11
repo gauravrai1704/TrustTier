@@ -124,7 +124,8 @@ model weights stay private. See `docs/SECURITY.md` findings 15, 20-22.
   deployment is rehearsed on a local node. The broadcast needs your RPC URL
   and a funded testnet key (see "Deploying to Sepolia").
 
-Tests: **126 contract tests** (Hardhat) and **92 Python tests** pass (CI runs both on every push).
+Tests: **126 contract tests** (Hardhat) and **92 Python tests** pass; Slither reports no findings and
+Echidna checks six invariants over 50,000+ random calls (`docs/FUZZING.md`). CI runs all of them on every push.
 
 ## Results
 
@@ -202,6 +203,23 @@ frontend/                    React DApp (light/dark): overview + guided demo,
 docs/SECURITY.md             31 findings, their status, and the trust assumptions
 docs/SNARK_VS_STARK.md       why Tier 2 uses a SNARK
 ```
+
+## Reproduce everything (one command)
+
+With only Docker:
+
+```bash
+docker build -t trusttier .
+docker run --rm trusttier            # ~2-3 min after the build
+```
+
+or natively (Node 20, Python 3.11): `make reproduce`. Either way it rebuilds
+the 575 MB proving key from the shipped SRS, runs the 126 contract and 92
+Python tests, Slither and Echidna (`docs/FUZZING.md`), re-measures gas,
+regenerates every evaluation, and reports whether each deterministic result
+file matches the committed one. On our machine and in the container all six
+match byte for byte. `make results-proving` adds the real-proof throughput
+benchmark; `make paper` builds the PDF. Cite with `CITATION.cff`.
 
 ## Quick start (local)
 

@@ -1,5 +1,5 @@
 {
-  "data": "/home/user/TrustTier/off-chain/evaluation/data/aave_v2_wallet_0x01acb3804ba9c42111c6e9c127831eb486ca1ac7.csv",
+  "data": "evaluation/data/aave_v2_wallet_0x01acb3804ba9c42111c6e9c127831eb486ca1ac7.csv",
   "wallets": 1,
   "snapshots": 73,
   "horizon_days": 7,
