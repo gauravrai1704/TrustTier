@@ -1,0 +1,198 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor,booktabs,tabularx,enumitem,titlesec}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,urlcolor=blue!60!black,linkcolor=black]{hyperref}
+\usepackage{fontawesome5}
+\usepackage{xurl}
+
+\definecolor{accent}{HTML}{2A78D6}
+\definecolor{warn}{HTML}{D1495B}
+\definecolor{ok}{HTML}{2E8B57}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlist{itemsep=2pt,topsep=3pt}
+\titleformat{\section}{\Large\bfseries\color{accent}}{}{0pt}{}
+\titleformat{\subsection}{\large\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\newtcolorbox{warnbox}{colback=warn!6,colframe=warn,boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{tipbox}{colback=accent!5,colframe=accent,boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{cmdbox}{colback=black!4,colframe=black!25,boxrule=0.4pt,arc=2pt,left=6pt,right=6pt,top=3pt,bottom=3pt,fontupper=\ttfamily\small}
+\newcommand{\ui}[1]{\textsf{\textbf{#1}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\arr}{\,$\rightarrow$\,}
+
+\begin{document}
+
+{\color{accent}\Huge\bfseries TrustTier: Deploying to Sepolia}\\[4pt]
+{\large Step-by-step guide for a teammate}\\[2pt]
+{\small Repository: \url{https://github.com/gauravrai1704/TrustTier}\quad Live site: \url{https://gauravrai1704.github.io/TrustTier/}}
+
+\vspace{6pt}
+\begin{tipbox}
+\textbf{What you will end up with:} TrustTier's contracts deployed on the Sepolia test network, verified on Etherscan, and the live website talking to them. Everything is \textbf{free} (Sepolia ETH has no real value). It takes about \textbf{20--30 minutes}, most of it waiting for a faucet.
+
+\textbf{Who does what.} You can do every part yourself \emph{except Part~E}: on a personal GitHub repository, only the owner (Gaurav) can add repository secrets. Do Parts A--D, then add the secrets together with Gaurav (Part~E), then run Parts F--H. To run the workflow in Part~F you need to be a collaborator on the repository with \emph{Write} access (Gaurav: \ui{Settings}\arr\ui{Collaborators}\arr\ui{Add people}).
+\end{tipbox}
+
+\begin{warnbox}
+\faExclamationTriangle\ \textbf{Never put real money anywhere in this guide.} Use a brand-new, testnet-only account. Never paste a private key into chat, email, a document or the repository.
+\end{warnbox}
+
+{\small\textbf{Checklist:}\quad \faSquare[regular]\ A account\quad \faSquare[regular]\ B $\geq$0.1 Sepolia ETH\quad \faSquare[regular]\ C RPC URL\quad \faSquare[regular]\ D Etherscan key\quad \faSquare[regular]\ E secrets added\quad \faSquare[regular]\ F run green\quad \faSquare[regular]\ G site shows Sepolia}
+
+\section{Part A: Create a testnet-only account (\code{PRIVATE\_KEY})}
+\begin{enumerate}
+  \item Install \textbf{MetaMask} from \url{https://metamask.io} (Chrome, Firefox or Brave extension) and set it up. If you already use MetaMask, go to step 2.
+  \item Create a separate account just for this: click the account name at the top\arr\ui{Add account or hardware wallet}\arr\ui{Add a new Ethereum account}\arr name it \ui{TrustTier deployer}.
+  \item Show test networks: network menu (top left)\arr turn on \ui{Show test networks}\arr select \ui{Sepolia}.
+  \item Copy the account's \textbf{address} (starts with \code{0x}, 42 characters). You will paste it into the faucet in Part~B.
+  \item Export the \textbf{private key}: account menu (\faEllipsisV) \arr\ui{Account details}\arr\ui{Show private key}\arr enter your MetaMask password\arr copy it.
+  \begin{itemize}
+    \item It is 64 hexadecimal characters. If it does not start with \code{0x}, add \code{0x} in front.
+    \item Keep it somewhere private. It becomes the \code{PRIVATE\_KEY} secret.
+  \end{itemize}
+\end{enumerate}
+{\small MetaMask moves its menus between versions; if a label differs, look for the same option under the account's \ui{\faEllipsisV} menu.}
+
+\section{Part B: Get free Sepolia test ETH}
+Deployment uses about \textbf{12--14 million gas}, plus \textbf{0.01 test ETH} that funds the reward pool. At typical Sepolia gas prices that is roughly 0.03--0.15 ETH. \textbf{Aim for at least 0.1 Sepolia ETH}; 0.05 can be enough when gas is cheap.
+
+Use one or more of these faucets, pasting your deployer address:
+\begin{itemize}
+  \item \textbf{Google Cloud Web3 faucet}: search ``Google Cloud Sepolia faucet'' (on cloud.google.com: Web3, then Faucet). Sign in with Google, choose \ui{Ethereum Sepolia}. About 0.05 ETH per day.
+  \item \textbf{Sepolia PoW faucet} (\url{https://sepolia-faucet.pk910.de}): no account needed. Start mining, leave the tab open for 30--60 minutes, then claim.
+  \item \textbf{Alchemy, Infura or QuickNode faucets}: these usually require a small balance of real ETH on mainnet; skip them if you do not have that.
+  \item Or ask a classmate or a professor to send you 0.1 Sepolia ETH; it costs them nothing real.
+\end{itemize}
+\textbf{Check the balance} at \url{https://sepolia.etherscan.io}: search your address and look at \ui{ETH Balance}.
+
+\section{Part C: An RPC URL (\code{SEPOLIA\_RPC\_URL})}
+This is how GitHub talks to Sepolia. Pick one:
+\begin{itemize}
+  \item \textbf{No signup:} \nolinkurl{https://ethereum-sepolia-rpc.publicnode.com}
+  \item \textbf{More reliable (recommended):}
+  \begin{enumerate}
+    \item Create a free account at \url{https://www.alchemy.com}.
+    \item Dashboard\arr\ui{Create new app}\arr name \ui{TrustTier}, chain \ui{Ethereum}, network \ui{Sepolia}.
+    \item Open the app\arr\ui{Endpoints} / \ui{API key}\arr copy the \textbf{HTTPS} URL. It looks like \nolinkurl{https://eth-sepolia.g.alchemy.com/v2/AbC...}
+  \end{enumerate}
+  Infura works the same way: create an API key and copy the Sepolia HTTPS endpoint.
+\end{itemize}
+{\small Treat an Alchemy or Infura URL as a secret too: it contains your API key.}
+
+\section{Part D: Etherscan API key (\code{ETHERSCAN\_API\_KEY}), optional}
+This gives the contracts the green \ui{Contract Source Code Verified} tick on Etherscan, which professors can click through.
+\begin{enumerate}
+  \item Register at \url{https://etherscan.io} and confirm your email.
+  \item Your profile\arr\ui{API Dashboard} (or \ui{API Keys})\arr\ui{Add}\arr name it \ui{TrustTier}\arr copy the key. One key also works for Sepolia.
+\end{enumerate}
+
+\section{Part E: Add the secrets to GitHub (repository owner)}
+\begin{tipbox}
+Only the repository owner can do this. Sit together, or share your screen, and \textbf{type the values directly into GitHub}; never send them over chat or email. Alternatively, Gaurav can create his own deployer account (Parts A--D) and add his own values.
+\end{tipbox}
+\begin{enumerate}
+  \item Go to \url{https://github.com/gauravrai1704/TrustTier}\arr\ui{Settings} (top tab)\arr left sidebar \ui{Secrets and variables}\arr\ui{Actions}.
+  \item Click \ui{New repository secret} once per row. \textbf{The names must match exactly:}
+\end{enumerate}
+\begin{center}
+\begin{tabularx}{0.9\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Name} & \textbf{Secret} \\
+\midrule
+\code{PRIVATE\_KEY} & the \code{0x...} key from Part A \\
+\code{SEPOLIA\_RPC\_URL} & the URL from Part C \\
+\code{ETHERSCAN\_API\_KEY} & the key from Part D (skip if you did not make one) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+GitHub keeps them encrypted and never shows them again, not even to the owner.
+
+\section{Part F: Run the deployment}
+\begin{enumerate}
+  \item Repository\arr\ui{Actions} tab\arr left list: \ui{Deploy to Sepolia}\arr\ui{Run workflow} (right side).
+  \item Keep the defaults:
+  \begin{itemize}
+    \item \textbf{Branch:} \code{main}
+    \item \textbf{Tier-2 verifier:} \code{real}
+    \item \textbf{Use Chainlink's real ETH/USD feed:} \faCheckSquare\ (ticked)
+    \item \textbf{Multisig owners:} leave \emph{empty}. If you fill this in, every later admin change needs those owners plus a timelock delay, which is awkward for a demo.
+  \end{itemize}
+  \item Click \ui{Run workflow} and open the run that appears. It takes about 5--10 minutes:
+\end{enumerate}
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Step} & \textbf{What happens} \\
+\midrule
+Check secrets & Fails immediately if a secret name is wrong. \\
+Deploy & About 15 transactions; the log prints each contract address. \\
+Verify on Etherscan & Waits 30\,s, then verifies each contract. Allowed to fail without stopping the run. \\
+Commit the deployment manifest & Adds \code{deployments/sepolia.json} to \code{main}. \\
+Rebuild the DApp & Starts the website deploy. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+When it is green, open the run's \ui{Summary}: it has a table of every contract, linked to Sepolia Etherscan.
+
+\section{Part G: Check the live site}
+\begin{enumerate}
+  \item Wait about 2 minutes for \ui{Deploy DApp to GitHub Pages} to finish (Actions tab).
+  \item Open \url{https://gauravrai1704.github.io/TrustTier/} and hard-refresh (\code{Ctrl+Shift+R}, or \code{Cmd+Shift+R} on a Mac).
+  \item The top bar should show \ui{Sepolia \textperiodcentered{} direct}, not \ui{Simulation}. The \ui{Protocol} page lists the contracts with Etherscan links.
+\end{enumerate}
+\textbf{To act on it:}
+\begin{itemize}
+  \item \textbf{Sign in:} either \ui{Create account} in the app (then fund that new address from a faucet), or \ui{Browser wallet} with MetaMask on Sepolia (the deployer account already has ETH).
+  \item \textbf{Positions page:} open a position (two transactions), then route it. Tier-0/1 claims, bond settlement and executing approvals all work from your account, and every transaction appears on Etherscan.
+  \item \textbf{Tier-2 proofs and challenges} need the prover, which lives in the router (Part H). Without it the app says so.
+\end{itemize}
+
+\section{Part H (optional): Tier 2 on Sepolia, running the router on your laptop}
+On your own machine (macOS or Linux; on Windows use WSL), from a clone of the repository. You need Git, Node.js~20, Python~3.11 and \code{make}. \code{make keys} builds the proving key, which can take several minutes and about 2\,GB of RAM.
+\begin{cmdbox}
+git clone https://github.com/gauravrai1704/TrustTier.git \&\& cd TrustTier\\
+git pull\\
+make install \&\& make keys\\
+cd off-chain\\
+export TRUSTTIER\_RPC\_URL="<your SEPOLIA\_RPC\_URL>"\\
+export TRUSTTIER\_NETWORK=sepolia\\
+export TRUSTTIER\_PRIVATE\_KEY="<a funded Sepolia key; the deployer key works>"\\
+../.venv/bin/python -m uvicorn main:app --port 8000
+\end{cmdbox}
+Open the live site; it detects the router at \code{http://127.0.0.1:8000} automatically (or set it on the \ui{Protocol} page). Tier-2 decisions then use real EZKL proofs (about 16\,s each) and the real on-chain verifier.
+
+{\small The \code{export} lines keep the key only in that terminal session. Do not write it into a file inside the repository.}
+
+\section{If something goes wrong}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{6.2cm}X@{}}
+\toprule
+\textbf{What you see} & \textbf{Fix} \\
+\midrule
+``Add the SEPOLIA\_RPC\_URL and PRIVATE\_KEY repository secrets first'' & A secret is missing or its name is misspelled; recheck Part E. \\
+\code{insufficient funds} & Get more test ETH (Part B), then click \ui{Re-run all jobs}. \\
+\code{429} / rate limit / timeout from the RPC & The public node is busy: use an Alchemy URL (Part C) and re-run. \\
+\code{replacement transaction underpriced} / nonce errors & Wait 2 minutes for pending transactions, then re-run. \\
+Verify step shows ``could not verify'' & Harmless; usually a missing or brand-new Etherscan key. Verify later from a laptop with \code{ETHERSCAN\_API\_KEY} set: \texttt{npx hardhat run scripts/verify.js -{}-network sepolia}. \\
+Commit step fails (``protected branch'') & Owner: \ui{Settings}\arr\ui{Branches}: allow GitHub Actions to push to \code{main}, or remove the protection. \\
+Site still says ``Simulation'' & Wait for the Pages deploy to finish, then hard-refresh. \\
+\ui{Run workflow} button missing & You need Write access to the repository (see the box on page 1). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Good to know}
+\begin{itemize}
+  \item \textbf{Re-running the deploy} creates a fresh set of contracts and overwrites \path{deployments/sepolia.json}; the site then switches to the new ones.
+  \item The \ui{Refresh Sepolia demo feeds} workflow runs automatically every 12 hours with the same secrets. It spends a tiny amount of test ETH and keeps the demo's mock price feeds from going stale before the presentation. Turn it off under \ui{Actions}\arr that workflow\arr\ui{\faEllipsisH}\arr\ui{Disable workflow}.
+  \item \textbf{Never reuse this key for anything with real money.} If you think it leaked, make a new account and have the owner update the \code{PRIVATE\_KEY} secret.
+  \item When you are done, send the link to the workflow run (or the error from its log) to the team so the deployment and the live site can be checked.
+\end{itemize}
+
+\end{document}
