@@ -167,7 +167,7 @@ Echidna checks seven invariants over 100,000 random calls (`docs/FUZZING.md`). C
 | Accounts warned ≥ 1 day before becoming liquidatable | 228 of 386 (median lead 6 days) |
 | vs health-factor rule, 3,000-position 30-day stress test | forced liquidations −85%, insolvencies 61 → 6 |
 | Decisions per 60 M-gas block (Tier 0 / Tier 1 / Tier 2, real verifier) | 216 / 172 / 59 |
-| Parallel EVM (RISE pevm, Block-STM), 374-decision block, real verifier | @@PEVM@@ |
+| Parallel EVM (RISE pevm, Block-STM), 374-decision block, real verifier | 3.74x on 4 threads (simulated: 3.99x on 4, 15.3x on 16); gas and status match Hardhat on all 35 blocks |
 | Model size: 29 → 4,609 parameters | ROC-AUC 0.907-0.922; proving 6.6 s → 56.6 s, proving key 392 MB → 3.1 GB |
 | Watcher profit at 20 gwei (fixed bond / gas-scaled bond) | −0.0061 / +0.0139 ETH |
 | Scheduling rounds for 374 decisions (old array log → per-position storage) | 374 → 1 |
@@ -570,7 +570,8 @@ panel.
   on L1; the intended deployment is a rollup.
 - **Unnecessary liquidations**: in the stress test 23% of soft-liquidated
   positions would have recovered.
-- **Parallel EVM runs are in-memory**: RISE pevm executes the exported blocks
-  without a client's storage I/O; mainnet clients execute sequentially today.
+- **Parallel EVM runs are in-memory and on 4 cores**: RISE pevm executes the
+  exported blocks without a client's storage I/O; 16/64-thread figures are
+  simulated; mainnet clients execute sequentially today.
 - **Base-fee spikes**: a bond covers a challenge while the base fee stays
   under ~1.86x its value at the claim.

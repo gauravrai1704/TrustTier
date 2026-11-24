@@ -71,8 +71,8 @@ We implement nine Solidity contracts, an EZKL proving pipeline, a router and a d
 \newcommand{\teaserGasText}{less gas than proving every\\decision, real Aave borrowers}
 \newcommand{\teaserReal}{228 / 386}
 \newcommand{\teaserRealText}{accounts warned $\ge$1 day before\\becoming liquidatable}
-\newcommand{\teaserPar}{TBD}
-\newcommand{\teaserParText}{speedup of a decision\\block on a real parallel EVM}
+\newcommand{\teaserPar}{3.74$\times$}
+\newcommand{\teaserParText}{374-decision block on a real\\parallel EVM, 4 threads}
 % Live L1/L2 fee study (scripts/l2_costs.js -> results/l2_costs.json).
 \newcommand{\leGasDate}{2026-11-24}
 \newcommand{\leEth}{1,699}
@@ -88,7 +88,22 @@ We implement nine Solidity contracts, an EZKL proving pipeline, a router and a d
 \newcommand{\leTestnetSentence}{}
 \newcommand{\leTtBaseYr}{1.47}
 % Results set from the parallel-EVM run and the fuzzing campaign.
-\newcommand{\pevmHeadline}{TBD}
+\newcommand{\pevmRows}{    Real verifier, deposit bonds & 374 & 1787.1\,ms & 2.06$\times$ & 3.74$\times$ & 3.99 \\
+    Real verifier, \code{msg.value} bonds & 374 & 1744.9\,ms & 2.06$\times$ & 3.67$\times$ & 3.99 \\
+    Real verifier, 70\% Tier 2 & 200 & 1499.2\,ms & 2.07$\times$ & 3.76$\times$ & 3.97 \\
+    Real verifier, 100 decisions & 100 & 457.6\,ms & 1.80$\times$ & 3.52$\times$ & 3.89 \\
+    Mock, deposit bonds & 374 & 23.4\,ms & 1.12$\times$ & 1.89$\times$ & 3.97 \\
+    Mock, \code{msg.value} bonds & 374 & 30.5\,ms & 1.05$\times$ & 1.11$\times$ & 3.97/3.13 \\
+    Mock, 50\% duplicates & 300 & 13.6\,ms & 0.78$\times$ & 0.91$\times$ & 3.93 \\
+    Mock, 6 oracle updates & 206 & 15.8\,ms & 0.94$\times$ & 1.16$\times$ & 3.97 \\
+    Mock, one sender & 200 & 15.8\,ms & 0.80$\times$ & 0.84$\times$ & 1.00 \\
+    Mock, array audit log & 374 & 23.1\,ms & 0.60$\times$ & 0.55$\times$ & 1.00 \\}
+\newcommand{\pevmHeadline}{3.74$\times$}
+\newcommand{\pevmValue}{3.67$\times$}
+\newcommand{\pevmDeposit}{1.89$\times$}
+\newcommand{\pevmFinal}{1.11$\times$}
+\newcommand{\pevmLegacy}{0.55$\times$}
+\newcommand{\pevmSingle}{0.84$\times$}
 \newcommand{\echidnaCalls}{100,117}
 \begin{teaserfigure}
   \centering
@@ -775,18 +790,19 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
     \toprule
     \textbf{Scenario (one block)} & \textbf{Bonds} & \textbf{Txs} & \textbf{Rev.} & \textbf{Rounds} & \textbf{16 thr s/o} & \textbf{64 thr s/o} & \textbf{Ab@16} & \textbf{Ab@64} & \textbf{Hottest shared write} \\
     \midrule
-    Final design, 374 decisions & delta & 374 & 0 & 1 & 15.32 / 15.32 & 54.75 / 54.75 & 0 & 0 & none \\
-    Final design, 374 decisions & RMW & 374 & 0 & 209 & 3.33 / 3.33 & 3.33 / 3.33 & 208 & 208 & engine balance (209 txs) \\
-    Deposit-funded bonds, 374 & either & 374 & 0 & 1 & 15.34 / 15.34 & 54.97 / 54.97 & 0 & 0 & none \\
+    Final design, 374 decisions & delta & 374 & 0 & 1 & 15.29 / 15.29 & 54.76 / 54.76 & 0 & 0 & none \\
+    Final design, 374 decisions & RMW & 374 & 0 & 209 & 3.65 / 3.65 & 3.65 / 3.65 & 208 & 208 & engine balance (209 txs) \\
+    Deposit-funded bonds, 374 & either & 374 & 0 & 1 & 15.30 / 15.30 & 54.75 / 54.75 & 0 & 0 & none \\
+    Real verifier, deposit bonds, 374 & either & 374 & 0 & 1 & 15.37 / 15.37 & 54.75 / 54.75 & 0 & 0 & none \\
     Array audit log (first design), 374 & either & 374 & 0 & 374 & 1.00 / 1.00 & 1.00 / 1.00 & 373 & 373 & log length slot (374 txs) \\
     \midrule
-    Final, 50 / 100 / 200 decisions & delta & -- & 0 & 1 & 13.2--15.0 & 31.4--48.4 & 0 & 0 & none \\
-    Contention 5\% (200 + 10 dups) & delta & 210 & 10 & 2 & 15.00 / 15.00 & 48.55 / 49.44 & 0 & 4 & none \\
-    Contention 20\% (200 + 40) & delta & 240 & 40 & 2 & 15.09 / 15.13 & 48.37 / 52.82 & 2 & 17 & none \\
-    Contention 50\% (200 + 100) & delta & 300 & 100 & 2 & 14.57 / 15.15 & 42.78 / 49.35 & 11 & 49 & none \\
-    Contention 20\% & RMW & 240 & 40 & 138 & 3.33 / 3.33 & 3.33 / 3.33 & 138 & 145 & engine balance \\
-    1 / 3 / 6 oracle heartbeats & delta & 201--206 & 0 & 2--3 & 15.0 / 14.6--14.8 & 47.3--48.5 / 42.3--45.7 & 4--6 & 16--27 & price feeds \\
-    Tier mix 80/15/5, 10/20/70 (s = o) & delta & 200 & 0 & 1 & 15.57, 15.12 & 43.58, 53.80 & 0 & 0 & none \\
+    Final, 50 / 100 / 200 decisions & delta & -- & 0 & 1 & 13.0--15.0 & 30.3--48.1 & 0 & 0 & none \\
+    Contention 5\% (200 + 10 dups) & delta & 210 & 10 & 2 & 14.92 / 14.92 & 50.57 / 51.47 & 0 & 4 & none \\
+    Contention 20\% (200 + 40) & delta & 240 & 40 & 2 & 15.02 / 15.10 & 48.46 / 52.05 & 2 & 18 & none \\
+    Contention 50\% (200 + 100) & delta & 300 & 100 & 2 & 14.43 / 15.01 & 42.87 / 49.58 & 11 & 51 & none \\
+    Contention 20\% & RMW & 240 & 40 & 138 & 3.65 / 3.65 & 3.65 / 3.65 & 139 & 147 & engine balance \\
+    1 / 3 / 6 oracle heartbeats & delta & 201--206 & 0 & 2--3 & 15.0 / 14.7--14.8 & 48.1--48.3 / 40.9--45.6 & 4--6 & 16--28 & price feeds \\
+    Tier mix 80/15/5, 10/20/70 (s = o) & delta & 200 & 0 & 1 & 15.42, 15.09 & 41.14, 52.99 & 0 & 0 & none \\
     One liquidator sends all 200 & delta & 200 & 0 & 200 & 1.00 / 0.99 & 1.00 / 0.99 & 199 & 199 & sender nonce \\
     \bottomrule
   \end{tabular}
@@ -806,11 +822,11 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
         grid=major, grid style={gray!20}]
       \addplot[gray,dashed] coordinates {(1,1) (2,2) (4,4) (8,8) (16,16) (32,32) (64,64)};
       \addlegendentry{ideal}
-      \addplot[tierzero,very thick,mark=*,mark size=1.6pt] coordinates {(1,1) (2,2.0) (4,3.98) (8,7.86) (16,15.34) (32,29.55) (64,54.97)};
+      \addplot[tierzero,very thick,mark=*,mark size=1.6pt] coordinates {(1,1) (2,2.0) (4,3.97) (8,7.87) (16,15.3) (32,29.44) (64,54.75)};
       \addlegendentry{deposit bonds (any balance model)}
-      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(1,1) (2,2.0) (4,3.97) (8,7.85) (16,15.32) (32,29.46) (64,54.75)};
+      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(1,1) (2,2.0) (4,3.97) (8,7.87) (16,15.29) (32,29.48) (64,54.76)};
       \addlegendentry{\code{msg.value} bonds, delta}
-      \addplot[tierone,thick,mark=triangle*,mark size=1.8pt] coordinates {(1,1) (2,1.89) (4,2.97) (8,3.33) (16,3.33) (32,3.33) (64,3.33)};
+      \addplot[tierone,thick,mark=triangle*,mark size=1.8pt] coordinates {(1,1) (2,1.9) (4,3.13) (8,3.63) (16,3.65) (32,3.65) (64,3.65)};
       \addlegendentry{\code{msg.value} bonds, RMW}
       \addplot[tiertwo,thick,mark=diamond*,mark size=1.8pt] coordinates {(1,1) (2,1.0) (4,1.0) (8,1.0) (16,1.0) (32,1.0) (64,1.0)};
       \addlegendentry{array audit log (first design)}
@@ -833,25 +849,45 @@ Models can miss shared state, so we measured it. For each scenario, \code{script
         label style={font=\footnotesize}, tick label style={font=\footnotesize},
         legend style={font=\scriptsize,at={(0.02,0.03)},anchor=south west,draw=none,fill=white,fill opacity=0.85,text opacity=1},
         grid=major, grid style={gray!20}]
-      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(0,48.44) (5,48.55) (10,48.66) (20,48.37) (30,47.10) (50,42.78)};
+      \addplot[accent,thick,mark=square*,mark size=1.4pt] coordinates {(0,48.05) (5,50.57) (10,49.24) (20,48.46) (30,46.92) (50,42.87)};
       \addlegendentry{pre-computed schedule}
-      \addplot[tierzero,thick,mark=*,mark size=1.6pt] coordinates {(0,48.44) (5,49.44) (10,50.95) (20,52.82) (30,49.12) (50,49.35)};
+      \addplot[tierzero,thick,mark=*,mark size=1.6pt] coordinates {(0,48.05) (5,51.47) (10,51.74) (20,52.05) (30,49.66) (50,49.58)};
       \addlegendentry{optimistic (Block-STM-style)}
 
     \end{axis}
   \end{tikzpicture}
-  \caption{Same-position contention in traced blocks of 200 decisions plus duplicates. Losing attempts revert at the lock and conflict only with the winner, so the block still needs just 2 strict rounds; speedup degrades gently. Optimistic aborts at 64 threads rise from 0 to 49 (Table~\ref{tab:parallel}).}
+  \caption{Same-position contention in traced blocks of 200 decisions plus duplicates. Losing attempts revert at the lock and conflict only with the winner, so the block still needs just 2 strict rounds; speedup degrades gently. Optimistic aborts at 64 threads rise from 0 to 51 (Table~\ref{tab:parallel}).}
   \label{fig:contention}
 \end{figure}
 
 Five findings stand out.
 \begin{enumerate}
-  \item \textbf{Per-position storage parallelizes.} A block of 374 decisions has no shared storage write at all. It needs one strict round and reaches 15.3$\times$ on 16 threads and 54.8$\times$ on 64. Scaling falls short of ideal only because transaction durations differ: one Tier-2 decision costs 3.3 times a Tier-0 one, so the longest transactions bound the makespan. The array audit log of our first design serializes the same block completely, whatever the engine.
-  \item \textbf{The balance is the hidden hot spot.} Storage keys alone would suggest the final design is conflict-free. The traces show that every \code{msg.value} bond also writes the engine's ETH balance. Treated as a read-modify-write, that single location makes the 209 bonded claims a chain: 3.33$\times$ at any thread count, with 208 aborts in the optimistic engine. Deposit-funded bonds (Section~\ref{sec:design-concurrency}) restore 15.3$\times$ under both balance models, for 5,238 gas per claim. As on historical Ethereum, conflicts concentrate on a little popular state~\cite{saraph2020empirical}; tracing found ours where our model had not.
-  \item \textbf{Racing liquidators cost little.} With 5--50\% duplicate attempts, losing attempts revert at the per-position lock, write nothing, and conflict only with the winner. The block still needs only 2 strict rounds, and 64-thread speedup stays at 42.8--52.8$\times$. Optimistic execution even beats the in-order schedule here: the schedule leaves a thread idle while it waits for a dependency, whereas the optimistic engine keeps every thread busy and pays only for a few aborts. The modelled scheduler had predicted 3--6 rounds, since it assumed losers write.
-  \item \textbf{Oracle updates cause little conflict.} Chainlink heartbeat updates inside the block conflict with every later decision on that market, which reads the feed. Six updates raise strict rounds to 3 and cause 6 aborts at 16 threads, costing up to 2\% of optimistic speedup at 16 threads and 13\% at 64.
+  \item \textbf{Per-position storage parallelizes.} A block of 374 decisions has no shared storage write at all. It needs one strict round and reaches 15.3$\times$ on 16 threads and 54.8$\times$ on 64, with the real verifier too. Scaling falls short of ideal only because transaction durations differ: one Tier-2 decision costs 3.3 times a Tier-0 one, so the longest transactions bound the makespan. The array audit log of our first design serializes the same block completely, whatever the engine.
+  \item \textbf{The balance is the hidden hot spot.} Storage keys alone would suggest the final design is conflict-free. The traces show that every \code{msg.value} bond also writes the engine's ETH balance. Treated as a read-modify-write, that single location makes the 209 bonded claims a chain: 3.65$\times$ at any thread count, with 208 aborts in the optimistic engine. Deposit-funded bonds (Section~\ref{sec:design-concurrency}) restore 15.3$\times$ under both balance models, for 5,238 gas per claim; the real parallel EVM below confirms both effects. As on historical Ethereum, conflicts concentrate on a little popular state~\cite{saraph2020empirical}; tracing found ours where our model had not.
+  \item \textbf{Racing liquidators cost little.} With 5--50\% duplicate attempts, losing attempts revert at the per-position lock, write nothing, and conflict only with the winner. The block still needs only 2 strict rounds, and 64-thread speedup stays at 42.9--52.1$\times$. Optimistic execution even beats the in-order schedule here: the schedule leaves a thread idle while it waits for a dependency, whereas the optimistic engine keeps every thread busy and pays only for a few aborts. The modelled scheduler had predicted 3--6 rounds, since it assumed losers write.
+  \item \textbf{Oracle updates cause little conflict.} Chainlink heartbeat updates inside the block conflict with every later decision on that market, which reads the feed. Six updates raise strict rounds to 3 and cause 6 aborts at 16 threads, costing up to 2\% of optimistic speedup at 16 threads and 15\% at 64.
   \item \textbf{Parallelism needs many senders.} A single liquidator account submitting all 200 decisions serializes the block through its own nonce (1.0$\times$). Parallel execution helps a market of liquidators, not one bot.
 \end{enumerate}
+
+\paragraph{On a real parallel EVM.}
+\label{sec:eval-pevm}
+Simulated engines can be wrong about what a real one does, so we executed the traced blocks with RISE \code{pevm}~\cite{risepevm}, an open-source Block-STM implementation of the EVM in Rust. \code{concurrency\_trace.js} exports each block with every account, code and storage slot it touches; a small harness loads it into \code{pevm}'s in-memory state, executes it sequentially and in parallel, checks that both give identical results and that every transaction's gas and status equal Hardhat's receipts (they do, for all 35 blocks, under the Osaka rules Hardhat runs), and takes the median of 15--25 runs. Five more blocks use the deployed Halo2 verifier and real proofs. Table~\ref{tab:pevm} shows the results on our 4-vCPU machine.
+
+\begin{table}[t]
+  \caption{Measured speedup of RISE \code{pevm} (Block-STM) over its own sequential execution, 4 vCPUs. Real verifier: Tier-2 decisions verify real proofs; mock: a stub verifier, so blocks execute about 75$\times$ faster and the scheduler's own overhead shows.}
+  \label{tab:pevm}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lrrrrr@{}}
+    \toprule
+    \textbf{Block} & \textbf{Txs} & \textbf{Seq.} & \textbf{2 thr} & \textbf{4 thr} & \textbf{Sim.\ 4} \\
+    \midrule
+\pevmRows
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The real engine reproduces the simulation's ranking. With the real verifier, a block of 374 decisions runs \pevmHeadline{} faster on four threads, against 3.99$\times$ simulated; the expensive proof verifications are independent, so even \code{msg.value} bonds reach \pevmValue{}, because their conflicts touch only the cheap claims. With a stub verifier the same blocks are dominated by Block-STM's own bookkeeping: deposit-funded bonds still gain \pevmDeposit{}, \code{msg.value} bonds only \pevmFinal{}, the shared balance write the traces found, and the array audit log of our first design is \emph{slower} in parallel (\pevmLegacy{}) because every transaction re-executes. One liquidator sending a whole block gains nothing (\pevmSingle{}). The machine has four cores, so these are not the 16- and 64-thread figures above, but at four threads the measured speedups of the real-verifier blocks are within 10\% of the simulated ones.
 
 \paragraph{Competing liquidator threads on a live node.}
 \label{sec:eval-race}
@@ -875,7 +911,7 @@ Finally, we ran $K$ liquidator bots as real concurrent threads, each with its ow
   \end{tabular}
 \end{table}
 
-\paragraph{Limits of these results.} Ethereum clients execute blocks sequentially today. Our speedups are what a parallel engine could achieve on TrustTier's real access patterns, with gas as a stand-in for execution time, not measured wall-clock time of a parallel client.
+\paragraph{Limits of these results.} Ethereum clients execute blocks sequentially today. The 16- and 64-thread speedups are simulated, with gas as a stand-in for time; the \code{pevm} measurements are wall-clock but on four cores and in-memory state, without a client's storage I/O.
 
 \subsection{Proving throughput}
 \label{sec:eval-proving}

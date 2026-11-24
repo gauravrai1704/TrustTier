@@ -1870,5 +1870,157 @@
    "64": 0
   },
   "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "real_deposit_n200",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 122.6,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.96,
+   "8": 7.8,
+   "16": 14.75,
+   "32": 27.16,
+   "64": 52.28
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 1.99,
+   "4": 3.96,
+   "8": 7.8,
+   "16": 14.75,
+   "32": 27.16,
+   "64": 52.28
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "real_deposit_n374",
+  "balance_mode": "delta",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 228.27,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.99,
+   "8": 7.87,
+   "16": 15.37,
+   "32": 29.31,
+   "64": 54.75
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.99,
+   "8": 7.87,
+   "16": 15.37,
+   "32": 29.31,
+   "64": 54.75
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "real_deposit_t2heavy",
+  "balance_mode": "delta",
+  "txs": 200,
+  "succeeded": 200,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 159.3,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.84,
+   "16": 15.4,
+   "32": 29.8,
+   "64": 53.1
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.97,
+   "8": 7.84,
+   "16": 15.4,
+   "32": 29.8,
+   "64": 53.1
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
+  "scenario": "real_value_n374",
+  "balance_mode": "delta",
+  "txs": 374,
+  "succeeded": 374,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 227.18,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.99,
+   "8": 7.87,
+   "16": 15.37,
+   "32": 29.28,
+   "64": 54.76
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.99,
+   "8": 7.87,
+   "16": 15.37,
+   "32": 29.28,
+   "64": 54.76
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
  }
 ]
