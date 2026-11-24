@@ -199,7 +199,11 @@ async function runScenario(name, opts) {
 
   // Build the block.
   await network.provider.send("evm_setAutomine", [false]);
-  await network.provider.send("evm_setBlockGasLimit", ["0x" + (4n * 10n ** 9n).toString(16)]);
+  // Default: an oversized block so every decision lands in one block. With
+  // opts.blockGasLimit (mainnet's 60 M), the block keeps what fits, as a block
+  // producer would, and the rest is dropped.
+  const limit = BigInt(opts.blockGasLimit || 4n * 10n ** 9n);
+  await network.provider.send("evm_setBlockGasLimit", ["0x" + limit.toString(16)]);
   const nonces = {};
   const bondValue = opts.bonds === "deposit" ? 0n : BOND;
   const sent = [];
@@ -225,8 +229,14 @@ async function runScenario(name, opts) {
   }
   await network.provider.send("evm_mine", []);
   await network.provider.send("evm_setAutomine", [true]);
-  const block = await ethers.provider.getBlock("latest");
-  if (block.transactions.length !== sent.length) throw new Error(`block has ${block.transactions.length}/${sent.length} txs`);
+  let block = await ethers.provider.getBlock("latest");
+  if (block.transactions.length !== sent.length) {
+    if (!opts.blockGasLimit) throw new Error(`block has ${block.transactions.length}/${sent.length} txs`);
+    const inBlock = new Set(block.transactions);
+    for (const x of sent) if (!inBlock.has(x.hash)) await network.provider.send("hardhat_dropTransaction", [x.hash]);
+    sent.splice(0, sent.length, ...sent.filter((x) => inBlock.has(x.hash)));
+    console.log(`  ${name}: ${sent.length} of ${plan.length} submitted decisions fit in a ${Number(limit) / 1e6} M-gas block (${Number(block.gasUsed) / 1e6} M used)`);
+  }
   const order = Object.fromEntries(block.transactions.map((h, i) => [h, i]));
 
   const txs = [];
@@ -324,6 +334,11 @@ async function main() {
   for (const n of [100, 200, 374]) S.push([`real_deposit_n${n}`, { n, mix: MIX, bonds: "deposit", realVerifier: true }]);
   S.push(["real_deposit_t2heavy", { n: 200, mix: [0.1, 0.2, 0.7], bonds: "deposit", realVerifier: true }]);
   S.push(["real_value_n374", { n: 374, mix: MIX, realVerifier: true }]);
+  // A block of mainnet size: the tier mix TrustTier chose for real Aave V2
+  // borrowers (evaluation/aave_eval.py, adaptive bands: 70.1 / 23.9 / 6.0 %),
+  // more decisions submitted than fit, and Ethereum's 60 M-gas limit.
+  const AAVE_MIX = [23620 / 33676, 8033 / 33676, 2023 / 33676];
+  S.push(["real_mainnet_block", { n: 220, mix: AAVE_MIX, bonds: "deposit", realVerifier: true, blockGasLimit: 60_000_000 }]);
   // The same experiments with deposit-funded bonds, the deployed design.
   for (const c of [0.1, 0.3, 0.5]) S.push([`deposit_contention${Math.round(c * 100)}`, { n: 200, mix: MIX, contention: c, bonds: "deposit" }]);
   for (const u of [1, 6]) S.push([`deposit_oracle${u}`, { n: 200, mix: MIX, oracleUpdates: u, bonds: "deposit" }]);

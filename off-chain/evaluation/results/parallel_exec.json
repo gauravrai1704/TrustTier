@@ -1986,6 +1986,44 @@
   "keys_written_by_more_than_one_tx": []
  },
  {
+  "scenario": "real_mainnet_block",
+  "balance_mode": "delta",
+  "txs": 166,
+  "succeeded": 166,
+  "reverted": 0,
+  "rounds_strict": 1,
+  "raw_edges": 0,
+  "critical_path_speedup": 56.86,
+  "speedup_schedule": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.44,
+   "16": 13.65,
+   "32": 23.26,
+   "64": 35.1
+  },
+  "speedup_optimistic": {
+   "1": 1.0,
+   "2": 2.0,
+   "4": 3.89,
+   "8": 7.44,
+   "16": 13.65,
+   "32": 23.26,
+   "64": 35.1
+  },
+  "aborts": {
+   "1": 0,
+   "2": 0,
+   "4": 0,
+   "8": 0,
+   "16": 0,
+   "32": 0,
+   "64": 0
+  },
+  "keys_written_by_more_than_one_tx": []
+ },
+ {
   "scenario": "real_value_n374",
   "balance_mode": "delta",
   "txs": 374,
