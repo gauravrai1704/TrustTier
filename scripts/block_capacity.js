@@ -51,7 +51,8 @@ async function main() {
   const signers = await ethers.getSigners();
   const real = await (await ethers.getContractFactory("Halo2Verifier")).deploy();
   const t = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, weightsHash: WH,
-    price: BigInt(high.price_now), pricePast: BigInt(high.price_past), vol: BigInt(high.vol_answer) });
+    price: BigInt(high.price_now), pricePast: BigInt(high.price_past), vol: BigInt(high.vol_answer),
+    thresholdBps: high.liquidation_threshold_bps });
   const bond = await t.engine.requiredBond();
   for (const s of signers) await t.engine.connect(s).deposit({ value: ethers.parseEther("20") });
 

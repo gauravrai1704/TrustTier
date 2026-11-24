@@ -10,7 +10,7 @@
   "hidden_layer_sizes": [
     8
   ],
-  "model_version": "v2",
+  "model_version": "v3",
   "input_normalization": {
     "method": "min-max to [0, 1]",
     "bounds": [
@@ -37,9 +37,12 @@
     ]
   },
   "logit_clip": 8.0,
-  "positive_rate": 0.421,
-  "validation_accuracy": 0.95875,
-  "validation_roc_auc": 0.9949753574610174,
+  "training_data": "real Aave V2 snapshots (1176 accounts, 40651 rows)",
+  "positive_rate": 0.07094536419768271,
+  "validation_accuracy": 0.8872089507106139,
+  "validation_roc_auc": 0.9101032047800109,
+  "validation_precision": 0.34367726920093095,
+  "validation_recall": 0.6187150837988827,
   "onnx_path": "artifacts/risk_model.onnx",
-  "model_hash_keccak256": "0x2a59f50fa3769e611c0d3c8e438d78af9d18b97ca2fa299923b784be88b44476"
+  "model_hash_keccak256": "0xc930b1f3628d439e39ac64e1fc4c7c93c0adb9bba079a8d5ccfbab856e045933"
 }

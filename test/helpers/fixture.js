@@ -39,7 +39,7 @@ async function deployTrustTier(opts = {}) {
   await volFeed.updateAnswer(opts.vol ?? VOL);
 
   const pool = await (await ethers.getContractFactory("MockLendingPool")).deploy();
-  await pool.addMarket(await priceFeed.getAddress(), await volFeed.getAddress(), 8000);
+  await pool.addMarket(await priceFeed.getAddress(), await volFeed.getAddress(), opts.thresholdBps ?? 8000);
 
   const registry = await (await ethers.getContractFactory("ModelRegistry")).deploy();
   const auditLog = await (await ethers.getContractFactory("TierAuditLog")).deploy();

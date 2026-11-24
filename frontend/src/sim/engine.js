@@ -44,6 +44,7 @@ const MARKETS = [
   { name: "ETH", price: 2000, past: 2200, vol: 35, thresholdBps: 8000 },
   { name: "WBTC", price: 60000, past: 59000, vol: 20, thresholdBps: 7500 },
   { name: "LINK", price: 15, past: 14, vol: 60, thresholdBps: 7000 },
+  { name: "ETH volatile", price: 2000, past: 2200, vol: 60, thresholdBps: 8600 },
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

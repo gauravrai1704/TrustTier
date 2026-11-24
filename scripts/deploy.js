@@ -118,6 +118,10 @@ async function main() {
     { name: "ETH", price: 2000, past: 2200, vol: 35, thresholdBps: 8000 },
     { name: "WBTC", price: 60000, past: 59000, vol: 20, thresholdBps: 7500 },
     { name: "LINK", price: 15, past: 14, vol: 60, thresholdBps: 7000 },
+    // A volatile market for the guided demo: Aave's WETH threshold (0.86) and
+    // 60% volatility, so a position at LTV 0.78 (delta 8%) may take a cheap
+    // Tier-1 claim, yet the model flags it as high risk.
+    { name: "ETH volatile", price: 2000, past: 2200, vol: 60, thresholdBps: 8600 },
   ];
   const e8 = (x) => BigInt(Math.round(x * 1e8));
 

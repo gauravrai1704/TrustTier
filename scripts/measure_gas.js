@@ -29,7 +29,8 @@ async function main() {
   const WH = BigInt(samplesFile.weights_hash);
   const ins = (s) => s.public_inputs.map(BigInt);
   const ltvOf = (s) => (Number(s.debt_usd) / Number(s.collateral_usd)).toFixed(4);
-  const feedOpts = (s) => ({ price: BigInt(s.price_now), pricePast: BigInt(s.price_past), vol: BigInt(s.vol_answer) });
+  const feedOpts = (s) => ({ price: BigInt(s.price_now), pricePast: BigInt(s.price_past), vol: BigInt(s.vol_answer),
+    thresholdBps: s.liquidation_threshold_bps });
 
   const real = await (await ethers.getContractFactory("Halo2Verifier")).deploy();
   out.deploy_Halo2Verifier = Number((await real.deploymentTransaction().wait()).gasUsed);

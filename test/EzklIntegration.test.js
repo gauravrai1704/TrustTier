@@ -41,6 +41,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
       price: BigInt(sample.price_now),
       pricePast: BigInt(sample.price_past),
       vol: BigInt(sample.vol_answer),
+      thresholdBps: sample.liquidation_threshold_bps,
     });
     const ltv = (Number(sample.debt_usd) / Number(sample.collateral_usd)).toFixed(4);
     await t.openPosition(POSITION, ltv, { ageDays: sample.age_days, topupDays: sample.topup_days_ago });
@@ -57,7 +58,8 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
     it("the contract computes the same features the proof was made on", async function () {
       const [q, delta] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
       expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
-      expect(s.inputs.slice(0, 5)).to.deep.equal(s.q.map(BigInt));
+      expect(s.inputs.slice(1, 6)).to.deep.equal(s.q.map(BigInt));
+      expect(s.inputs[0]).to.equal(weightsHash);
       expect(s.inputs[6]).to.equal(1n);
       expect(delta).to.equal(8000n - 9300n);
     });

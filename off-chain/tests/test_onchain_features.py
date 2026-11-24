@@ -35,7 +35,7 @@ class TestQuantization(unittest.TestCase):
         for s in samples:
             q = quantize(_sample_position(s), s["price_now"], s["price_past"], s["vol_answer"], s["vol_decimals"], NOW)
             self.assertEqual(q, s["q"], s["name"])
-            self.assertEqual(q, [int(x) for x in s["public_inputs"][:5]], s["name"])
+            self.assertEqual(q, [int(x) for x in s["public_inputs"][1:6]], s["name"])  # instance 0 is the weights hash
 
     def test_model_label_on_q_matches_the_proven_label(self):
         model = RiskModel()

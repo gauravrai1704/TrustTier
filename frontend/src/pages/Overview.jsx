@@ -42,8 +42,11 @@ function Ladder() {
   );
 }
 
+// The "ETH volatile" market (deploy.js / sim engine): the last market listed.
+const DEMO_MARKET = 3;
+
 const STEPS = [
-  { title: "Open a position near the boundary", text: "ETH collateral at LTV 0.72: δ = 8%, so the chain accepts Tier 1 or 2. The model sees high volatility and a falling price." },
+  { title: "Open a position near the boundary", text: "ETH collateral at LTV 0.78 in a volatile market (threshold 0.86, 60% volatility): δ = 8%, so the chain still accepts a cheap Tier-1 claim. The model, trained on real Aave liquidations, sees a new account that has not topped up in months, and flags high risk." },
   { title: "A dishonest router claims it is safe", text: "It posts a cheap Tier-1 claim with a bond and keeps its commitment closed, hoping nobody checks." },
   { title: "A watcher proves the claim false", text: "A Tier-2 proof on the features the claim snapshotted says HIGH RISK. Commit, then reveal: the bond is slashed." },
   { title: "The honest route: a zk proof", text: "Re-routed, the position needs Tier 2. The verified proof approves a liquidation — nothing else can." },
@@ -60,7 +63,7 @@ function GuidedDemo() {
 
   async function next() {
     if (step === 0) {
-      const p = await run("s", () => backend.openPosition({ market: 0, ltv: 0.72, account_age_days: 30, time_since_last_topup_days: 60 }));
+      const p = await run("s", () => backend.openPosition({ market: DEMO_MARKET, ltv: 0.78, account_age_days: 5, time_since_last_topup_days: 89 }));
       if (!p) return;
       setPid(p.position_id);
       note(`#${p.position_id}: δ ${(p.delta_bps / 100).toFixed(1)}%, model P(high) ${(p.model_p_high * 100).toFixed(0)}%, chain allows ${p.allowed_tier.replace("_", " ")}`);

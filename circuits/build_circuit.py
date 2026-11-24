@@ -96,13 +96,14 @@ SAMPLES = [
         "price_now": 2_000 * 10**8, "price_past": 1_900 * 10**8, "vol_answer": 5 * 10**8, "vol_decimals": 8,
         "topup_days_ago": 1, "age_days": 1_500,
     },
-    {   # LTV 0.72 (delta 8%: the chain allows a cheap Tier-1 claim), but the price fell
-        # 16.7% in 24 h, 50% volatility, no top-up for 60 days, 30-day-old account:
+    {   # The guided demo's volatile market: Aave's WETH threshold 0.86, LTV 0.78
+        # (delta 8%: the chain allows a cheap Tier-1 claim at 60% volatility),
+        # price down 9.1% in 24 h, no top-up for 89 days, 5-day-old account:
         # the model says high risk, so a Tier-1 "safe" claim on it is slashable.
         "name": "watch_high", "expected_label": 1,
-        "collateral_usd": 2_000 * 10**8, "debt_usd": 1_440 * 10**8, "liquidation_threshold_bps": 8_000,
-        "price_now": 2_000 * 10**8, "price_past": 2_400 * 10**8, "vol_answer": 50 * 10**8, "vol_decimals": 8,
-        "topup_days_ago": 60, "age_days": 30,
+        "collateral_usd": 2_000 * 10**8, "debt_usd": 1_560 * 10**8, "liquidation_threshold_bps": 8_600,
+        "price_now": 2_000 * 10**8, "price_past": 2_200 * 10**8, "vol_answer": 60 * 10**8, "vol_decimals": 8,
+        "topup_days_ago": 89, "age_days": 5,
     },
 ]
 
