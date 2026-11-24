@@ -37,8 +37,8 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
   describe("on-chain features and delta", function () {
     it("computes the five quantized features exactly as the off-chain mirror does", async function () {
       const [q, delta] = await engine.currentFeatures(RISKY, PAST_ROUND);
-      // ltv 0.93: 1860e8 * 2048 / (3 * 2000e8) = 634
-      expect(q[0]).to.equal(634n);
+      // utilization 0.93 / 0.80: 1860e8 * 20_480_000 / (3 * 2000e8 * 8000) = 793
+      expect(q[0]).to.equal(793n);
       // volatility 35%: 35e8 * 1024 / (100 * 1e8) = 358
       expect(q[1]).to.equal(358n);
       // momentum: 2000 * 512 / 2200 = 465
@@ -52,12 +52,12 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
     it("updates when the lending position changes (a top-up resets time-since-top-up)", async function () {
       await pool.addCollateral(RISKY, 10n ** 18n); // collateral doubles: LTV 0.465
       const [q, delta] = await engine.currentFeatures(RISKY, PAST_ROUND);
-      expect(q[0]).to.equal(317n);
+      expect(q[0]).to.equal(396n);
       expect(q[3]).to.equal(0n);
       expect(delta).to.equal(8000n - 4650n);
     });
 
-    it("clamps features to their bounds (LTV above 1.5 -> 1024)", async function () {
+    it("clamps features to their bounds (utilization above 1.5 -> 1024)", async function () {
       await t.openPosition(9, "1.80");
       const [q] = await engine.currentFeatures(9, PAST_ROUND);
       expect(q[0]).to.equal(1024n);

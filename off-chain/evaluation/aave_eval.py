@@ -108,31 +108,47 @@ def main():
             }
         report["policies"][name] = r
 
-    # Early warning on liquidated accounts (adaptive policy).
+    # Early warning on liquidated accounts (adaptive bands), and approvals on
+    # the random sample: TrustTier (Tier 2 AND the proven model says high risk)
+    # against a model-free rule that approves whenever delta is in the Tier-2
+    # band. The health-factor rule itself acts only at HF < 1 (zero lead).
     tier, _ = route(df, True)
-    df["approves"] = (tier == 2) & (df.model_label.values == 1) & (df.health_factor.values >= 1.0)
-    lead = []
-    for u, g in df[df["sample"] == "liquidated"].groupby("user"):
-        g = g.sort_values("day")
-        first = g[g.health_factor < 1.0]
-        if not len(first):
-            continue
-        d0 = int(first.day.iloc[0])
-        before = g[(g.day < d0) & (g.day >= d0 - 14) & g.approves]
-        lead.append(d0 - int(before.day.min()) if len(before) else 0)
-    lead = np.array(lead)
-    report["early_warning"] = {
-        "liquidated_accounts_observed": int(len(lead)),
-        "flagged_at_least_1_day_before": int((lead >= 1).sum()),
-        "flagged_at_least_3_days_before": int((lead >= 3).sum()),
-        "median_lead_days_when_flagged": float(np.median(lead[lead >= 1])) if (lead >= 1).any() else 0.0,
-    }
+    live_now = df.health_factor.values >= 1.0
+    policies = {"trusttier_model": (tier == 2) & (df.model_label.values == 1) & live_now,
+                "delta_only_baseline": (tier == 2) & live_now}
+    report["early_warning"], report["false_alarms_random_sample"] = {}, {}
+    for pname, approves in policies.items():
+        df["approves"] = approves
+        lead = []
+        for u, g in df[df["sample"] == "liquidated"].groupby("user"):
+            g = g.sort_values("day")
+            first = g[g.health_factor < 1.0]
+            if not len(first):
+                continue
+            d0 = int(first.day.iloc[0])
+            before = g[(g.day < d0) & (g.day >= d0 - 14) & g.approves]
+            lead.append(d0 - int(before.day.min()) if len(before) else 0)
+        lead = np.array(lead)
+        report["early_warning"][pname] = {
+            "liquidated_accounts_observed": int(len(lead)),
+            "flagged_at_least_1_day_before": int((lead >= 1).sum()),
+            "flagged_at_least_3_days_before": int((lead >= 3).sum()),
+            "median_lead_days_when_flagged": float(np.median(lead[lead >= 1])) if (lead >= 1).any() else 0.0,
+        }
+        rnd = df[(df["sample"] == "random") & (df.health_factor >= 1.0)]
+        appr = rnd.approves.values
+        report["false_alarms_random_sample"][pname] = {
+            "approved_soft_liquidations": int(appr.sum()),
+            "of_which_liquidatable_within_7d": int((appr & rnd.liq_7d.values).sum()),
+            "position_days": int(len(rnd)),
+        }
+    # Ranking quality on the random sample (base rate of becoming liquidatable within 7 days).
+    from sklearn.metrics import roc_auc_score
     rnd = df[(df["sample"] == "random") & (df.health_factor >= 1.0)]
-    appr = rnd.approves.values
-    report["false_alarms_random_sample"] = {
-        "approved_soft_liquidations": int(appr.sum()),
-        "of_which_liquidatable_within_7d": int((appr & rnd.liq_7d.values).sum()),
-        "position_days": int(len(rnd)),
+    report["ranking_auc_random_sample"] = {
+        "model_p_high": round(float(roc_auc_score(rnd.liq_7d, rnd.p_high)), 4),
+        "minus_delta": round(float(roc_auc_score(rnd.liq_7d, -rnd.delta)), 4),
+        "base_rate_7d": round(float(rnd.liq_7d.mean()), 5),
     }
     os.makedirs(RESULTS, exist_ok=True)
     with open(os.path.join(RESULTS, "aave_eval.json"), "w") as f:
@@ -146,7 +162,8 @@ def main():
                          f"{v['always_zk_gas_M']} | {v['saving_pct']}% | {v['cheap_claims_liquidatable_1d']} / {v['cheap_claims_liquidatable_7d']} |")
         lines.append("")
     lines += ["## Early warning (liquidated accounts, adaptive bands)", "", json.dumps(report["early_warning"], indent=2), "",
-              "## Approved soft liquidations on the random sample", "", json.dumps(report["false_alarms_random_sample"], indent=2)]
+              "## Approved soft liquidations on the random sample", "", json.dumps(report["false_alarms_random_sample"], indent=2), "",
+              "## Ranking (random sample, liquidatable within 7 days)", "", json.dumps(report["ranking_auc_random_sample"], indent=2)]
     with open(os.path.join(RESULTS, "aave_eval.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines))

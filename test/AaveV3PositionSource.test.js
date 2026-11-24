@@ -49,7 +49,7 @@ describe("AaveV3PositionSource", function () {
   it("the engine computes features and delta from Aave data", async function () {
     await source.register(alice.address);
     const [q, delta] = await t.engine.currentFeatures(0, PAST_ROUND);
-    expect(q[0]).to.equal(634n); // LTV 0.93, same as the MockLendingPool test
+    expect(q[0]).to.equal(793n); // utilization 0.93 / 0.80, same as the MockLendingPool test
     expect(q[3]).to.equal(0n);   // just registered
     expect(delta).to.equal(-1300n);
   });

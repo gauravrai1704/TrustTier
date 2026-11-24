@@ -87,7 +87,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
     });
 
     it("rejects the proof once the price moves", async function () {
-      await t.priceFeed.updateAnswer(BigInt(s.price_now) - 10n ** 8n);
+      await t.priceFeed.updateAnswer((BigInt(s.price_now) * 98n) / 100n); // a 2% move
       await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs))
         .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
     });

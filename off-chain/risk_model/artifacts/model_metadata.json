@@ -1,6 +1,6 @@
 {
   "feature_names": [
-    "ltv",
+    "utilization",
     "collateral_volatility_30d",
     "price_momentum_24h",
     "time_since_last_topup_days",
@@ -39,10 +39,10 @@
   "logit_clip": 8.0,
   "training_data": "real Aave V2 snapshots (1176 accounts, 40651 rows)",
   "positive_rate": 0.07094536419768271,
-  "validation_accuracy": 0.8872089507106139,
-  "validation_roc_auc": 0.9101032047800109,
-  "validation_precision": 0.34367726920093095,
-  "validation_recall": 0.6187150837988827,
+  "validation_accuracy": 0.9084769680475758,
+  "validation_roc_auc": 0.9214039916368018,
+  "validation_precision": 0.4156414762741652,
+  "validation_recall": 0.6606145251396648,
   "onnx_path": "artifacts/risk_model.onnx",
-  "model_hash_keccak256": "0xc930b1f3628d439e39ac64e1fc4c7c93c0adb9bba079a8d5ccfbab856e045933"
+  "model_hash_keccak256": "0x749c7e40df794f4bd31d4dd12abdcaa1d9219f835d283f2ed4daa4eb85178e11"
 }

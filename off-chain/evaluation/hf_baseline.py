@@ -71,7 +71,7 @@ T0_MIN, T1_MIN = 0.15, 0.05  # tier bands on delta (LiquidationEngine)
 def _quantize(ltv, vol, mom, topup_days, age_days):
     """Vectorized mirror of LiquidationEngine.currentFeatures (floors included)."""
     q = np.empty((len(ltv), 5), dtype=np.int64)
-    q[:, 0] = np.minimum(np.floor(ltv * 2048 / 3), 1024)
+    q[:, 0] = np.minimum(np.floor(ltv / LT * 2048 / 3), 1024)
     q[:, 1] = np.minimum(np.floor(vol * 1024), 1024)
     q[:, 2] = np.minimum(np.floor((1 + mom) * 512), 1024)
     q[:, 3] = np.floor(np.minimum(np.floor(topup_days), 90) * 1024 / 90)

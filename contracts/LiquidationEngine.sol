@@ -380,7 +380,7 @@ contract LiquidationEngine is Ownable {
     /// @param pastRoundId The price feed round that was current 24 hours ago
     ///        (found off-chain by walking back from the latest round; checked
     ///        here). Needed for the momentum feature.
-    /// @return q [ltv, volatility, momentum, topup, age], each in [0, 1024]
+    /// @return q [utilization, volatility, momentum, topup, age], each in [0, 1024]
     /// @return deltaBps liquidation threshold minus LTV, in basis points
     function currentFeatures(uint256 positionId, uint80 pastRoundId)
         public
@@ -391,8 +391,9 @@ contract LiquidationEngine is Ownable {
         IPositionSource.Position memory p = positionSource.getPosition(positionId);
         if (p.collateralUsd == 0) revert UnknownPosition(positionId);
 
-        // LTV: ltv / 1.5 * 1024 == debt * 2048 / (3 * collateral)
-        q[0] = _min(p.debtUsd * 2048 / (3 * p.collateralUsd), SCALE);
+        // Utilization u = LTV / threshold (1.0 = liquidatable):
+        // u / 1.5 * 1024 == debt * 10_000 * 2048 / (3 * collateral * thresholdBps)
+        q[0] = _min(p.debtUsd * 20_480_000 / (3 * p.collateralUsd * p.liquidationThresholdBps), SCALE);
         deltaBps = int256(p.liquidationThresholdBps) - int256(p.debtUsd * 10_000 / p.collateralUsd);
 
         // Volatility: the feed answers in percent; normalized range [0, 1]

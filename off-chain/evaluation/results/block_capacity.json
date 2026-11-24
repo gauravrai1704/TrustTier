@@ -1,0 +1,36 @@
+{
+  "block_gas_limit": 60000000,
+  "note": "one block each; Tier-2 rows use the real EZKL verifier and a real proof",
+  "rows": [
+    {
+      "scenario": "tier0_heuristic",
+      "submitted": 320,
+      "included": 216,
+      "succeeded": 216,
+      "reverted": 0,
+      "gas_used": 59605632,
+      "gas_limit": 60000000,
+      "fill": 0.9934
+    },
+    {
+      "scenario": "tier1_commitment",
+      "submitted": 320,
+      "included": 172,
+      "succeeded": 172,
+      "reverted": 0,
+      "gas_used": 59603560,
+      "gas_limit": 60000000,
+      "fill": 0.9934
+    },
+    {
+      "scenario": "tier2_zk_proof",
+      "submitted": 140,
+      "included": 59,
+      "succeeded": 59,
+      "reverted": 0,
+      "gas_used": 59256473,
+      "gas_limit": 60000000,
+      "fill": 0.9876
+    }
+  ]
+}

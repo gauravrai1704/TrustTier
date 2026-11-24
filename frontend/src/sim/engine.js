@@ -185,7 +185,7 @@ export class SimEngine {
     const collateralUsd = p.collateral * price;
     const ltv = p.debt / collateralUsd;
     const q = [
-      Math.min(Math.floor((ltv * 2048) / 3), 1024),
+      Math.min(Math.floor((p.debt * 20_480_000) / (3 * collateralUsd * m.thresholdBps)), 1024),
       Math.min(Math.floor((m.vol * 1024) / 100), 1024),
       Math.min(Math.floor((price * 512) / this._price(m, this.s.time - DAY)), 1024),
       Math.floor((Math.min(Math.floor((this.s.time - p.lastTopUpAt) / DAY), 90) * 1024) / 90),
@@ -311,7 +311,7 @@ export class SimEngine {
     else if (challengeable) state = "CLAIM_OPEN";
     else if (st.decided) state = st.bond === 0n ? "SETTLED" : "AWAITING_SETTLEMENT";
     const bounds = [[0, 1.5], [0, 1], [-1, 1], [0, 90], [0, 2000]];
-    const names = ["ltv", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"];
+    const names = ["utilization", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"];
     return {
       position_id: id, market: p.market, features_q: f.q,
       features: Object.fromEntries(names.map((n, i) => [n, +(bounds[i][0] + (f.q[i] / 1024) * (bounds[i][1] - bounds[i][0])).toFixed(4)])),

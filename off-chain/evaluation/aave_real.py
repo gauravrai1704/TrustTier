@@ -132,10 +132,12 @@ def main():
     df = pd.DataFrame(rows)
     df = df[(df.debt_eth >= MIN_DEBT_ETH) & (df.collateral_eth > 0)].dropna(subset=["ltv", "collateral_volatility_30d"])
     df["delta"] = df.liq_threshold - df.ltv
+    df["utilization"] = df.ltv / df.liq_threshold
     df.to_parquet(OUT_POS)
 
     train = df[df.full_horizon & (df.health_factor >= 1.0)]
-    feats = ["ltv", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"]
+    train = train.assign(utilization=train.ltv / train.liq_threshold)
+    feats = ["utilization", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"]
     X = np.array([normalize_vector(r) for r in train[feats].values.tolist()])
     y = train.label.values.astype(int)
     groups = train.user.values

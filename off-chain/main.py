@@ -351,7 +351,7 @@ def position_features(position_id: int, refresh: bool = True):
     return {
         "position_id": position_id,
         "features_q": view["q"],
-        "features": dict(zip(["ltv", "collateral_volatility_30d", "price_momentum_24h",
+        "features": dict(zip(["utilization", "collateral_volatility_30d", "price_momentum_24h",
                               "time_since_last_topup_days", "account_age_days"],
                              _dequantize(view["q"]))),
         "delta_bps": view["delta_bps"],

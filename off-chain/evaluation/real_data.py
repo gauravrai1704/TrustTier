@@ -58,6 +58,7 @@ class RealPosition:
     def to_features(self) -> dict:
         return {
             "ltv": self.ltv,
+            "liquidation_threshold": self.liquidation_threshold,
             "collateral_volatility_30d": self.collateral_volatility_30d,
             "price_momentum_24h": self.price_momentum_24h,
             "time_since_last_topup_days": self.time_since_last_topup_days,

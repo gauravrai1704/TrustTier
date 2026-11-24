@@ -17,7 +17,7 @@ model was exported with, since ONNX Runtime takes a plain float array.
 """
 
 FEATURE_NAMES = [
-    "ltv",                      # current loan-to-value ratio, in [0, 1.5]
+    "utilization",              # LTV / liquidation threshold (1.0 = liquidatable), in [0, 1.5]
     "collateral_volatility_30d",  # 30-day realized volatility of the collateral asset, in [0, 1]
     "price_momentum_24h",         # signed 24h price change of the collateral asset, in [-1, 1]
     "time_since_last_topup_days",  # days since the borrower last added collateral/repaid, in [0, 90]
@@ -34,7 +34,7 @@ N_FEATURES = len(FEATURE_NAMES)
 # needed 2^18 rows and minutes per proof. Values outside the bounds are
 # clamped to them, on-chain and off-chain alike.
 FEATURE_BOUNDS = [
-    (0.0, 1.5),     # ltv
+    (0.0, 1.5),     # utilization
     (0.0, 1.0),     # collateral_volatility_30d
     (-1.0, 1.0),    # price_momentum_24h
     (0.0, 90.0),    # time_since_last_topup_days
@@ -44,6 +44,10 @@ FEATURE_BOUNDS = [
 
 def features_to_vector(features: dict) -> list:
     """Convert a features dict into an ordered vector matching FEATURE_NAMES."""
+    if "utilization" not in features and "ltv" in features:
+        # Utilization = LTV / liquidation threshold (Aave V2's default 0.80
+        # when the caller does not give the position's own threshold).
+        features = {**features, "utilization": features["ltv"] / features.get("liquidation_threshold", 0.80)}
     return [float(features[name]) for name in FEATURE_NAMES]
 
 

@@ -44,11 +44,11 @@ class OnchainPosition:
 
 def quantize(pos: OnchainPosition, price_now: int, price_past: int,
              vol_answer: int, vol_decimals: int, now: int) -> list[int]:
-    """Return q = [ltv, volatility, momentum, topup, age], each in [0, 1024]."""
+    """Return q = [utilization, volatility, momentum, topup, age], each in [0, 1024]."""
     if pos.collateral_usd <= 0:
         raise ValueError("position has no collateral")
-    # ltv / 1.5 * 1024  ==  debt * 2048 / (3 * collateral)
-    q_ltv = min(pos.debt_usd * 2048 // (3 * pos.collateral_usd), SCALE)
+    # utilization u = ltv / threshold;  u / 1.5 * 1024 == debt * 20_480_000 / (3 * collateral * threshold_bps)
+    q_ltv = min(pos.debt_usd * 20_480_000 // (3 * pos.collateral_usd * pos.liquidation_threshold_bps), SCALE)
     # volatility feed answers in percent with `vol_decimals` decimals; range [0, 1]
     q_vol = min(vol_answer * SCALE // (100 * 10 ** vol_decimals), SCALE)
     # momentum m = p_now / p_past - 1 in [-1, 1];  (m + 1) / 2 * 1024 == p_now * 512 / p_past

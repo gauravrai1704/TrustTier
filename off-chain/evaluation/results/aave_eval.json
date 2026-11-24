@@ -1,62 +1,116 @@
 {
-  "positions": 23407,
-  "accounts": 603,
+  "positions": 57081,
+  "accounts": 1297,
   "samples": {
+    "liquidated": {
+      "positions": 23057,
+      "accounts": 432
+    },
     "random": {
-      "positions": 23407,
-      "accounts": 603
+      "positions": 34024,
+      "accounts": 865
     }
   },
   "gas_per_tier": {
-    "0": 269534,
-    "1": 379161,
-    "2": 878050
+    "0": 270714,
+    "1": 380373,
+    "2": 1004335
   },
   "policies": {
     "adaptive": {
-      "random": {
-        "rows": 23182,
+      "liquidated": {
+        "rows": 11276,
         "tiers": [
-          16435,
-          3622,
-          3125
+          1096,
+          3603,
+          6577
         ],
-        "escalated": 1888,
-        "gas_M": 8547.0,
-        "always_zk_gas_M": 20355.0,
-        "saving_pct": 58.0,
-        "cheap_claims_liquidatable_1d": 2,
-        "cheap_claims_liquidatable_7d": 29,
-        "liquidatable_7d_rows": 129
+        "escalated": 1021,
+        "gas_M": 8272.7,
+        "always_zk_gas_M": 11324.9,
+        "saving_pct": 27.0,
+        "cheap_claims_liquidatable_1d": 21,
+        "cheap_claims_liquidatable_7d": 501,
+        "liquidatable_7d_rows": 2711
+      },
+      "random": {
+        "rows": 33676,
+        "tiers": [
+          23620,
+          7948,
+          2108
+        ],
+        "escalated": 123,
+        "gas_M": 11534.6,
+        "always_zk_gas_M": 33822.0,
+        "saving_pct": 65.9,
+        "cheap_claims_liquidatable_1d": 9,
+        "cheap_claims_liquidatable_7d": 97,
+        "liquidatable_7d_rows": 222
       }
     },
     "fixed_15_5": {
-      "random": {
-        "rows": 23182,
+      "liquidated": {
+        "rows": 11276,
         "tiers": [
-          20819,
-          376,
-          1987
+          3432,
+          2658,
+          5186
         ],
-        "escalated": 1544,
-        "gas_M": 7498.7,
-        "always_zk_gas_M": 20355.0,
-        "saving_pct": 63.2,
-        "cheap_claims_liquidatable_1d": 5,
-        "cheap_claims_liquidatable_7d": 54,
-        "liquidatable_7d_rows": 129
+        "escalated": 2298,
+        "gas_M": 7148.6,
+        "always_zk_gas_M": 11324.9,
+        "saving_pct": 36.9,
+        "cheap_claims_liquidatable_1d": 59,
+        "cheap_claims_liquidatable_7d": 790,
+        "liquidatable_7d_rows": 2711
+      },
+      "random": {
+        "rows": 33676,
+        "tiers": [
+          30036,
+          2422,
+          1218
+        ],
+        "escalated": 638,
+        "gas_M": 10275.7,
+        "always_zk_gas_M": 33822.0,
+        "saving_pct": 69.6,
+        "cheap_claims_liquidatable_1d": 16,
+        "cheap_claims_liquidatable_7d": 135,
+        "liquidatable_7d_rows": 222
       }
     }
   },
   "early_warning": {
-    "liquidated_accounts_observed": 0,
-    "flagged_at_least_1_day_before": 0,
-    "flagged_at_least_3_days_before": 0,
-    "median_lead_days_when_flagged": 0.0
+    "trusttier_model": {
+      "liquidated_accounts_observed": 386,
+      "flagged_at_least_1_day_before": 197,
+      "flagged_at_least_3_days_before": 149,
+      "median_lead_days_when_flagged": 5.0
+    },
+    "delta_only_baseline": {
+      "liquidated_accounts_observed": 386,
+      "flagged_at_least_1_day_before": 239,
+      "flagged_at_least_3_days_before": 182,
+      "median_lead_days_when_flagged": 7.0
+    }
   },
   "false_alarms_random_sample": {
-    "approved_soft_liquidations": 2965,
-    "of_which_liquidatable_within_7d": 85,
-    "position_days": 23182
+    "trusttier_model": {
+      "approved_soft_liquidations": 1060,
+      "of_which_liquidatable_within_7d": 63,
+      "position_days": 33676
+    },
+    "delta_only_baseline": {
+      "approved_soft_liquidations": 2108,
+      "of_which_liquidatable_within_7d": 125,
+      "position_days": 33676
+    }
+  },
+  "ranking_auc_random_sample": {
+    "model_p_high": 0.8586,
+    "minus_delta": 0.9107,
+    "base_rate_7d": 0.00659
   }
 }

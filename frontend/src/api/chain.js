@@ -279,7 +279,7 @@ export class ChainBackend {
     else if (challengeable) state = "CLAIM_OPEN";
     else if (finalized) state = bond === 0n ? "SETTLED" : "AWAITING_SETTLEMENT";
     const bounds = [[0, 1.5], [0, 1], [-1, 1], [0, 90], [0, 2000]];
-    const names = ["ltv", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"];
+    const names = ["utilization", "collateral_volatility_30d", "price_momentum_24h", "time_since_last_topup_days", "account_age_days"];
     const market = this.pool ? Number((await this.pool.accounts(id))[0]) : 0;
     const hasRecord = Number(record.timestamp ?? record[4] ?? 0) > 0;
     return {

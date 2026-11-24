@@ -45,7 +45,7 @@ class TestQuantization(unittest.TestCase):
 
     def test_hand_computed_values(self):
         pos = OnchainPosition(2000 * 10**8, 1860 * 10**8, 8000, NOW - 200 * DAY, NOW - 5 * DAY)
-        self.assertEqual(quantize(pos, 2000 * 10**8, 2200 * 10**8, 35 * 10**8, 8, NOW), [634, 358, 465, 56, 102])
+        self.assertEqual(quantize(pos, 2000 * 10**8, 2200 * 10**8, 35 * 10**8, 8, NOW), [793, 358, 465, 56, 102])
         self.assertEqual(ltv_bps(pos), 9300)
         self.assertEqual(delta_bps(pos), -1300)
 

@@ -212,7 +212,7 @@ export default function Overview() {
           <Card title="How a decision is made">
             <div className="stack" style={{ gap: 10 }}>
               {[
-                ["cpu", "The contract computes the features", "LTV and δ from the lending pool, volatility and 24-hour momentum from Chainlink, ages from timestamps."],
+                ["cpu", "The contract computes the features", "Utilization (LTV ÷ threshold) and δ from the lending pool, volatility and 24-hour momentum from Chainlink, ages from timestamps."],
                 ["layers", "δ picks the weakest tier allowed", <>Bands follow the collateral's volatility: at 35%, above 15.5%: <TierBadge tier="HEURISTIC" short />; above 5%: <TierBadge tier="COMMITMENT" short />; otherwise <TierBadge tier="ZK_PROOF" short />. Riskier assets need more headroom.</>],
                 ["hammer", "Cheap claims are optimistic", "Bonded for an hour. A Tier-2 proof on the snapshot slashes a false one; the bond always covers the challenge gas."],
                 ["bolt", "Only a proof can liquidate", "A verified HIGH-RISK proof approves one soft liquidation, executed within 30 minutes or it expires."],
