@@ -10,8 +10,5 @@ crytic-export
 circuits/pk.key
 off-chain/data
 off-chain/**/__pycache__
-docs/paper/*.aux
-docs/paper/*.log
-docs/paper/main.pdf
 deployments/localhost.json
 .git

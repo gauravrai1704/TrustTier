@@ -4,7 +4,7 @@
 #                         static analysis, re-measure gas, regenerate every
 #                         evaluation, and report whether the regenerated
 #                         results match the committed ones
-#   make test | analyze | gas | results | results-proving | paper | demo
+#   make test | analyze | gas | results | results-proving | demo
 #
 # Or, with nothing but Docker installed:
 #   docker build -t trusttier . && docker run --rm trusttier
@@ -25,7 +25,7 @@ export HARDHAT_LOCAL_SOLC ?= 1
 DETERMINISTIC := gas_measurements.json evaluation_report.json hf_baseline.json bond_economics.json \
                  band_sensitivity.json outcome_labels.json
 
-.PHONY: reproduce install keys test analyze gas results results-proving compare paper demo clean
+.PHONY: reproduce install keys test analyze gas results results-proving compare demo clean
 
 reproduce: install keys test analyze gas results compare
 
@@ -59,7 +59,6 @@ gas:
 results:
 	cd off-chain && for m in evaluate hf_baseline bond_economics band_sensitivity outcome_labels concurrency_sim concurrency_ablation; do \
 	  echo "== evaluation.$$m"; $(PY) -m evaluation.$$m > /dev/null || exit 1; done
-	cp off-chain/evaluation/results/band_sensitivity.tex docs/paper/figures/band_sensitivity.tex
 
 # Real EZKL proofs: several minutes and ~2 GB of RAM per worker.
 results-proving: keys
@@ -73,8 +72,6 @@ compare:
 	if [ $$status = 0 ]; then echo "All deterministic results reproduce exactly."; \
 	else echo "Some results differ: see git diff off-chain/evaluation/results"; fi
 
-paper:
-	cd docs/paper && latexmk -pdf -interaction=nonstopmode main.tex
 
 # Local demo: chain + contracts + router + DApp (Ctrl-C to stop).
 demo:

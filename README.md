@@ -2,10 +2,8 @@
 
 **A Cost-Tiered Zero-Knowledge Verification Framework for DeFi Liquidation Risk Scoring**
 
-CSD436 (Blockchain Technology) course project.
-
-**Live app:** https://gauravrai1704.github.io/TrustTier/ (rebuilt from `main` on every push; runs as an
-in-browser simulation until you connect it to a router, see [The DApp](#the-dapp)).
+**DApp:** `frontend/` builds a static site (GitHub Pages workflow included) that
+runs as an in-browser simulation until connected to a router, see [The DApp](#the-dapp).
 
 TrustTier makes the strength of on-chain verification for a liquidation
 decision grow with how close a position is to its liquidation boundary
@@ -290,7 +288,7 @@ Python tests, Slither and Echidna (`docs/FUZZING.md`), re-measures gas,
 regenerates every evaluation, and reports whether each deterministic result
 file matches the committed one. On our machine and in the container all six
 match byte for byte. `make results-proving` adds the real-proof throughput
-benchmark; `make paper` builds the PDF. Cite with `CITATION.cff`.
+benchmark.
 
 ## Quick start (local)
 
@@ -426,7 +424,7 @@ It runs in three modes, shown in the top bar:
   on-chain and proofs are not generated; the app says so.
 
 To use the hosted site against your own node, start the router with
-`TRUSTTIER_CORS=https://gauravrai1704.github.io` (that origin is allowed by
+`TRUSTTIER_CORS=https://<your-pages-host>` (the project's own Pages origin is allowed by
 default) and pick "Router only" on the Protocol page.
 
 **Hosting.** `.github/workflows/pages.yml` builds and publishes the app on
