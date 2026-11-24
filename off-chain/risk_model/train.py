@@ -24,13 +24,14 @@ from onnx import helper, numpy_helper
 from web3 import Web3
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from skl2onnx import to_onnx
 from skl2onnx.common.data_types import FloatTensorType
 
 from risk_model.features import FEATURE_BOUNDS, FEATURE_NAMES, N_FEATURES, normalize_vector
 
-MODEL_VERSION = "v2"
+MODEL_VERSION = "v3"
 # The exported graph clips the output logit to [-LOGIT_CLIP, LOGIT_CLIP]
 # before the sigmoid. sigmoid(8) = 0.99966, so labels are unchanged and
 # probabilities move by < 0.04%, but the Tier-2 circuit's sigmoid lookup
@@ -56,18 +57,35 @@ from risk_model.synthetic_data import generate_synthetic_dataset
 ARTIFACT_DIR = os.path.join(os.path.dirname(__file__), "artifacts")
 ONNX_PATH = os.path.join(ARTIFACT_DIR, "risk_model.onnx")
 METADATA_PATH = os.path.join(ARTIFACT_DIR, "model_metadata.json")
+REAL_TRAINING = os.path.join(os.path.dirname(__file__), "..", "evaluation", "data", "aave_v2_training.npz")
 
 
 def train_and_export():
     os.makedirs(ARTIFACT_DIR, exist_ok=True)
 
-    X_raw, y, _risk_scores = generate_synthetic_dataset(n_samples=4000)
-    # Train on min-max normalized features (risk_model/features.py): the
-    # Tier-2 circuit proves over the same normalized vector.
-    X = np.array([normalize_vector(row) for row in X_raw])
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    if os.path.exists(REAL_TRAINING) and os.environ.get("TRAIN_DATA", "real") == "real":
+        # Real Aave V2 snapshots (evaluation/aave_real.py): label = the account
+        # became liquidatable within 7 days. Split by ACCOUNT, so no borrower is
+        # in both sets, and up-weight the rare positives by duplication.
+        d = np.load(REAL_TRAINING, allow_pickle=True)
+        X, y, groups = d["X"], d["y"].astype(int), d["groups"]
+        splitter = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+        tr, te = next(splitter.split(X, y, groups))
+        X_train, X_test, y_train, y_test = X[tr], X[te], y[tr], y[te]
+        pos = np.where(y_train == 1)[0]
+        reps = max(1, int((len(y_train) - len(pos)) / max(1, len(pos)) / 4))
+        X_train = np.vstack([X_train] + [X_train[pos]] * reps)
+        y_train = np.concatenate([y_train] + [y_train[pos]] * reps)
+        data_source = f"real Aave V2 snapshots ({len(np.unique(groups))} accounts, {len(y)} rows)"
+    else:
+        X_raw, y, _risk_scores = generate_synthetic_dataset(n_samples=4000)
+        # Train on min-max normalized features (risk_model/features.py): the
+        # Tier-2 circuit proves over the same normalized vector.
+        X = np.array([normalize_vector(row) for row in X_raw])
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        data_source = "synthetic"
 
     # Small architecture, kept EZKL-circuit-friendly: 5 -> 8 -> 1.
     model = MLPClassifier(
@@ -83,8 +101,10 @@ def train_and_export():
     probs = model.predict_proba(X_test)[:, 1]
     acc = accuracy_score(y_test, preds)
     auc = roc_auc_score(y_test, probs)
-    print(f"Validation accuracy: {acc:.4f}")
-    print(f"Validation ROC-AUC:  {auc:.4f}")
+    prec = precision_score(y_test, preds, zero_division=0)
+    rec = recall_score(y_test, preds, zero_division=0)
+    print(f"Training data: {data_source}")
+    print(f"Validation accuracy: {acc:.4f}  ROC-AUC: {auc:.4f}  precision: {prec:.4f}  recall: {rec:.4f}")
 
     # Export to ONNX. skl2onnx needs an explicit input shape/type.
     # zipmap=False is required for EZKL compatibility: by default skl2onnx
@@ -128,9 +148,12 @@ def train_and_export():
         "model_version": MODEL_VERSION,
         "input_normalization": {"method": "min-max to [0, 1]", "bounds": FEATURE_BOUNDS},
         "logit_clip": LOGIT_CLIP,
+        "training_data": data_source,
         "positive_rate": float(y.mean()),
         "validation_accuracy": acc,
         "validation_roc_auc": auc,
+        "validation_precision": prec,
+        "validation_recall": rec,
         "onnx_path": os.path.relpath(ONNX_PATH, start=os.path.dirname(__file__)),
         "model_hash_keccak256": model_hash,
     }

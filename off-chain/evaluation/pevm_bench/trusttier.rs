@@ -36,9 +36,9 @@ fn load(path: &str) -> (String, InMemoryStorage, BlockEnv, Vec<TxEnv>, Vec<u64>,
     for (addr, a) in j["accounts"].as_object().unwrap() {
         let address = Address::from_str(addr).unwrap();
         let code_hex = a["code"].as_str().unwrap();
-        let mut storage = std::collections::HashMap::default();
+        let mut storage: Vec<(U256, U256)> = Vec::new();
         for (k, v) in a["storage"].as_object().unwrap() {
-            storage.insert(U256::from_str(k).unwrap(), u256(v));
+            storage.push((U256::from_str(k).unwrap(), u256(v)));
         }
         let mut acc = EvmAccount {
             balance: u256(&a["balance"]),
@@ -67,7 +67,7 @@ fn load(path: &str) -> (String, InMemoryStorage, BlockEnv, Vec<TxEnv>, Vec<u64>,
         prevrandao: Some(B256::from_str(b["prevrandao"].as_str().unwrap()).unwrap()),
         ..BlockEnv::default()
     };
-    let chain_id = j["chainId"].as_u64().unwrap();
+    let _chain_id = j["chainId"].as_u64().unwrap();
     let txs = j["txs"]
         .as_array()
         .unwrap()
@@ -81,7 +81,7 @@ fn load(path: &str) -> (String, InMemoryStorage, BlockEnv, Vec<TxEnv>, Vec<u64>,
             value: u256(&t["value"]),
             data: Bytes::from_str(t["input"].as_str().unwrap()).unwrap(),
             nonce: u64v(&t["nonce"]),
-            chain_id: Some(chain_id),
+            chain_id: None, // pevm checks it against mainnet (1); our contracts never read block.chainid
             ..TxEnv::default()
         })
         .collect();
