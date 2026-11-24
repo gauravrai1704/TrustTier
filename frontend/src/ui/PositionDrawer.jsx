@@ -9,6 +9,7 @@ import { AbiCoder, hexlify, keccak256, randomBytes } from "ethers";
 import { engineContract, liquidatorContract, walletChallenge } from "../wallet";
 import { explorerTx } from "../lib/account";
 import { duration, eth, gas, num, short, usd } from "../lib/format";
+import GAS from "../../../off-chain/evaluation/results/gas_measurements.json";
 
 const EVENT_TEXT = {
   PositionOpened: ["Position opened", "plus"],
@@ -296,7 +297,7 @@ export default function PositionDrawer({ id, onClose }) {
                 })}
               </ul>
             )}
-            <div className="small muted">Gas figures are measured on the real contracts; Tier 2 uses the real EZKL verifier ({gas(878050)} gas).</div>
+            <div className="small muted">Gas figures are measured on the real contracts; Tier 2 uses the real EZKL verifier ({gas(GAS.decideZkProof)} gas).</div>
           </section>
         </>
       )}

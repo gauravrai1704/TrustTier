@@ -262,7 +262,7 @@ export class SimEngine {
         COMMITMENT: GAS.decideCommitment + GAS.revealCommitment,
         ZK_PROOF: GAS.decideZkProof,
       },
-      tier2_proving_seconds: 16.1,
+      tier2_proving_seconds: 10.1,
     };
   }
 
@@ -390,9 +390,9 @@ export class SimEngine {
       result.tier_reason += "; escalated to ZK_PROOF because the model flags high risk (a cheap 'safe' claim would be false and slashable)";
     }
     if (tier === "ZK_PROOF") {
-      await sleep(1200); // stands in for ~16 s of EZKL proving
+      await sleep(1200); // stands in for ~10 s of EZKL proving
       result.proof_kind = "simulated";
-      result.proving_seconds = 16.1;
+      result.proving_seconds = 10.1;
       result.risk_score = probs[1];
       result.model_hash = MODEL_HASH;
       if (label !== 1) {
@@ -448,7 +448,7 @@ export class SimEngine {
     return {
       position_id: id, model_hash: MODEL_HASH, proof: hex(64), features_q: st.snapshot,
       public_inputs: [...st.snapshot, label, Math.round(probs[0] * 1024), Math.round(probs[1] * 1024)].map(String),
-      label, high_risk: label === 1, proof_kind: "simulated", proving_seconds: 16.1,
+      label, high_risk: label === 1, proof_kind: "simulated", proving_seconds: 10.1,
     };
   }
 
@@ -637,7 +637,7 @@ export class SimEngine {
     const { label, probs } = predict(f.q);
     return { position_id: Number(id), past_round: 1, model_hash: MODEL_HASH, proof: hex(64), features_q: f.q,
       public_inputs: [...f.q, label, Math.round(probs[0] * 1024), Math.round(probs[1] * 1024)].map(String),
-      label, high_risk: label === 1, proof_kind: "simulated", proving_seconds: 16.1 };
+      label, high_risk: label === 1, proof_kind: "simulated", proving_seconds: 10.1 };
   }
 
   async simulate(n = 9) {

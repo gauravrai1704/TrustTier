@@ -12,7 +12,7 @@ const TRUST = [
   ["link", "The lending protocol's accounting", "Collateral, debt and threshold come from the protocol (or the Aave V3 adapter). TrustTier trusts exactly what the protocol already trusts."],
   ["trend", "Chainlink feeds", "Price, 24-hour round and realized volatility. Stale answers, a bad 24-hour round, phase-boundary rounds and a down L2 sequencer are all rejected on-chain."],
   ["protocol", "Governance pointers", "The verifier, the position source and the liquidator are owner-settable — behind an M-of-N multisig and a timelock in a governed deployment."],
-  ["key", "The proving setup", "The KZG SRS is self-generated for the testnet demo; production needs a ceremony SRS."],
+  ["key", "The proving setup", "The public perpetual-powers-of-tau KZG SRS (secure if any ceremony participant was honest), and the registered weights hash checked in every proof."],
   ["cpu", "Nothing else", "No oracle supplies features, no router chooses the tier, and no party can liquidate without a verified proof."],
 ];
 

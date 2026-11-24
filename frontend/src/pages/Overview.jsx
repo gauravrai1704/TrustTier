@@ -8,6 +8,7 @@ import { gas, num, usd } from "../lib/format";
 import EVAL from "../../../off-chain/evaluation/results/evaluation_report.json";
 import HF from "../../../off-chain/evaluation/results/hf_baseline.json";
 import GAS from "../../../off-chain/evaluation/results/gas_measurements.json";
+import AAVE from "../../../off-chain/evaluation/results/aave_eval.json";
 
 function Ladder() {
   // A position drifting toward its liquidation boundary: the evidence the
@@ -188,11 +189,11 @@ export default function Overview() {
       </section>
 
       <div className="grid g4">
-        <Stat label="Gas saved vs. proving every decision" value={`${c.gas_savings_vs_always_tier2_pct.toFixed(1)}%`}
-          note={`${c.n} positions · ${gas(c.total_gas_trusttier)} vs ${gas(c.total_gas_always_tier2)} gas`} accent />
+        <Stat label="Gas saved vs. proving every decision" value={`${AAVE.policies.adaptive.random.saving_pct.toFixed(1)}%`}
+          note={`${num(AAVE.policies.adaptive.random.rows)} real Aave V2 position-days · ${c.gas_savings_vs_always_tier2_pct.toFixed(1)}% on the ${c.n}-position design set`} accent />
         <Stat label="Fewer forced liquidations than the HF rule" value={`${(forcedCut * 100).toFixed(0)}%`}
           note={`${num(hf.hf_rule.forced_liquidations)} → ${num(hf.trusttier.forced_liquidations)} in a 30-day stress test`} />
-        <Stat label="Tier-2 proof" value="~16 s" note={`EZKL Halo2 · verified on-chain in ${gas(GAS.verifyProof_standalone)} gas`} />
+        <Stat label="Tier-2 proof" value="~10 s" note={`EZKL Halo2 · verified on-chain in ${gas(GAS.verifyProof_standalone)} gas`} />
         <Stat label="Inputs trusted from the caller" value="0" note="δ and all five features are read on-chain" />
       </div>
 
