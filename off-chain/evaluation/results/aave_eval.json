@@ -1,0 +1,62 @@
+{
+  "positions": 23407,
+  "accounts": 603,
+  "samples": {
+    "random": {
+      "positions": 23407,
+      "accounts": 603
+    }
+  },
+  "gas_per_tier": {
+    "0": 269534,
+    "1": 379161,
+    "2": 878050
+  },
+  "policies": {
+    "adaptive": {
+      "random": {
+        "rows": 23182,
+        "tiers": [
+          16435,
+          3622,
+          3125
+        ],
+        "escalated": 1888,
+        "gas_M": 8547.0,
+        "always_zk_gas_M": 20355.0,
+        "saving_pct": 58.0,
+        "cheap_claims_liquidatable_1d": 2,
+        "cheap_claims_liquidatable_7d": 29,
+        "liquidatable_7d_rows": 129
+      }
+    },
+    "fixed_15_5": {
+      "random": {
+        "rows": 23182,
+        "tiers": [
+          20819,
+          376,
+          1987
+        ],
+        "escalated": 1544,
+        "gas_M": 7498.7,
+        "always_zk_gas_M": 20355.0,
+        "saving_pct": 63.2,
+        "cheap_claims_liquidatable_1d": 5,
+        "cheap_claims_liquidatable_7d": 54,
+        "liquidatable_7d_rows": 129
+      }
+    }
+  },
+  "early_warning": {
+    "liquidated_accounts_observed": 0,
+    "flagged_at_least_1_day_before": 0,
+    "flagged_at_least_3_days_before": 0,
+    "median_lead_days_when_flagged": 0.0
+  },
+  "false_alarms_random_sample": {
+    "approved_soft_liquidations": 2965,
+    "of_which_liquidatable_within_7d": 85,
+    "position_days": 23182
+  }
+}

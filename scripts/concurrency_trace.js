@@ -41,7 +41,14 @@ function rng(seed) {
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
 }
 
-async function deploy(design) {
+// The real-verifier scenario uses the deployed circuit's sample proof.
+const SAMPLES_FILE = path.join(__dirname, "..", "circuits", "samples.json");
+const realSample = () => {
+  const f = JSON.parse(fs.readFileSync(SAMPLES_FILE, "utf8"));
+  return { high: f.samples.find((s) => s.name === "high_risk"), weights: BigInt(f.weights_hash) };
+};
+
+async function deploy(design, realVerifier = false) {
   const F = (n) => ethers.getContractFactory(n);
   const feeds = [];
   for (const m of MARKETS) {
@@ -58,9 +65,10 @@ async function deploy(design) {
   for (const f of feeds) await pool.addMarket(await f.p.getAddress(), await f.v.getAddress(), f.m.th);
   const registry = await (await F("ModelRegistry")).deploy();
   const log = await (await F(design === "legacy-array" ? "LegacyArrayAuditLog" : "TierAuditLog")).deploy();
-  const verifier = await (await F("MockTier2Verifier")).deploy();
+  const verifier = await (await F(realVerifier ? "Halo2Verifier" : "MockTier2Verifier")).deploy();
   const engine = await (await F("LiquidationEngine")).deploy(
-    await registry.getAddress(), await log.getAddress(), await verifier.getAddress(), MODEL, WEIGHTS,
+    await registry.getAddress(), await log.getAddress(), await verifier.getAddress(), MODEL,
+    realVerifier ? realSample().weights : WEIGHTS,
     await pool.getAddress(), 30 * DAY, 30 * DAY
   );
   await log.authorizeLogger(await engine.getAddress());
@@ -128,7 +136,8 @@ async function footprint(txHash, to, from, value, names) {
 async function runScenario(name, opts) {
   await network.provider.send("hardhat_reset", []);
   await network.provider.send("evm_setAutomine", [true]);
-  const { engine, pool, feeds, names } = await deploy(opts.design || "final");
+  const { engine, pool, feeds, names } = await deploy(opts.design || "final", !!opts.realVerifier);
+  const real = opts.realVerifier ? realSample() : null;
   const R = rng(opts.seed || 7);
   const [funder] = await ethers.getSigners();
 
@@ -140,13 +149,17 @@ async function runScenario(name, opts) {
   let pid = 1;
   for (let tier = 0; tier < 3; tier++) {
     for (let i = 0; i < counts[tier]; i++) {
-      const mi = (pid - 1) % MARKETS.length;
+      // Real-verifier blocks: every Tier-2 position copies the proof sample's
+      // on-chain parameters (ETH market), so the sample's real proof is valid for it.
+      const asSample = real && tier === 2;
+      const mi = asSample ? 0 : (pid - 1) % MARKETS.length;
       const m = MARKETS[mi];
       const ltv = LTV_FOR_TIER[tier] * (m.th / 8000);
-      const debt = (e8(m.price) * BigInt(Math.round(ltv * 10000))) / 10000n;
+      const debt = asSample ? BigInt(real.high.debt_usd) : (e8(m.price) * BigInt(Math.round(ltv * 10000))) / 10000n;
       await pool.openPosition(pid, mi, 10n ** 18n, debt);
       const now = (await ethers.provider.getBlock("latest")).timestamp;
-      await pool.setTimestamps(pid, now - Math.floor(30 + R() * 1400) * DAY, now - Math.floor(R() * 89) * DAY);
+      if (asSample) await pool.setTimestamps(pid, now - real.high.age_days * DAY - 60, now - real.high.topup_days_ago * DAY - 60);
+      else await pool.setTimestamps(pid, now - Math.floor(30 + R() * 1400) * DAY, now - Math.floor(R() * 89) * DAY);
       plan.push({ pid, tier, market: mi });
       pid++;
     }
@@ -176,7 +189,11 @@ async function runScenario(name, opts) {
   for (const p of plan) {
     if (p.oracle === undefined && p.tier === 2 && !inputsFor[p.pid]) {
       const [q] = await engine.currentFeatures(p.pid, PAST_ROUND);
-      inputsFor[p.pid] = [WEIGHTS, ...q.map(BigInt), 1n, 3n, 1021n];
+      if (real) {
+        const want = real.high.public_inputs.slice(1, 6).map(BigInt);
+        if (q.map(BigInt).join() !== want.join()) throw new Error(`position ${p.pid}: features ${q} != sample ${want}`);
+        inputsFor[p.pid] = real.high.public_inputs.map(BigInt);
+      } else inputsFor[p.pid] = [WEIGHTS, ...q.map(BigInt), 1n, 3n, 1021n];
     }
   }
 
@@ -201,7 +218,7 @@ async function runScenario(name, opts) {
     } else if (p.tier === 1) {
       tx = await engine.connect(w).decideCommitment(p.pid, PAST_ROUND, MODEL, ethers.id(`c${p.pid}`), { ...ov, value: bondValue }); kind = "tier1";
     } else {
-      tx = await engine.connect(w).decideZkProof(p.pid, PAST_ROUND, MODEL, "0x01", inputsFor[p.pid], ov); kind = "tier2";
+      tx = await engine.connect(w).decideZkProof(p.pid, PAST_ROUND, MODEL, real ? real.high.proof : "0x01", inputsFor[p.pid], ov); kind = "tier2";
     }
     sent.push({ hash: tx.hash, kind, pid: p.pid ?? null, market: p.market ?? p.oracle, duplicate: !!p.duplicate,
       from: w.address, to: tx.to, value: tx.value });
@@ -303,6 +320,10 @@ async function main() {
   S.push(["final_mix_t2heavy", { n: 200, mix: [0.1, 0.2, 0.7] }]);
   // One liquidator bot submitting the whole batch (one sender, a nonce chain).
   S.push(["final_single_sender", { n: 200, mix: MIX, senders: "single" }]);
+  // Real Halo2 verifier and real proofs for every Tier-2 decision (heavy, realistic work).
+  for (const n of [100, 200, 374]) S.push([`real_deposit_n${n}`, { n, mix: MIX, bonds: "deposit", realVerifier: true }]);
+  S.push(["real_deposit_t2heavy", { n: 200, mix: [0.1, 0.2, 0.7], bonds: "deposit", realVerifier: true }]);
+  S.push(["real_value_n374", { n: 374, mix: MIX, realVerifier: true }]);
   // The same experiments with deposit-funded bonds, the deployed design.
   for (const c of [0.1, 0.3, 0.5]) S.push([`deposit_contention${Math.round(c * 100)}`, { n: 200, mix: MIX, contention: c, bonds: "deposit" }]);
   for (const u of [1, 6]) S.push([`deposit_oracle${u}`, { n: 200, mix: MIX, oracleUpdates: u, bonds: "deposit" }]);
