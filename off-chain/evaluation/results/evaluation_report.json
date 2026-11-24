@@ -3,65 +3,65 @@
     "label": "Real (single-account)",
     "n": 74,
     "tier_counts": {
-      "HEURISTIC": 26,
-      "COMMITMENT": 7,
-      "ZK_PROOF": 41
+      "HEURISTIC": 29,
+      "COMMITMENT": 9,
+      "ZK_PROOF": 36
     },
-    "total_gas_trusttier": 45662061,
-    "total_gas_always_tier0": 19945516,
-    "total_gas_always_tier2": 64975700,
-    "gas_savings_vs_always_tier2_pct": 29.724403123013676,
-    "tier0_count": 26,
-    "tier0_high_risk_misses": 1,
-    "miss_rate_pct": 3.8461538461538463,
-    "proving_seconds_trusttier": 668.3000000000001,
-    "proving_seconds_always_tier2": 1206.2,
-    "tier2_low_risk": 3,
-    "escalated_tier1_to_tier2": 6
+    "total_gas_trusttier": 47437283,
+    "total_gas_always_tier0": 20040680,
+    "total_gas_always_tier2": 74327228,
+    "gas_savings_vs_always_tier2_pct": 36.17778534671036,
+    "tier0_count": 29,
+    "tier0_high_risk_misses": 0,
+    "miss_rate_pct": 0.0,
+    "proving_seconds_trusttier": 342.0,
+    "proving_seconds_always_tier2": 703.0,
+    "tier2_low_risk": 4,
+    "escalated_tier1_to_tier2": 4
   },
   "synthetic": {
     "label": "Synthetic",
     "n": 300,
     "tier_counts": {
-      "HEURISTIC": 100,
-      "COMMITMENT": 76,
-      "ZK_PROOF": 124
+      "HEURISTIC": 117,
+      "COMMITMENT": 64,
+      "ZK_PROOF": 119
     },
-    "total_gas_trusttier": 164647836,
-    "total_gas_always_tier0": 80860200,
-    "total_gas_always_tier2": 263415000,
-    "gas_savings_vs_always_tier2_pct": 37.49488981265304,
-    "tier0_count": 100,
+    "total_gas_trusttier": 175562814,
+    "total_gas_always_tier0": 81246000,
+    "total_gas_always_tier2": 301326600,
+    "gas_savings_vs_always_tier2_pct": 41.736702302418706,
+    "tier0_count": 117,
     "tier0_high_risk_misses": 0,
     "miss_rate_pct": 0.0,
-    "proving_seconds_trusttier": 2021.2,
-    "proving_seconds_always_tier2": 4890.0,
-    "tier2_low_risk": 6,
-    "escalated_tier1_to_tier2": 15
+    "proving_seconds_trusttier": 1130.5,
+    "proving_seconds_always_tier2": 2850.0,
+    "tier2_low_risk": 11,
+    "escalated_tier1_to_tier2": 11
   },
   "combined": {
     "label": "Combined",
     "n": 374,
     "tier_counts": {
-      "HEURISTIC": 126,
-      "COMMITMENT": 83,
-      "ZK_PROOF": 165
+      "HEURISTIC": 146,
+      "COMMITMENT": 73,
+      "ZK_PROOF": 155
     },
-    "total_gas_trusttier": 210309897,
-    "total_gas_always_tier0": 100805716,
-    "total_gas_always_tier2": 328390700,
-    "gas_savings_vs_always_tier2_pct": 35.957413836628135,
-    "tier0_count": 126,
-    "tier0_high_risk_misses": 1,
-    "miss_rate_pct": 0.7936507936507936,
-    "proving_seconds_trusttier": 2689.5,
-    "proving_seconds_always_tier2": 6096.2,
-    "tier2_low_risk": 9,
-    "escalated_tier1_to_tier2": 21
+    "total_gas_trusttier": 223000097,
+    "total_gas_always_tier0": 101286680,
+    "total_gas_always_tier2": 375653828,
+    "gas_savings_vs_always_tier2_pct": 40.6368096427331,
+    "tier0_count": 146,
+    "tier0_high_risk_misses": 0,
+    "miss_rate_pct": 0.0,
+    "proving_seconds_trusttier": 1472.5,
+    "proving_seconds_always_tier2": 3553.0,
+    "tier2_low_risk": 15,
+    "escalated_tier1_to_tier2": 15
   },
   "gas_by_tier": {
-    "HEURISTIC": 269534,
-    "COMMITMENT": 379161,
-    "ZK_PROOF": 878050
+    "HEURISTIC": 270820,
+    "COMMITMENT": 380479,
+    "ZK_PROOF": 1004422
   }
 }

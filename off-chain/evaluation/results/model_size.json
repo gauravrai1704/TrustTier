@@ -1,0 +1,152 @@
+{
+  "training_data": "real Aave V2 snapshots",
+  "rows": [
+    {
+      "hidden_layers": [
+        4
+      ],
+      "parameters": 29,
+      "accuracy": 0.934,
+      "roc_auc": 0.9108,
+      "logrows": 15,
+      "setup_s": 8.6,
+      "prove_s": 7.6,
+      "proof_bytes": 4480,
+      "pk_mb": 392,
+      "deployed_bytes": 19672,
+      "deploy_gas": 4307209,
+      "verify_gas": 742205,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        8
+      ],
+      "parameters": 57,
+      "accuracy": 0.9338,
+      "roc_auc": 0.9074,
+      "logrows": 15,
+      "setup_s": 7.8,
+      "prove_s": 6.8,
+      "proof_bytes": 4480,
+      "pk_mb": 392,
+      "deployed_bytes": 19670,
+      "deploy_gas": 4306801,
+      "verify_gas": 742193,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        16
+      ],
+      "parameters": 113,
+      "accuracy": 0.9333,
+      "roc_auc": 0.9121,
+      "logrows": 15,
+      "setup_s": 6.6,
+      "prove_s": 6.6,
+      "proof_bytes": 4480,
+      "pk_mb": 392,
+      "deployed_bytes": 19672,
+      "deploy_gas": 4307233,
+      "verify_gas": 742181,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        32
+      ],
+      "parameters": 225,
+      "accuracy": 0.9341,
+      "roc_auc": 0.9112,
+      "logrows": 15,
+      "setup_s": 6.5,
+      "prove_s": 6.7,
+      "proof_bytes": 4480,
+      "pk_mb": 392,
+      "deployed_bytes": 19672,
+      "deploy_gas": 4307221,
+      "verify_gas": 742109,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        64
+      ],
+      "parameters": 449,
+      "accuracy": 0.9346,
+      "roc_auc": 0.9144,
+      "logrows": 16,
+      "setup_s": 12.8,
+      "prove_s": 13.5,
+      "proof_bytes": 4480,
+      "pk_mb": 785,
+      "deployed_bytes": 19673,
+      "deploy_gas": 4307425,
+      "verify_gas": 742246,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        16,
+        16
+      ],
+      "parameters": 385,
+      "accuracy": 0.9348,
+      "roc_auc": 0.9123,
+      "logrows": 15,
+      "setup_s": 6.5,
+      "prove_s": 7.1,
+      "proof_bytes": 4480,
+      "pk_mb": 392,
+      "deployed_bytes": 19671,
+      "deploy_gas": 4307041,
+      "verify_gas": 742169,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        32,
+        32
+      ],
+      "parameters": 1281,
+      "accuracy": 0.9372,
+      "roc_auc": 0.9159,
+      "logrows": 16,
+      "setup_s": 12.7,
+      "prove_s": 15.2,
+      "proof_bytes": 4480,
+      "pk_mb": 785,
+      "deployed_bytes": 19672,
+      "deploy_gas": 4307257,
+      "verify_gas": 742198,
+      "verified": true,
+      "eip170_ok": true
+    },
+    {
+      "hidden_layers": [
+        64,
+        64
+      ],
+      "parameters": 4609,
+      "accuracy": 0.9386,
+      "roc_auc": 0.9225,
+      "logrows": 18,
+      "setup_s": 52.4,
+      "prove_s": 56.6,
+      "proof_bytes": 4480,
+      "pk_mb": 3138,
+      "deployed_bytes": 19672,
+      "deploy_gas": 4307197,
+      "verify_gas": 742388,
+      "verified": true,
+      "eip170_ok": true
+    }
+  ]
+}

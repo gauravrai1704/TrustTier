@@ -158,7 +158,7 @@ def main():
     # Every input is q / 1024 with q in [0, 1024]: calibrate on random points
     # and every corner of the unit box so any position can be proved (inputs
     # outside the calibrated range make EZKL's witness generation hang).
-    # Scale 10 + clipped logits give a 2^16-row circuit and ~16 s proofs.
+    # Scale 10 + clipped logits give a 2^16-row circuit and ~10 s proofs (4 vCPUs).
     rng = np.random.default_rng(3)
     rows = (rng.integers(0, SCALE + 1, (64, 5)) / SCALE).tolist()
     rows += [list(c) for c in itertools.product([0.0, 1.0], repeat=5)]

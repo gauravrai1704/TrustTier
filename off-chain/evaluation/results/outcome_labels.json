@@ -3,12 +3,12 @@
   "wallets": 1,
   "snapshots": 73,
   "horizon_days": 7,
-  "deployed_model_v2": {
+  "deployed_model": {
     "n": 73,
     "positives": 1,
-    "precision": 0.026,
+    "precision": 0.032,
     "recall": 1.0,
-    "roc_auc": 0.861
+    "roc_auc": 0.931
   },
   "hf_rule_warn_below_1.15": {
     "n": 73,

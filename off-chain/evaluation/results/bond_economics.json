@@ -1,123 +1,123 @@
 {
   "measured": {
-    "challengeDecision": 678774,
-    "commit_plus_reveal": 773612,
-    "decideHeuristic": 269534
+    "challengeDecision": 804800,
+    "commit_plus_reveal": 900046,
+    "decideHeuristic": 270820
   },
   "fixed_bond_eth": 0.01,
   "bond_gas_cover": 1500000,
-  "fixed_bond_breakeven_gwei": 14.73,
-  "fixed_bond_breakeven_committed_gwei": 12.93,
-  "gas_scaled_max_basefee_rise": 2.21,
-  "gas_scaled_max_basefee_rise_committed": 1.94,
+  "fixed_bond_breakeven_gwei": 12.43,
+  "fixed_bond_breakeven_committed_gwei": 11.11,
+  "gas_scaled_max_basefee_rise": 1.86,
+  "gas_scaled_max_basefee_rise_committed": 1.67,
   "table": [
     {
       "gas_price_gwei": 1,
-      "challenge_cost_eth": 0.000679,
-      "committed_challenge_cost_eth": 0.000774,
-      "fixed_bond_profit_eth": 0.009321,
+      "challenge_cost_eth": 0.000805,
+      "committed_challenge_cost_eth": 0.0009,
+      "fixed_bond_profit_eth": 0.009195,
       "gas_scaled_bond_eth": 0.01,
-      "gas_scaled_profit_eth": 0.009321,
-      "gas_scaled_profit_committed_eth": 0.009226
+      "gas_scaled_profit_eth": 0.009195,
+      "gas_scaled_profit_committed_eth": 0.0091
     },
     {
       "gas_price_gwei": 2,
-      "challenge_cost_eth": 0.001358,
-      "committed_challenge_cost_eth": 0.001547,
-      "fixed_bond_profit_eth": 0.008642,
+      "challenge_cost_eth": 0.00161,
+      "committed_challenge_cost_eth": 0.0018,
+      "fixed_bond_profit_eth": 0.00839,
       "gas_scaled_bond_eth": 0.01,
-      "gas_scaled_profit_eth": 0.008642,
-      "gas_scaled_profit_committed_eth": 0.008453
+      "gas_scaled_profit_eth": 0.00839,
+      "gas_scaled_profit_committed_eth": 0.0082
     },
     {
       "gas_price_gwei": 5,
-      "challenge_cost_eth": 0.003394,
-      "committed_challenge_cost_eth": 0.003868,
-      "fixed_bond_profit_eth": 0.006606,
+      "challenge_cost_eth": 0.004024,
+      "committed_challenge_cost_eth": 0.0045,
+      "fixed_bond_profit_eth": 0.005976,
       "gas_scaled_bond_eth": 0.01,
-      "gas_scaled_profit_eth": 0.006606,
-      "gas_scaled_profit_committed_eth": 0.006132
+      "gas_scaled_profit_eth": 0.005976,
+      "gas_scaled_profit_committed_eth": 0.0055
     },
     {
       "gas_price_gwei": 10,
-      "challenge_cost_eth": 0.006788,
-      "committed_challenge_cost_eth": 0.007736,
-      "fixed_bond_profit_eth": 0.003212,
+      "challenge_cost_eth": 0.008048,
+      "committed_challenge_cost_eth": 0.009,
+      "fixed_bond_profit_eth": 0.001952,
       "gas_scaled_bond_eth": 0.015,
-      "gas_scaled_profit_eth": 0.008212,
-      "gas_scaled_profit_committed_eth": 0.007264
+      "gas_scaled_profit_eth": 0.006952,
+      "gas_scaled_profit_committed_eth": 0.006
     },
     {
       "gas_price_gwei": 15,
-      "challenge_cost_eth": 0.010182,
-      "committed_challenge_cost_eth": 0.011604,
-      "fixed_bond_profit_eth": -0.000182,
+      "challenge_cost_eth": 0.012072,
+      "committed_challenge_cost_eth": 0.013501,
+      "fixed_bond_profit_eth": -0.002072,
       "gas_scaled_bond_eth": 0.0225,
-      "gas_scaled_profit_eth": 0.012318,
-      "gas_scaled_profit_committed_eth": 0.010896
+      "gas_scaled_profit_eth": 0.010428,
+      "gas_scaled_profit_committed_eth": 0.008999
     },
     {
       "gas_price_gwei": 20,
-      "challenge_cost_eth": 0.013575,
-      "committed_challenge_cost_eth": 0.015472,
-      "fixed_bond_profit_eth": -0.003575,
+      "challenge_cost_eth": 0.016096,
+      "committed_challenge_cost_eth": 0.018001,
+      "fixed_bond_profit_eth": -0.006096,
       "gas_scaled_bond_eth": 0.03,
-      "gas_scaled_profit_eth": 0.016425,
-      "gas_scaled_profit_committed_eth": 0.014528
+      "gas_scaled_profit_eth": 0.013904,
+      "gas_scaled_profit_committed_eth": 0.011999
     },
     {
       "gas_price_gwei": 30,
-      "challenge_cost_eth": 0.020363,
-      "committed_challenge_cost_eth": 0.023208,
-      "fixed_bond_profit_eth": -0.010363,
+      "challenge_cost_eth": 0.024144,
+      "committed_challenge_cost_eth": 0.027001,
+      "fixed_bond_profit_eth": -0.014144,
       "gas_scaled_bond_eth": 0.045,
-      "gas_scaled_profit_eth": 0.024637,
-      "gas_scaled_profit_committed_eth": 0.021792
+      "gas_scaled_profit_eth": 0.020856,
+      "gas_scaled_profit_committed_eth": 0.017999
     },
     {
       "gas_price_gwei": 50,
-      "challenge_cost_eth": 0.033939,
-      "committed_challenge_cost_eth": 0.038681,
-      "fixed_bond_profit_eth": -0.023939,
+      "challenge_cost_eth": 0.04024,
+      "committed_challenge_cost_eth": 0.045002,
+      "fixed_bond_profit_eth": -0.03024,
       "gas_scaled_bond_eth": 0.075,
-      "gas_scaled_profit_eth": 0.041061,
-      "gas_scaled_profit_committed_eth": 0.036319
+      "gas_scaled_profit_eth": 0.03476,
+      "gas_scaled_profit_committed_eth": 0.029998
     },
     {
       "gas_price_gwei": 75,
-      "challenge_cost_eth": 0.050908,
-      "committed_challenge_cost_eth": 0.058021,
-      "fixed_bond_profit_eth": -0.040908,
+      "challenge_cost_eth": 0.06036,
+      "committed_challenge_cost_eth": 0.067503,
+      "fixed_bond_profit_eth": -0.05036,
       "gas_scaled_bond_eth": 0.1125,
-      "gas_scaled_profit_eth": 0.061592,
-      "gas_scaled_profit_committed_eth": 0.054479
+      "gas_scaled_profit_eth": 0.05214,
+      "gas_scaled_profit_committed_eth": 0.044997
     },
     {
       "gas_price_gwei": 100,
-      "challenge_cost_eth": 0.067877,
-      "committed_challenge_cost_eth": 0.077361,
-      "fixed_bond_profit_eth": -0.057877,
+      "challenge_cost_eth": 0.08048,
+      "committed_challenge_cost_eth": 0.090005,
+      "fixed_bond_profit_eth": -0.07048,
       "gas_scaled_bond_eth": 0.15,
-      "gas_scaled_profit_eth": 0.082123,
-      "gas_scaled_profit_committed_eth": 0.072639
+      "gas_scaled_profit_eth": 0.06952,
+      "gas_scaled_profit_committed_eth": 0.059995
     },
     {
       "gas_price_gwei": 150,
-      "challenge_cost_eth": 0.101816,
-      "committed_challenge_cost_eth": 0.116042,
-      "fixed_bond_profit_eth": -0.091816,
+      "challenge_cost_eth": 0.12072,
+      "committed_challenge_cost_eth": 0.135007,
+      "fixed_bond_profit_eth": -0.11072,
       "gas_scaled_bond_eth": 0.225,
-      "gas_scaled_profit_eth": 0.123184,
-      "gas_scaled_profit_committed_eth": 0.108958
+      "gas_scaled_profit_eth": 0.10428,
+      "gas_scaled_profit_committed_eth": 0.089993
     },
     {
       "gas_price_gwei": 200,
-      "challenge_cost_eth": 0.135755,
-      "committed_challenge_cost_eth": 0.154722,
-      "fixed_bond_profit_eth": -0.125755,
+      "challenge_cost_eth": 0.16096,
+      "committed_challenge_cost_eth": 0.180009,
+      "fixed_bond_profit_eth": -0.15096,
       "gas_scaled_bond_eth": 0.3,
-      "gas_scaled_profit_eth": 0.164245,
-      "gas_scaled_profit_committed_eth": 0.145278
+      "gas_scaled_profit_eth": 0.13904,
+      "gas_scaled_profit_committed_eth": 0.119991
     }
   ],
   "assumptions": {
@@ -126,33 +126,33 @@
     "decision_cadence": "one decision per position per day (hf_baseline)"
   },
   "gas_per_position_day": {
-    "trusttier": 322472,
-    "always_zk": 880328
+    "trusttier": 320111,
+    "always_zk": 1005834
   },
   "viability": [
     {
       "network": "Ethereum L1 (20 gwei)",
       "gas_price_gwei": 20.0,
-      "trusttier_usd_per_position_year": 7062.14,
-      "trusttier_min_debt_usd": 1412427.0,
-      "always_zk_usd_per_position_year": 19279.18,
-      "always_zk_min_debt_usd": 3855837.0
+      "trusttier_usd_per_position_year": 7010.43,
+      "trusttier_min_debt_usd": 1402086.0,
+      "always_zk_usd_per_position_year": 22027.76,
+      "always_zk_min_debt_usd": 4405553.0
     },
     {
       "network": "Ethereum L1 (5 gwei)",
       "gas_price_gwei": 5.0,
-      "trusttier_usd_per_position_year": 1765.53,
-      "trusttier_min_debt_usd": 353107.0,
-      "always_zk_usd_per_position_year": 4819.8,
-      "always_zk_min_debt_usd": 963959.0
+      "trusttier_usd_per_position_year": 1752.61,
+      "trusttier_min_debt_usd": 350522.0,
+      "always_zk_usd_per_position_year": 5506.94,
+      "always_zk_min_debt_usd": 1101388.0
     },
     {
       "network": "Rollup (0.05 gwei effective)",
       "gas_price_gwei": 0.05,
-      "trusttier_usd_per_position_year": 17.66,
-      "trusttier_min_debt_usd": 3531.0,
-      "always_zk_usd_per_position_year": 48.2,
-      "always_zk_min_debt_usd": 9640.0
+      "trusttier_usd_per_position_year": 17.53,
+      "trusttier_min_debt_usd": 3505.0,
+      "always_zk_usd_per_position_year": 55.07,
+      "always_zk_min_debt_usd": 11014.0
     }
   ]
 }

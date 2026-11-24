@@ -17,7 +17,7 @@ with the reasoning spelled out so it isn't silently forgotten.
 | 2 | Check-ordering bug masking `AlreadyChallenged` | Information Disclosure (wrong error) | Low | **Fixed** |
 | 3 | Single-owner (EOA) access control via `Ownable` | Elevation of Privilege | High (if deployed for real) | **Fixed** (multisig + timelock) |
 | 4 | Challenge label convention not encoded per-model | Tampering | Medium | **Mitigated** (verifier bound to one model) |
-| 5 | Self-generated SRS, not from a real trusted-setup ceremony | Tampering | Medium (N/A locally) | Documented |
+| 5 | Self-generated SRS, not from a real trusted-setup ceremony | Tampering | Medium | Fixed (public perpetual-powers-of-tau SRS) |
 | 6 | Hardcoded fallback test private key in `chain_client.py` | Spoofing | Critical (if misused) | **Fixed** |
 | 7 | Reentrancy | Tampering | — | Confirmed safe |
 | 8 | Front-running on `challengeDecision` | Tampering | Low | **Fixed** (commit-reveal challenges) |
@@ -44,6 +44,7 @@ with the reasoning spelled out so it isn't silently forgotten.
 | 29 | Tier 0/1 safe-claims emitted `LiquidationApproved` | Repudiation | Low | **Fixed** (`SafeClaimRecorded`) |
 | 30 | A JSON-RPC proxy would expose the node's unlocked accounts | Elevation of Privilege | Critical | **Fixed** (method allow-list) |
 | 31 | Keys generated in the browser live in browser storage | Information Disclosure | Medium | Mitigated (encrypted keystore; testnet only) |
+| 32 | Private weights were unconstrained: a proof made with forged weights verified | Spoofing | Critical | Fixed (Poseidon weights hash is a public input, checked on-chain) |
 
 ---
 
@@ -133,24 +134,21 @@ Changing model or encoding means deploying a new verifier and calling
 per-model `highRiskLabelValue` would only be needed if several Tier-2
 models had to be live at once.
 
-## 5. Self-generated SRS (Documented — Medium for real deployment, N/A locally)
+## 5. Self-generated SRS (Fixed — Medium)
 
-**Where:** `circuits/build_circuit.py`, `ezkl.gen_srs`.
+**Where:** `circuits/build_circuit.py`.
 
 **The issue:** the KZG structured reference string backing every Tier-2
-proof is generated locally rather than drawn from a public, audited
-trusted-setup ceremony. A self-generated SRS means whoever generated it
-technically retains the "toxic waste" that could be used to forge false
-proofs for that specific SRS — a real concern for a production deployment
-securing real funds.
+proof was generated locally (`ezkl.gen_srs`) rather than drawn from a public
+trusted-setup ceremony. Whoever generates an SRS can keep the "toxic waste"
+and forge proofs for it.
 
-**Why it's fine here:** this project's SRS never secures anything beyond
-local testing and a Sepolia testnet demo (see the main README's documented
-caveat), and the self-generation was a direct, noted consequence of this
-sandboxed environment's network restrictions blocking the real params
-server — not a judgment that self-generation is an acceptable general
-practice. A real deployment must use a ceremony-audited SRS (e.g. the
-Ethereum KZG ceremony's output, which EZKL supports pulling directly).
+**The fix:** the circuit now uses the public 2^16 powers of the
+perpetual-powers-of-tau ceremony, fetched with `ezkl.get_srs`, which checks
+the file's hash against the published one. The ceremony is secure if any one
+of its participants destroyed their secret. `circuits/kzg.srs` is that file;
+the proving and verification keys and the Solidity verifier were rebuilt
+from it.
 
 ## 6. Hardcoded fallback test private key (Fixed — Critical if misused)
 
@@ -295,7 +293,7 @@ Each is quantized exactly as the circuit expects (`q = round-down(x_norm *
 1024)`), with stale-feed checks (`maxPriceAge`, `maxVolatilityAge`). The oracle
 role, `commitPositionFeatures` and `MAX_POSITION_ID` are gone. The features
 become public (they are public chain data anyway); only the model weights
-stay private. `risk_model/onchain_features.py` mirrors the arithmetic and is
+stay private, committed by their Poseidon hash (finding 32). `risk_model/onchain_features.py` mirrors the arithmetic and is
 cross-checked against real proofs.
 
 Tier 0/1 claims snapshot the five features they were made on
@@ -528,6 +526,29 @@ renders no HTML from user data and loads scripts only from its own bundle;
 the generated accounts are intended for testnets. Users can export the
 keystore and should keep the recovery phrase offline.
 
+## 32. Private weights were unconstrained: forged weights verified (Fixed — Critical)
+
+**Where:** `circuits/build_circuit.py` (`param_visibility`),
+`LiquidationEngine.decideZkProof` / `challengeDecision`.
+
+**The issue:** with `param_visibility = "private"`, the EZKL verifier encodes
+the network's *shape* (5 -> 8 -> 1) but not its weights. The engine checked
+that the cited model hash was registered, but nothing tied the proof to that
+model's weights. A prover could pick weights that label every position "high
+risk", prove with the real proving key, and the deployed verifier accepted
+the proof: any position at Tier 2 could be liquidated, and any honest cheap
+claim slashed. We built such a proof and confirmed the old verifier accepted it.
+
+**The fix:** the weights are now `hashed/public`: the circuit computes a
+Poseidon hash of the quantized weights and exposes it as public input 0. The
+engine stores `tier2WeightsHash` (set with the verifier and the registry hash
+in `setTier2Verifier`, under the timelock) and rejects any proof whose
+input 0 differs (`WrongModelWeights`), in `decideZkProof` and in both
+challenge paths. Tests prove with forged weights and see the revert; the
+Echidna property `echidna_proofs_use_registered_weights` checks that no
+approval or slash ever rests on other weights. Cost: one public input, 4.7 KB
+of verifier code (20,361 bytes, under EIP-170) and ~124k gas per verification.
+
 ---
 
 ## Trust assumptions in one place
@@ -541,8 +562,8 @@ What a user of TrustTier still trusts, and nothing else:
 3. **Governance**: the verifier, position source, liquidator, sequencer feed,
    feed ages and claim reward are owner-settable, behind an M-of-N multisig and
    a timelock in a governed deployment.
-4. **The proving setup**: the KZG SRS is self-generated for the demo
-   (finding 5).
+4. **The proving setup**: the public perpetual-powers-of-tau KZG SRS, secure
+   if any ceremony participant was honest (finding 5).
 5. **The Halo2/KZG proof system's soundness.**
 
 Not trusted: the router, any liquidator or watcher, any off-chain feature or
@@ -565,7 +586,7 @@ infrastructure: **Forta Network** runs a decentralized network of
 detection bots watching on-chain activity across many protocols in
 real time, and **OpenZeppelin Defender** provides automated monitoring with
 configurable response actions (alerts, pausing, etc.) for a project's own
-contracts. `off-chain/sentinel/` is a real, working, prototype-scale
+contracts. `off-chain/sentinel/` is a real, working, small-scale
 analogue of that pattern — explicitly not a claim of equivalent coverage,
 audit rigor, or scale:
 

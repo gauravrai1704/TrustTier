@@ -16,27 +16,27 @@
   legend style={font=\scriptsize, at={(0.5,-0.30)}, anchor=north, draw=none, column sep=6pt},
   tick label style={font=\scriptsize}, label style={font=\small},
   grid=major, grid style={gray!20}]
-\addplot[color=tiertwo, mark=*, mark size=1.6pt] coordinates {(0.05,44.0) (0.08,40.1) (0.1,38.9) (0.12,38.1) (0.15,37.3) (0.2,36.8) (0.25,36.1) (0.3,35.3)};
-\addlegendentry{$B_1=0.00$: 7 exposed}
-\addplot[color=tierone, mark=square*, mark size=1.6pt] coordinates {(0.05,43.4) (0.08,39.5) (0.1,38.3) (0.12,37.5) (0.15,36.7) (0.2,36.2) (0.25,35.5) (0.3,34.7)};
-\addlegendentry{$B_1=0.02$: 3 exposed}
-\addplot[color=tierzero, mark=triangle*, mark size=1.6pt] coordinates {(0.08,38.7) (0.1,37.6) (0.12,36.7) (0.15,36.0) (0.2,35.5) (0.25,34.8) (0.3,33.9)};
+\addplot[color=tiertwo, mark=*, mark size=1.6pt] coordinates {(0.05,47.9) (0.08,44.4) (0.1,43.8) (0.12,43.1) (0.15,42.4) (0.2,42.1) (0.25,41.5) (0.3,40.7)};
+\addlegendentry{$B_1=0.00$: 13 exposed}
+\addplot[color=tierone, mark=square*, mark size=1.6pt] coordinates {(0.05,46.6) (0.08,43.1) (0.1,42.5) (0.12,41.8) (0.15,41.0) (0.2,40.8) (0.25,40.1) (0.3,39.4)};
+\addlegendentry{$B_1=0.02$: 5 exposed}
+\addplot[color=tierzero, mark=triangle*, mark size=1.6pt] coordinates {(0.08,41.5) (0.1,40.8) (0.12,40.1) (0.15,39.4) (0.2,39.1) (0.25,38.5) (0.3,37.8)};
 \addlegendentry{$B_1=0.05$: 0 exposed}
-\addplot[color=accent, mark=diamond*, mark size=1.6pt] coordinates {(0.1,34.2) (0.12,33.4) (0.15,32.6) (0.2,32.1) (0.25,31.4) (0.3,30.6)};
+\addplot[color=accent, mark=diamond*, mark size=1.6pt] coordinates {(0.1,36.7) (0.12,36.0) (0.15,35.2) (0.2,34.9) (0.25,34.3) (0.3,33.6)};
 \addlegendentry{$B_1=0.08$: 0 exposed}
-\addplot[color=muted, mark=pentagon*, mark size=1.6pt] coordinates {(0.12,30.7) (0.15,29.9) (0.2,29.4) (0.25,28.7) (0.3,27.9)};
+\addplot[color=muted, mark=pentagon*, mark size=1.6pt] coordinates {(0.12,32.5) (0.15,31.7) (0.2,31.5) (0.25,30.8) (0.3,30.1)};
 \addlegendentry{$B_1=0.10$: 0 exposed}
-\node[font=\scriptsize, text=tiertwo] at (axis cs:0.05,46) {22};
-\node[font=\scriptsize, text=tiertwo] at (axis cs:0.08,46) {5};
-\node[font=\scriptsize, text=tiertwo] at (axis cs:0.1,46) {2};
-\node[font=\scriptsize, text=tiertwo] at (axis cs:0.12,46) {2};
-\node[font=\scriptsize, text=tiertwo] at (axis cs:0.15,46) {1};
+\node[font=\scriptsize, text=tiertwo] at (axis cs:0.05,46) {15};
+\node[font=\scriptsize, text=tiertwo] at (axis cs:0.08,46) {1};
+\node[font=\scriptsize, text=tiertwo] at (axis cs:0.1,46) {1};
+\node[font=\scriptsize, text=tiertwo] at (axis cs:0.12,46) {1};
+\node[font=\scriptsize, text=tiertwo] at (axis cs:0.15,46) {0};
 \node[font=\scriptsize, text=tiertwo] at (axis cs:0.2,46) {0};
 \node[font=\scriptsize, text=tiertwo] at (axis cs:0.25,46) {0};
 \node[font=\scriptsize, text=tiertwo] at (axis cs:0.3,46) {0};
 \draw[dashed, gray] (axis cs:0.03,45) -- (axis cs:0.32,45);
-\node[draw, circle, inner sep=2.6pt, thick] at (axis cs:0.15,36.0) {};
-\node[font=\scriptsize, anchor=north] at (axis cs:0.15,35.6) {chosen};
+\node[draw, circle, inner sep=2.6pt, thick] at (axis cs:0.15,39.4) {};
+\node[font=\scriptsize, anchor=north] at (axis cs:0.15,39.0) {chosen};
 \end{axis}
 \end{tikzpicture}
 \caption{Gas saving over 374 positions as the tier bands vary. Red numbers along the top: Tier-0
@@ -54,10 +54,10 @@ circled point is the deployed setting ($B_0=0.15$, $B_1=0.05$).}
 \toprule
 Threshold & Tiers 0/1/2 & Saving & Tier-0 flagged & Exposed \\
 \midrule
-0.70 & 110/23/241 & 23.9\% & 1 & 0 \\
-0.75 & 126/44/204 & 30.0\% & 1 & 0 \\
-0.80 & 126/83/165 & 36.0\% & 1 & 0 \\
-0.85 & 163/52/159 & 38.1\% & 1 & 0 \\
+0.70 & 110/25/239 & 25.6\% & 0 & 0 \\
+0.75 & 126/46/202 & 32.2\% & 0 & 0 \\
+0.80 & 126/89/159 & 39.4\% & 0 & 0 \\
+0.85 & 163/63/148 & 42.3\% & 0 & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}

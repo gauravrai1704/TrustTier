@@ -7,7 +7,7 @@ challenge window (LiquidationEngine.sol) gives the system economic security
 notices and submits the challenge within the window. Nothing on-chain
 *alerts* anyone that a challenge happened, or that a claimant's behavior
 looks suspicious. That's the gap this module (and sentinel/watch.py) fills:
-a lightweight, prototype-scale analogue of the pattern used by real
+a lightweight, small-scale analogue of the pattern used by real
 production systems like Forta Network (a decentralized network of
 detection bots watching on-chain activity) and OpenZeppelin Defender
 (automated monitoring + response actions) - NOT a claim of equivalent

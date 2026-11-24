@@ -35,7 +35,7 @@ import numpy as np
 import onnx
 import ezkl
 from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.neural_network import MLPClassifier
 from skl2onnx import to_onnx
 from skl2onnx.common.data_types import FloatTensorType
@@ -54,11 +54,21 @@ SRS_CACHE = os.path.join(WORK, "srs")
 
 
 def training_data():
+    """The deployed model's data and split (risk_model/train.py): split by
+    account, positives duplicated in the training part only."""
     if os.path.exists(REAL_TRAINING):
-        d = np.load(REAL_TRAINING)
-        return d["X"], d["y"], "real Aave V2 snapshots"
+        d = np.load(REAL_TRAINING, allow_pickle=True)
+        X, y, groups = d["X"], d["y"].astype(int), d["groups"]
+        tr, te = next(GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42).split(X, y, groups))
+        X_tr, y_tr, X_te, y_te = X[tr], y[tr], X[te], y[te]
+        pos = np.where(y_tr == 1)[0]
+        reps = max(1, int((len(y_tr) - len(pos)) / max(1, len(pos)) / 4))
+        X_tr = np.vstack([X_tr] + [X_tr[pos]] * reps)
+        y_tr = np.concatenate([y_tr] + [y_tr[pos]] * reps)
+        return X_tr, X_te, y_tr, y_te, "real Aave V2 snapshots (account-level split, as train.py)"
     X_raw, y, _ = generate_synthetic_dataset(n_samples=4000)
-    return np.array([normalize_vector(r) for r in X_raw]), y, "synthetic"
+    X = np.array([normalize_vector(r) for r in X_raw])
+    return (*train_test_split(X, y, test_size=0.2, random_state=42, stratify=y), "synthetic")
 
 
 def export(model, path):
@@ -162,8 +172,7 @@ def study(arch, X_tr, X_te, y_tr, y_te):
 
 
 def main():
-    X, y, source = training_data()
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    X_tr, X_te, y_tr, y_te, source = training_data()
     rows = []
     for arch in ARCHS:
         print("==", arch, flush=True)

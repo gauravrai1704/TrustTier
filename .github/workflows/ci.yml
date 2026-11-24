@@ -46,7 +46,8 @@ jobs:
       - run: npx hardhat compile
       - run: pip install slither-analyzer==0.11.6
       # slither.config.json lists the excluded detectors and why; anything else fails the build.
-      - run: slither .
+      # The wrapper only raises Slither's recursion limit (the hashed-weights verifier is deep).
+      - run: python scripts/slither_run.py .
 
   fuzzing:
     runs-on: ubuntu-latest

@@ -172,6 +172,38 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
       await expect(t.engine.connect(challenger).challengeDecision(POSITION, modelHash, high.proof, high.inputs))
         .to.be.revertedWithCustomError(t.engine, "ProofNotForPosition");
     });
+
+    // circuits/forged_weights_sample.json: THIS position proved with forged weights
+    // (off-chain/scripts/forge_weights_proof.py). The verifier accepts it - it encodes
+    // the network's shape, not its weights - so only the weights hash stops it.
+    describe("a real proof made with forged weights (SECURITY.md finding 32)", function () {
+      let forged;
+      before(function () {
+        const f = path.join(__dirname, "..", "circuits", "forged_weights_sample.json");
+        if (!fs.existsSync(f)) this.skip();
+        const j = JSON.parse(fs.readFileSync(f, "utf8"));
+        forged = { proof: j.proof, inputs: j.public_inputs.map(BigInt) };
+      });
+
+      it("is a valid proof of 'high risk' on this position's own features", async function () {
+        expect(forged.inputs.slice(1, 6)).to.deep.equal(s.inputs.slice(1, 6));
+        expect(forged.inputs[6]).to.equal(1n);
+        expect(forged.inputs[0]).to.not.equal(weightsHash);
+        expect(await t.verifier.verifyProof.staticCall(forged.proof, forged.inputs)).to.equal(true);
+      });
+
+      it("cannot approve a liquidation", async function () {
+        await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, forged.proof, forged.inputs))
+          .to.be.revertedWithCustomError(t.engine, "WrongModelWeights");
+      });
+
+      it("cannot slash an honest claim", async function () {
+        await t.engine.connect(claimant).decideHeuristic(POSITION, PAST_ROUND, { value: BOND });
+        await expect(t.engine.connect(challenger).challengeDecision(POSITION, modelHash, forged.proof, forged.inputs))
+          .to.be.revertedWithCustomError(t.engine, "WrongModelWeights");
+        expect(await t.engine.bondOf(POSITION)).to.equal(BOND);
+      });
+    });
   });
 
   describe("watch-band sample: a cheap claim the model contradicts", function () {

@@ -31,7 +31,7 @@ retrieved. Pulling more than this one sample wallet would require either:
 - Querying Aave's on-chain history directly via an Etherscan or TheGraph
   API key (see "Extending to a larger real dataset" below).
 
-**What this means for `evaluate.py` (Weeks 5-6 evaluation script):** the
+**What this means for `evaluate.py` (cost evaluation script):** the
 real-data portion of the evaluation is a genuine, honestly-sourced
 single-account case study - useful for confirming TrustTier's tiering
 logic behaves correctly against a real historical HF trajectory, including

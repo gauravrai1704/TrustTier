@@ -33,6 +33,7 @@ from evaluation.cost_model import GAS_BY_TIER, TIER2_GAS
 from evaluation.real_data import load_real_positions
 from risk_model.inference import RiskModel
 from router.position_stream import generate_position_stream
+from router.tiering import tier_bands
 
 RESULTS = os.path.join(os.path.dirname(__file__), "results")
 B0_GRID = [0.05, 0.08, 0.10, 0.12, 0.15, 0.20, 0.25, 0.30]
@@ -48,25 +49,27 @@ TOP_Y = 46  # y position of the flagged-count labels in the figure
 def scored(positions, model, threshold_of):
     out = []
     for p in positions:
-        f = p.to_features()
-        label, _ = model.predict(f)
         th = threshold_of(p)
-        out.append({"delta": th - f["ltv"], "high": label == 1,
+        f = {**p.to_features(), "liquidation_threshold": th}
+        label, _ = model.predict(f)
+        out.append({"delta": th - f["ltv"], "high": label == 1, "bands": tier_bands(f["collateral_volatility_30d"]),
                     # would a sudden collateral price drop of SHOCK push it past its threshold?
                     "shock_crosses": f["ltv"] / (1 - SHOCK) >= th})
     return out
 
 
-def route(rows, b0, b1):
+def route(rows, b0, b1, adaptive=False, escalate=True):
     tiers, t0_flagged, escalated, exposed = [], 0, 0, 0
     for r in rows:
-        if r["delta"] > b1 and r["shock_crosses"] and not (b1 < r["delta"] <= b0 and r["high"]):
+        if adaptive:
+            b0, b1 = r["bands"]
+        if r["delta"] > b1 and r["shock_crosses"] and not (escalate and b1 < r["delta"] <= b0 and r["high"]):
             exposed += 1  # a cheap claim stands on it, yet a 5% drop breaches it
         if r["delta"] > b0:
             tier = "HEURISTIC"
             t0_flagged += r["high"]
         elif r["delta"] > b1:
-            tier = "ZK_PROOF" if r["high"] else "COMMITMENT"
+            tier = "ZK_PROOF" if (escalate and r["high"]) else "COMMITMENT"
             escalated += r["high"]
         else:
             tier = "ZK_PROOF"
@@ -75,7 +78,7 @@ def route(rows, b0, b1):
     gas = sum(GAS_BY_TIER[t] for t in tiers)
     t0 = tiers.count("HEURISTIC")
     return {
-        "b0": b0, "b1": b1, "n": n,
+        "b0": "adaptive" if adaptive else b0, "b1": "adaptive" if adaptive else b1, "n": n,
         "tiers": [t0, tiers.count("COMMITMENT"), tiers.count("ZK_PROOF")],
         "saving_pct": round(100 * (1 - gas / (n * TIER2_GAS)), 1),
         "t0_share_pct": round(100 * t0 / n, 1),
@@ -95,6 +98,14 @@ def main():
     synth = scored(synth_positions, model, lambda p: 0.80)
     grid = [route(real + synth, b0, b1) for b0 in B0_GRID for b1 in B1_GRID if b1 < b0]
     chosen = next(g for g in grid if (g["b0"], g["b1"]) == CHOSEN)
+    adaptive = route(real + synth, None, None, adaptive=True)
+    # Ablations of the deployed (adaptive) design on the same positions.
+    ablations = {"deployed_adaptive": adaptive}
+    ablations["no_escalation"] = route(real + synth, None, None, adaptive=True, escalate=False)
+    ablations["no_tier1"] = route([dict(r, bands=(r["bands"][0], r["bands"][0])) for r in real + synth], None, None, adaptive=True)
+    ablations["b1_zero"] = route([dict(r, bands=(r["bands"][0], 0.0)) for r in real + synth], None, None, adaptive=True)
+    ablations["always_tier0"] = route([dict(r, bands=(-9.0, -9.0)) for r in real + synth], None, None, adaptive=True)
+    ablations["fixed_15_5"] = chosen
 
     # Pareto front over (saving up, flagged Tier-0 claims down, shock-exposed claims down).
     def dominates(h, g):
@@ -113,11 +124,13 @@ def main():
         thresholds.append({"threshold": th, **route(real + s, *CHOSEN)})
 
     with open(os.path.join(RESULTS, "band_sensitivity.json"), "w") as f:
-        json.dump({"grid": grid, "thresholds": thresholds, "chosen": chosen,
+        json.dump({"grid": grid, "thresholds": thresholds, "chosen": chosen, "adaptive": adaptive, "ablations": ablations,
                    "model_flagged_total": sum(r["high"] for r in real + synth)}, f, indent=2)
     write_markdown(grid, thresholds, chosen)
     write_latex(grid, thresholds, chosen)
     print(f"chosen {CHOSEN}: {chosen}")
+    for k, v in ablations.items():
+        print(k, v["tiers"], v["saving_pct"], "t0_flagged", v["t0_flagged"], "exposed", v["shock_exposed"], "esc", v["escalated"])
     print(f"pareto: {[(g['b0'], g['b1'], g['saving_pct'], g['t0_flagged'], g['shock_exposed']) for g in pareto]}")
 
 

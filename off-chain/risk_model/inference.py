@@ -3,7 +3,7 @@ Loads the exported ONNX risk model and runs inference via ONNX Runtime.
 
 Using ONNX Runtime here (rather than re-loading the scikit-learn model
 directly) is deliberate: it's exactly the artifact format EZKL consumes in
-Weeks 3-5, so this module exercises the same ONNX file that will eventually
+the circuit pipeline, so this module exercises the same ONNX file that will eventually
 be compiled into a zk-SNARK circuit - catching any export issues (unsupported
 ops, shape mismatches) early, well before the EZKL integration phase.
 """

@@ -9,10 +9,10 @@ correlation 0.6, crash probability 0.02/day
 | policy | forced liquidations (LTV >= LT) | insolvencies | bad debt (% of debt) | bonus paid by borrowers (% of debt) | pre-emptive soft liquidations | decision gas | gas / position-day |
 |---|---|---|---|---|---|---|---|
 | hf_rule | 2461 | 61 | 0.018% | 1.353% | 0 (0 unnecessary) | 0.0 M | 0 |
-| trusttier | 297 | 2 | 0.001% | 1.669% | 2365 (323 unnecessary) | 29,022.5 M | 322,472 |
-| always_zk | 297 | 2 | 0.001% | 1.669% | 2368 (323 unnecessary) | 79,229.6 M | 880,328 |
+| trusttier | 373 | 6 | 0.003% | 1.626% | 2262 (282 unnecessary) | 28,810.0 M | 320,111 |
+| always_zk | 373 | 6 | 0.003% | 1.626% | 2262 (282 unnecessary) | 90,525.0 M | 1,005,834 |
 
-TrustTier's decision gas is 63.4% below proving every position
+TrustTier's decision gas is 68.2% below proving every position
 every day, for the same pre-emptive protection near the boundary.
 
 Over ten further independent scenarios (mean, and the bad-debt range):
@@ -20,7 +20,7 @@ Over ten further independent scenarios (mean, and the bad-debt range):
 | policy | forced liquidations | insolvencies | bad debt (% of debt) |
 |---|---|---|---|
 | hf_rule | 3971.9 | 197.8 | 0.087% (0.002-0.294) |
-| trusttier | 1085.1 | 45.1 | 0.022% (0.0-0.089) |
+| trusttier | 1198.2 | 51.2 | 0.023% (0.0-0.099) |
 
 Reading it: the health-factor rule costs no decision gas but acts only at the
 boundary, so a crash day can carry a position from below LT to under water

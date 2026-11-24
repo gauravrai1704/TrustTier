@@ -1,9 +1,10 @@
 """
 External validity: score the model against what actually happened.
 
-The deployed model (v2) is trained on SYNTHETIC labels that are a formula of
-its own inputs, so its validation accuracy says little about real risk.
-This script labels REAL Aave V2 snapshots by their outcome instead:
+A second, independent real-outcome check (the main one is evaluation/aave_eval.py
+on archive-node snapshots, which the deployed model is trained on). This script
+labels Aave V2 snapshots from the Cred Protocol health-factor dataset by
+their outcome:
 
     label(t) = 1  if the wallet's health factor falls below 1 within the
                   next HORIZON_DAYS (it became liquidatable), else 0
@@ -47,7 +48,7 @@ import numpy as np
 import pandas as pd
 
 from evaluation.real_data import DATA_PATH, positions_from_frame
-from risk_model.features import FEATURE_NAMES, normalize_vector
+from risk_model.features import features_to_vector, normalize_vector
 from risk_model.inference import RiskModel
 
 RESULTS = os.path.join(os.path.dirname(__file__), "results")
@@ -99,7 +100,7 @@ def _metrics(y, score, flag) -> dict:
 def run(path: str) -> dict:
     data = build_dataset(path)
     model = RiskModel()
-    x = np.array([normalize_vector([r[n] for n in FEATURE_NAMES]) for _, r in data.iterrows()], dtype=np.float32)
+    x = np.array([normalize_vector(features_to_vector(dict(r))) for _, r in data.iterrows()], dtype=np.float32)
     labels, probs = model.session.run(None, {model.input_name: x})
     p_high = np.asarray(probs)[:, 1]
     y = data["label"].to_numpy()
@@ -108,7 +109,7 @@ def run(path: str) -> dict:
         "data": os.path.relpath(os.path.abspath(path), os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         "wallets": int(data["wallet"].nunique()), "snapshots": int(len(data)),
         "horizon_days": HORIZON_DAYS,
-        "deployed_model_v2": _metrics(y, p_high, np.asarray(labels).reshape(-1)),
+        "deployed_model": _metrics(y, p_high, np.asarray(labels).reshape(-1)),
         f"hf_rule_warn_below_{HF_WARN}": _metrics(y, -data["hf"].to_numpy(), (data["hf"] < HF_WARN).astype(int)),
         "candidate_model": None,
     }
@@ -146,7 +147,7 @@ def _markdown(r: dict) -> str:
     def row(name, m):
         return (f"| {name} | {m['n']} | {m['positives']} | {m['precision']} | {m['recall']} | "
                 f"{m['roc_auc'] if m['roc_auc'] is not None else 'n/a'} |")
-    rows = [row("deployed model v2 (synthetic labels)", r["deployed_model_v2"]),
+    rows = [row("deployed model", r["deployed_model"]),
             row(f"HF rule: warn when HF < {HF_WARN}", r[f"hf_rule_warn_below_{HF_WARN}"])]
     cand = r["candidate_model"]
     if isinstance(cand, dict):

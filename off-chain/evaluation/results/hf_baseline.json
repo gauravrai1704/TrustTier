@@ -35,45 +35,45 @@
       "gas_per_position_day": 0
     },
     "trusttier": {
-      "forced_liquidations": 297,
-      "insolvent_positions": 2,
-      "bad_debt": 0.023,
-      "borrower_bonus_paid": 29.8462,
-      "soft_liquidations": 2365,
-      "gas": 29022500848,
+      "forced_liquidations": 373,
+      "insolvent_positions": 6,
+      "bad_debt": 0.0556,
+      "borrower_bonus_paid": 29.0852,
+      "soft_liquidations": 2262,
+      "gas": 28809963989,
       "tier_counts": {
-        "HEURISTIC": 68672,
-        "COMMITMENT": 16875,
-        "ZK_PROOF": 4426
+        "HEURISTIC": 69629,
+        "COMMITMENT": 17045,
+        "ZK_PROOF": 3235
       },
-      "proofs": 4426,
-      "bad_debt_pct_of_debt": 0.001,
-      "borrower_bonus_paid_pct_of_debt": 1.669,
-      "positions_soft_liquidated": 1264,
-      "unnecessary_soft_liquidations": 323,
-      "gas_per_position_day": 322472
+      "proofs": 3235,
+      "bad_debt_pct_of_debt": 0.003,
+      "borrower_bonus_paid_pct_of_debt": 1.626,
+      "positions_soft_liquidated": 1238,
+      "unnecessary_soft_liquidations": 282,
+      "gas_per_position_day": 320111
     },
     "always_zk": {
-      "forced_liquidations": 297,
-      "insolvent_positions": 2,
-      "bad_debt": 0.023,
-      "borrower_bonus_paid": 29.8519,
-      "soft_liquidations": 2368,
-      "gas": 79229553290,
+      "forced_liquidations": 373,
+      "insolvent_positions": 6,
+      "bad_debt": 0.0556,
+      "borrower_bonus_paid": 29.0852,
+      "soft_liquidations": 2262,
+      "gas": 90525046082,
       "tier_counts": {
         "HEURISTIC": 0,
         "COMMITMENT": 0,
-        "ZK_PROOF": 89973
+        "ZK_PROOF": 89909
       },
-      "proofs": 89973,
-      "bad_debt_pct_of_debt": 0.001,
-      "borrower_bonus_paid_pct_of_debt": 1.669,
-      "positions_soft_liquidated": 1264,
-      "unnecessary_soft_liquidations": 323,
-      "gas_per_position_day": 880328
+      "proofs": 89909,
+      "bad_debt_pct_of_debt": 0.003,
+      "borrower_bonus_paid_pct_of_debt": 1.626,
+      "positions_soft_liquidated": 1238,
+      "unnecessary_soft_liquidations": 282,
+      "gas_per_position_day": 1005834
     }
   },
-  "trusttier_gas_saving_vs_always_zk_pct": 63.4,
+  "trusttier_gas_saving_vs_always_zk_pct": 68.2,
   "seeds": {
     "hf_rule": {
       "forced_liquidations": {
@@ -94,19 +94,19 @@
     },
     "trusttier": {
       "forced_liquidations": {
-        "mean": 1085.1,
-        "min": 101.0,
-        "max": 2360.0
+        "mean": 1198.2,
+        "min": 115.0,
+        "max": 2572.0
       },
       "insolvent_positions": {
-        "mean": 45.1,
-        "min": 0.0,
-        "max": 208.0
+        "mean": 51.2,
+        "min": 1.0,
+        "max": 240.0
       },
       "bad_debt_pct_of_debt": {
-        "mean": 0.022,
+        "mean": 0.023,
         "min": 0.0,
-        "max": 0.089
+        "max": 0.099
       }
     }
   }

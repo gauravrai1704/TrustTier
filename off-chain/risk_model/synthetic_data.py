@@ -1,12 +1,10 @@
 """
 Generates synthetic borrower position data to train the risk model on.
 
-There is no realistic substitute for real Aave/Compound liquidation history
-at this stage of the project (that integration is planned for Weeks 5-6,
-per the project timeline, once real historical data replay is built). This
-generator exists purely to produce a risk model that behaves sensibly for
-the Weeks 2-3 milestone: routing a synthetic position stream through
-Tier 0/1/2 end-to-end.
+The deployed model is trained on real Aave V2 outcomes
+(evaluation/aave_real.py; TRAIN_DATA=real, the default). This generator is
+the fallback when that data has not been downloaded (TRAIN_DATA=synthetic),
+and it feeds the synthetic position streams used by the design-set replay.
 
 The synthetic "ground truth" risk label is deliberately NOT a pure function
 of LTV alone - it also responds to collateral volatility, momentum, and

@@ -8,9 +8,9 @@
       "included": 216,
       "succeeded": 216,
       "reverted": 0,
-      "gas_used": 59605632,
+      "gas_used": 59628528,
       "gas_limit": 60000000,
-      "fill": 0.9934
+      "fill": 0.9938
     },
     {
       "scenario": "tier1_commitment",
@@ -18,9 +18,9 @@
       "included": 172,
       "succeeded": 172,
       "reverted": 0,
-      "gas_used": 59603560,
+      "gas_used": 59621792,
       "gas_limit": 60000000,
-      "fill": 0.9934
+      "fill": 0.9937
     },
     {
       "scenario": "tier2_zk_proof",
@@ -28,9 +28,9 @@
       "included": 59,
       "succeeded": 59,
       "reverted": 0,
-      "gas_used": 59256473,
+      "gas_used": 59261606,
       "gas_limit": 60000000,
-      "fill": 0.9876
+      "fill": 0.9877
     }
   ]
 }

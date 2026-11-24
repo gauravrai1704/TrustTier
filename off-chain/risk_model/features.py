@@ -7,7 +7,7 @@ encoding, no feature crosses) for two reasons:
      a bare LTV ratio - collateral volatility, momentum, and account
      history all plausibly refine a liquidation decision.
   2. Small, simple models compile into far smaller/faster zk-SNARK circuits.
-     EZKL (Weeks 3-5) performs its own fixed-point quantization during
+     EZKL performs its own fixed-point quantization during
      circuit compilation, so no manual weight quantization is done here -
      keeping the *architecture* small is what actually matters for
      circuit size and proving time.

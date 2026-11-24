@@ -7,7 +7,7 @@ model is registered:
 
 Endpoints:
     GET  /health
-    GET  /cost-model           - measured per-tier gas constants (Weeks 3-6),
+    GET  /cost-model           - measured per-tier gas constants,
                                   used by the frontend's cost comparison panel
                                   so it never duplicates these numbers
     GET  /markets              - the deployed markets (feeds, thresholds, prices)
@@ -104,7 +104,7 @@ from ledger.indexer import Indexer
 
 app = FastAPI(title="TrustTier Off-Chain Router", version="0.1.0")
 
-# The frontend dev server (Vite, Weeks 7-8) normally reaches this API
+# The frontend dev server (Vite) normally reaches this API
 # through Vite's own /api proxy - see frontend/vite.config.js - which
 # avoids needing CORS at all in the common case. This middleware is kept
 # as a fallback for anyone running the frontend build directly against

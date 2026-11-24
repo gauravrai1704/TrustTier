@@ -3,7 +3,7 @@ Live polling sentinel: watches the deployed LiquidationEngine for
 DecisionLogged and DecisionChallenged events and raises alerts in real
 time, using the pure detection logic in sentinel/detectors.py.
 
-This is a minimal, prototype-scale analogue of a Forta-style detection bot
+This is a minimal, small-scale analogue of a Forta-style detection bot
 or an OpenZeppelin Defender monitor - polling instead of a streaming
 subscription, printing instead of paging someone, but the same core loop:
 watch events as they land, run detection rules over them, surface what

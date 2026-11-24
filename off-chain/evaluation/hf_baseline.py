@@ -65,7 +65,8 @@ CRASH_PROB = 0.02            # chance per day of a market-wide crash
 CRASH_RANGE = (0.12, 0.30)   # size of a crash day
 SEED = 7
 
-T0_MIN, T1_MIN = 0.15, 0.05  # tier bands on delta (LiquidationEngine)
+# Tier bands on delta: volatility-adaptive, exactly as LiquidationEngine.tierBands.
+from router.tiering import tier_bands_bps  # noqa: E402
 
 
 def _quantize(ltv, vol, mom, topup_days, age_days):
@@ -152,12 +153,14 @@ def simulate(policy: str, model: _Model, ltv0, vol, topup0, age0, rel_price):
             if policy == "always_zk":
                 tier2 = np.ones(len(live), dtype=bool)
             else:
-                tier2 = delta <= T1_MIN
-                tier1 = (delta > T1_MIN) & (delta <= T0_MIN)
+                bands = np.array([tier_bands_bps(int(v)) for v in q[:, 1]]) / 10_000
+                b0, b1 = bands[:, 0], bands[:, 1]
+                tier2 = delta <= b1
+                tier1 = (delta > b1) & (delta <= b0)
                 escalate = tier1 & flags        # router never makes a claim its watcher could slash
                 tier2 |= escalate
                 n_t1 = int((tier1 & ~escalate).sum())
-                n_t0 = int((delta > T0_MIN).sum())
+                n_t0 = int((delta > b0).sum())
                 out["tier_counts"]["COMMITMENT"] += n_t1
                 out["tier_counts"]["HEURISTIC"] += n_t0
                 out["gas"] += n_t1 * GAS_BY_TIER["COMMITMENT"] + n_t0 * GAS_BY_TIER["HEURISTIC"]

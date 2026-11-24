@@ -6,7 +6,7 @@
 
 | scorer | snapshots | positives | precision | recall | ROC-AUC |
 |---|---|---|---|---|---|
-| deployed model v2 (synthetic labels) | 73 | 1 | 0.026 | 1.0 | 0.861 |
+| deployed model | 73 | 1 | 0.032 | 1.0 | 0.931 |
 | HF rule: warn when HF < 1.15 | 73 | 1 | 0.025 | 1.0 | 0.819 |
 
 Candidate model: skipped: 1 wallet(s); retraining needs at least 20 (download the complete dataset, see module docstring).

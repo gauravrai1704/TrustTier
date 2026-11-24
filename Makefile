@@ -46,7 +46,7 @@ test:
 
 analyze:
 	npx hardhat compile
-	$(abspath $(TOOLS))/bin/slither .
+	$(abspath $(TOOLS))/bin/python scripts/slither_run.py .
 	@if command -v echidna >/dev/null; then \
 	  PATH="$(abspath $(TOOLS))/bin:$$PATH" echidna . --contract EngineInvariants --config echidna.yaml --test-limit 50000 --format text | tail -12; \
 	else echo "echidna not installed: skipping fuzzing (the Docker image has it)"; fi

@@ -6,7 +6,7 @@ import GAS from "../../../off-chain/evaluation/results/gas_measurements.json";
 import EVAL from "../../../off-chain/evaluation/results/evaluation_report.json";
 import HF from "../../../off-chain/evaluation/results/hf_baseline.json";
 import BOND from "../../../off-chain/evaluation/results/bond_economics.json";
-import OUT from "../../../off-chain/evaluation/results/outcome_labels.json";
+import AAVE from "../../../off-chain/evaluation/results/aave_eval.json";
 import POOL from "../../../off-chain/evaluation/results/prover_pool.json";
 
 const POLICY = { hf_rule: "Health-factor rule", trusttier: "TrustTier", always_zk: "Always zk-proof" };
@@ -175,20 +175,27 @@ export default function Economics() {
         </div>
       </Card>
 
-      <Card title="Real outcomes (case study)" sub={`${OUT.wallets} real Aave V2 wallet, ${OUT.snapshots} snapshots; label = health factor below 1 within ${OUT.horizon_days} days`}>
+      <Card title="Real Aave V2 positions" sub={`${num(AAVE.positions)} position-days from ${num(AAVE.accounts)} borrowers, read from an archive node; outcome = health factor below 1 within 7 days`}>
         <div className="table-wrap">
           <table className="table">
-            <thead><tr><th>Scorer</th><th className="num">Positives</th><th className="num">Precision</th><th className="num">Recall</th><th className="num">ROC-AUC</th></tr></thead>
+            <thead><tr><th>Sample · bands</th><th className="num">Tier 0 / 1 / 2</th><th className="num">Gas saved vs always-zk</th><th className="num">Cheap claims that went bad (7 d)</th></tr></thead>
             <tbody>
-              {[["Deployed model (synthetic labels)", OUT.deployed_model_v2], ["HF rule (warn below 1.15)", OUT["hf_rule_warn_below_1.15"]]].map(([n, m]) => (
-                <tr key={n} style={{ cursor: "default" }}>
-                  <td>{n}</td><td className="num">{m.positives}</td><td className="num">{m.precision}</td><td className="num">{m.recall}</td><td className="num">{m.roc_auc ?? "n/a"}</td>
-                </tr>
-              ))}
+              {["adaptive", "fixed_15_5"].flatMap((b) => ["random", "liquidated"].map((smp) => {
+                const r = AAVE.policies[b][smp];
+                return (
+                  <tr key={b + smp} style={{ cursor: "default" }}>
+                    <td>{smp} · {b === "adaptive" ? "adaptive" : "fixed 15% / 5%"}</td><td className="num">{r.tiers.map(num).join(" / ")}</td>
+                    <td className="num">{r.saving_pct}%</td><td className="num">{num(r.cheap_claims_liquidatable_7d)}</td>
+                  </tr>
+                );
+              }))}
             </tbody>
           </table>
         </div>
-        <div className="small muted" style={{ marginTop: 10 }}>One wallet is a case study, not a statistic. <span className="mono">evaluation/outcome_labels.py</span> runs the same test on Cred Protocol's full 35,524-wallet dataset.</div>
+        <div className="stack small ink2" style={{ marginTop: 10 }}>
+          <p>Approved soft liquidations on the random sample: <b style={{ color: "var(--ink)" }}>{num(AAVE.false_alarms_random_sample.trusttier_model.approved_soft_liquidations)}</b> with the proven model, against {num(AAVE.false_alarms_random_sample.delta_only_baseline.approved_soft_liquidations)} for a δ-only rule; {AAVE.false_alarms_random_sample.trusttier_model.of_which_liquidatable_within_7d} of the model's approvals became liquidatable within a week.</p>
+          <p>Early warning: of {AAVE.early_warning.trusttier_model.liquidated_accounts_observed} accounts that became liquidatable, TrustTier approved a soft liquidation at least a day earlier for {AAVE.early_warning.trusttier_model.flagged_at_least_1_day_before} (median lead {AAVE.early_warning.trusttier_model.median_lead_days_when_flagged} days). The health-factor rule acts only once HF &lt; 1.</p>
+        </div>
       </Card>
     </>
   );

@@ -15,10 +15,10 @@ proof is used.
 |---|---|---|
 | Trusted setup | Required (KZG needs a structured reference string) | Not required (hash-based, transparent) |
 | Post-quantum security | No — relies on elliptic-curve discrete log | Yes — relies only on collision-resistant hashes |
-| Proof size | Small (our measured proof: **3,584 bytes** of on-chain calldata) | Large (typically 40 KB – several hundred KB, grows poly-logarithmically with circuit size) |
-| Verification cost (single, unbatched proof) | Small (our measured on-chain verification: **621,921 gas**) | Large per-proof — STARK verifiers are comparatively expensive to run on a single proof |
+| Proof size | Small (our measured proof: **4,480 bytes** of on-chain calldata) | Large (typically 40 KB – several hundred KB, grows poly-logarithmically with circuit size) |
+| Verification cost (single, unbatched proof) | Small (our measured on-chain verification: **745,517 gas**) | Large per-proof — STARK verifiers are comparatively expensive to run on a single proof |
 | Verification cost (amortized over a large batch) | Doesn't batch specially — cost is roughly linear in the number of proofs | Very cheap *per underlying statement* once amortized across a large batch (this is STARK rollups' core trick) |
-| Proving time | Our measured: **~16 s** for the reference model | Comparable or faster for similar-sized computations, but less mature general-purpose ML tooling |
+| Proving time | Our measured: **~10 s** (4 vCPUs) for the reference model | Comparable or faster for similar-sized computations, but less mature general-purpose ML tooling |
 
 ## Why SNARK fits TrustTier's actual design better
 
@@ -40,8 +40,8 @@ numbers are considerably worse than a comparably-sized SNARK's — which is
 exactly TrustTier's situation, since each Tier-2 call is a lone, immediate
 decision, never a batch collected and proved together.
 
-Our own measured SNARK numbers make the unbatched cost concrete: **3,584
-bytes** of proof calldata and **621,921 gas** for the standalone verifier
+Our own measured SNARK numbers make the unbatched cost concrete: **4,480
+bytes** of proof calldata and **745,517 gas** for the standalone verifier
 call (875,489 gas for the full `decideZkProof` path, which also reads the
 position and two Chainlink feeds, computes the five features on-chain,
 checks them against the proof's public inputs and writes the audit log)
@@ -91,8 +91,8 @@ that Tier-2 decisions for many positions were collected and proved
 every Tier-2 escalation in the last N blocks, rather than one proof per
 position per transaction), a STARK's batched-verification economics would
 start to look attractive, and its lack of a trusted setup would remove the
-self-generated-SRS caveat documented in the main README and
-`circuits/build_circuit.py`. That would be a genuine architectural change
+remaining setup assumption (today the public perpetual-powers-of-tau
+ceremony, `circuits/build_circuit.py`). That would be a genuine architectural change
 — moving Tier 2 from synchronous per-decision verification to an
 optimistic-batched model — and is noted as realistic future work rather
 than something this project's scope or timeline supports today.
@@ -116,7 +116,7 @@ coursework-scale decisions as production-final ones.
 |---|---|---|
 | Unbatched, single-decision verification cost | **SNARK** | STARKs' efficiency case depends on amortizing across large batches; TrustTier verifies one decision at a time |
 | Tooling maturity for ONNX risk models | **SNARK** (EZKL) | Orion/Cairo tooling is comparatively less mature for this use case |
-| Trusted setup | STARK (no setup needed) | Real but currently mitigated by documenting the self-generated-SRS limitation; not a blocker for coursework scope |
+| Trusted setup | STARK (no setup needed) | Real but mitigated: the SRS comes from the public perpetual-powers-of-tau ceremony (secure if any participant was honest) |
 | Post-quantum security | STARK | Relevant for a real deployment, not for this project's timeline |
 | **Net fit for TrustTier's current architecture** | **zk-SNARK (Halo2/KZG via EZKL)** | Matches the unbatched, synchronous, per-decision verification model TrustTier actually uses |
 
