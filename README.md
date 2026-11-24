@@ -168,7 +168,7 @@ Echidna checks seven invariants over 100,000 random calls (`docs/FUZZING.md`). C
 | vs health-factor rule, 3,000-position 30-day stress test | forced liquidations −85%, insolvencies 61 → 6 |
 | Decisions per 60 M-gas block (Tier 0 / Tier 1 / Tier 2, real verifier) | 216 / 172 / 59 |
 | Parallel EVM (RISE pevm, Block-STM), 374-decision block, real verifier | 3.74x on 4 threads (simulated: 3.99x on 4, 15.3x on 16); gas and status match Hardhat on all 35 blocks |
-| Model size: 29 → 4,609 parameters | ROC-AUC 0.907-0.922; proving 6.6 s → 56.6 s, proving key 392 MB → 3.1 GB |
+| Model size: 29 → 4,609 parameters | ROC-AUC 0.921-0.929; proving 5.5 s → 56 s, proving key 392 MB → 3.1 GB; verifier gas flat (742 k) |
 | Watcher profit at 20 gwei (fixed bond / gas-scaled bond) | −0.0061 / +0.0139 ETH |
 | Scheduling rounds for 374 decisions (old array log → per-position storage) | 374 → 1 |
 | Circuit/ONNX label agreement on 200 random positions | 200/200 (`circuits/fidelity.json`) |

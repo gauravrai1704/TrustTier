@@ -605,7 +605,7 @@ Our first model was trained on synthetic labels centred at LTV~0.5, below almost
 \subsection{Why the model is small}
 \label{sec:eval-modelsize}
 
-A 5$\to$8$\to$1 network has 57 parameters. Is it too small to be useful, or could a larger one buy accuracy for free? \code{evaluation/model\_size.py} trains eight architectures on the same real Aave data and account split, then builds each one's circuit exactly as the deployed one (hashed weights, scale $2^{10}$, the public SRS), proves an input, and deploys and calls its verifier (Table~\ref{tab:modelsize}).
+A 5$\to$8$\to$1 network has 57 parameters. Is it too small to be useful, or could a larger one buy accuracy for free? \code{evaluation/model\_size.py} trains eight architectures on the same real Aave data, account-level split and oversampling as the deployed model (so the 8-unit row \emph{is} the deployed model), then builds each one's circuit exactly as the deployed one (hashed weights, scale $2^{10}$, the public SRS), proves an input, and deploys and calls its verifier (Table~\ref{tab:modelsize}).
 
 \begin{table}[t]
   \caption{Model size against Tier-2 cost, same data and circuit settings (4 vCPUs). Every verifier is 19.7\,KB and costs 742\,k gas to call; proofs are 4,480 bytes.}
@@ -616,19 +616,19 @@ A 5$\to$8$\to$1 network has 57 parameters. Is it too small to be useful, or coul
     \toprule
     \textbf{Hidden} & \textbf{Params} & \textbf{ROC-AUC} & \textbf{Rows} & \textbf{Prove} & \textbf{Proving key} \\
     \midrule
-    4 & 29 & 0.911 & $2^{15}$ & 7.6\,s & 392\,MB \\
-    8 & 57 & 0.907 & $2^{15}$ & 6.8\,s & 392\,MB \\
-    16 & 113 & 0.912 & $2^{15}$ & 6.6\,s & 392\,MB \\
-    32 & 225 & 0.911 & $2^{15}$ & 6.7\,s & 392\,MB \\
-    64 & 449 & 0.914 & $2^{16}$ & 13.5\,s & 785\,MB \\
-    16$\times$16 & 385 & 0.912 & $2^{15}$ & 7.1\,s & 392\,MB \\
-    32$\times$32 & 1,281 & 0.916 & $2^{16}$ & 15.2\,s & 785\,MB \\
-    64$\times$64 & 4,609 & 0.922 & $2^{18}$ & 56.6\,s & 3,138\,MB \\
+    4 & 29 & 0.921 & $2^{15}$ & 5.5\,s & 392\,MB \\
+    8 (deployed) & 57 & 0.921 & $2^{16}$ & 11.1\,s & 785\,MB \\
+    16 & 113 & 0.925 & $2^{15}$ & 5.6\,s & 392\,MB \\
+    32 & 225 & 0.923 & $2^{15}$ & 5.7\,s & 392\,MB \\
+    64 & 449 & 0.923 & $2^{16}$ & 11.2\,s & 785\,MB \\
+    16$\times$16 & 385 & 0.929 & $2^{16}$ & 10.7\,s & 785\,MB \\
+    32$\times$32 & 1,281 & 0.928 & $2^{16}$ & 12.3\,s & 785\,MB \\
+    64$\times$64 & 4,609 & 0.926 & $2^{18}$ & 56.3\,s & 3,138\,MB \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Two things stand out. First, size buys almost nothing: from 29 to 4,609 parameters, held-out ROC-AUC moves between 0.907 and 0.922 (accuracy 93.4--93.9\%), because five features, one of them dominant, carry little structure for depth to find. Second, on-chain cost is flat, since a Halo2 verifier's size and gas depend on the circuit's shape, not its row count, but \emph{proving} grows by powers of two: the largest network needs $2^{18}$ rows, 8.3$\times$ the proving time and 8$\times$ the memory of the smallest. Proving is what limits Tier~2 in a crash (Section~\ref{sec:eval-proving}), so a 160$\times$ larger model would cut crash throughput by about 8$\times$ for 0.01 of AUC. The deployed 8-unit network needs $2^{16}$ rows rather than $2^{15}$ because its activations span a wider range; how many rows a network needs depends on its weights as well as its size. A larger feature set, not a larger network, is where accuracy would come from, and each new feature is another on-chain input to verify.
+Two things stand out. First, size buys almost nothing: from 29 to 4,609 parameters, held-out ROC-AUC stays between 0.921 and 0.929 (accuracy 89.5--92.0\%), because five features, one of them dominant, carry little structure for depth to find. Second, on-chain cost is flat, since a Halo2 verifier's size and gas depend on the circuit's shape, not its row count, but \emph{proving} grows in powers of two of the row count: $2^{15}$ rows prove in 5.5\,s, $2^{16}$ in about 11\,s, and the largest network needs $2^{18}$ rows, 56\,s and a 3.1\,GB proving key. How many rows a network needs depends on the range of its activations as well as its size: the deployed 8-unit network needs $2^{16}$ while 16- and 32-unit ones fit in $2^{15}$. Proving is what limits Tier~2 in a crash (Section~\ref{sec:eval-proving}), so a 160$\times$ larger model would cut crash throughput about fivefold for less than 0.01 of AUC. A larger feature set, not a larger network, is where accuracy would come from, and each new feature is another on-chain input to verify. On-chain inference (Section~\ref{sec:eval-baseline}) makes the opposite trade: proving disappears, but every weight is paid for in gas.
 
 \subsection{Against on-chain inference (Alhaidari et al., AFT 2025)}
 \label{sec:eval-baseline}
