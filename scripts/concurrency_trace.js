@@ -26,6 +26,7 @@ const DAY = 24 * 3600;
 const BOND = ethers.parseEther("0.01");
 const PAST_ROUND = 1;
 const MODEL = ethers.id("risk-model");
+const WEIGHTS = 1n; // stand-in weights hash for the mock verifier
 const MARKETS = [
   { name: "ETH", price: 2000, past: 2200, vol: 35, th: 8000 },
   { name: "WBTC", price: 60000, past: 59000, vol: 20, th: 7500 },
@@ -59,7 +60,7 @@ async function deploy(design) {
   const log = await (await F(design === "legacy-array" ? "LegacyArrayAuditLog" : "TierAuditLog")).deploy();
   const verifier = await (await F("MockTier2Verifier")).deploy();
   const engine = await (await F("LiquidationEngine")).deploy(
-    await registry.getAddress(), await log.getAddress(), await verifier.getAddress(), MODEL,
+    await registry.getAddress(), await log.getAddress(), await verifier.getAddress(), MODEL, WEIGHTS,
     await pool.getAddress(), 30 * DAY, 30 * DAY
   );
   await log.authorizeLogger(await engine.getAddress());
@@ -85,6 +86,7 @@ async function footprint(txHash, to, from, value, names) {
   const t = await network.provider.send("debug_traceTransaction", [txHash, { disableMemory: true, disableStorage: true }]);
   const label = (a) => names[a] || a;
   const reads = new Set(), writes = new Set(), balances = new Set();
+  const raw = new Set(); const touched = new Set([to.toLowerCase(), from.toLowerCase()]);
   const stack = [to.toLowerCase()];
   let pendingCtx = null;
   let depth = 1;
@@ -98,21 +100,23 @@ async function footprint(txHash, to, from, value, names) {
     const st = l.stack || [];
     const top = (i) => st[st.length - 1 - i];
     switch (l.op) {
-      case "SLOAD": reads.add(`${label(ctx)}#${BigInt("0x" + top(0)).toString(16)}`); break;
-      case "SSTORE": writes.add(`${label(ctx)}#${BigInt("0x" + top(0)).toString(16)}`); break;
+      case "SLOAD": reads.add(`${label(ctx)}#${BigInt("0x" + top(0)).toString(16)}`); raw.add(`${ctx}#${BigInt("0x" + top(0)).toString(16)}`); break;
+      case "SSTORE": writes.add(`${label(ctx)}#${BigInt("0x" + top(0)).toString(16)}`); raw.add(`${ctx}#${BigInt("0x" + top(0)).toString(16)}`); break;
       case "CALL": case "CALLCODE": {
         const target = word(top(1)).toLowerCase();
         const val = BigInt("0x" + top(2));
         pendingCtx = l.op === "CALL" ? target : ctx;
+        touched.add(target);
         if (val > 0n) { balances.add(label(ctx)); balances.add(label(target)); }
         break;
       }
-      case "STATICCALL": pendingCtx = word(top(1)).toLowerCase(); break;
+      case "STATICCALL": pendingCtx = word(top(1)).toLowerCase(); touched.add(pendingCtx); break;
       case "DELEGATECALL": pendingCtx = ctx; break;
       default: break;
     }
   }
-  return { reads: [...reads], writes: [...writes], balances: [...balances], steps: t.structLogs.length };
+  return { reads: [...reads], writes: [...writes], balances: [...balances], steps: t.structLogs.length,
+    _raw: [...raw], _touched: [...touched] };
 }
 
 /**
@@ -172,7 +176,7 @@ async function runScenario(name, opts) {
   for (const p of plan) {
     if (p.oracle === undefined && p.tier === 2 && !inputsFor[p.pid]) {
       const [q] = await engine.currentFeatures(p.pid, PAST_ROUND);
-      inputsFor[p.pid] = [...q.map(BigInt), 1n, 3n, 1021n];
+      inputsFor[p.pid] = [WEIGHTS, ...q.map(BigInt), 1n, 3n, 1021n];
     }
   }
 
@@ -209,17 +213,76 @@ async function runScenario(name, opts) {
   const order = Object.fromEntries(block.transactions.map((h, i) => [h, i]));
 
   const txs = [];
+  const rawAll = new Set(), touchedAll = new Set();
   for (const s of sent) {
     const r = await ethers.provider.getTransactionReceipt(s.hash);
-    const fp = await footprint(s.hash, s.to, s.from, s.value, names);
+    const { _raw, _touched, ...fp } = await footprint(s.hash, s.to, s.from, s.value, names);
+    _raw.forEach((x) => rawAll.add(x));
+    _touched.forEach((x) => touchedAll.add(x));
     txs.push({ index: order[s.hash], kind: s.kind, positionId: s.pid, market: s.market, duplicate: s.duplicate,
       status: r.status, gasUsed: Number(r.gasUsed), ...fp });
   }
+  if (process.env.PEVM_EXPORT) await exportPevm(name, block, sent.map((s) => s.hash), rawAll, touchedAll);
   txs.sort((a, b) => a.index - b.index);
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(path.join(OUT, `${name}.json`), JSON.stringify({ name, opts, txs }, null, 1));
   const ok = txs.filter((t) => t.status === 1).length;
   console.log(`${name}: ${txs.length} txs in one block, ${ok} succeeded, ${txs.length - ok} reverted`);
+}
+
+/**
+ * Export a block for RISE pevm (off-chain/evaluation/pevm_bench): the exact
+ * pre-block state of every account and storage slot the block touches, and
+ * its transactions in order. Values are read at the parent block, so pevm
+ * starts from precisely the state Hardhat executed the block on.
+ */
+async function exportPevm(name, block, hashes, rawSlots, touchedAddrs) {
+  const parent = "0x" + (block.number - 1).toString(16);
+  const hex = (x) => "0x" + BigInt(x).toString(16);
+  const accounts = {};
+  const ensure = async (addr) => {
+    addr = addr.toLowerCase();
+    if (accounts[addr] || BigInt(addr) < 0x100n) return; // skip precompiles
+    accounts[addr] = {
+      balance: hex(await network.provider.send("eth_getBalance", [addr, parent])),
+      nonce: Number(await network.provider.send("eth_getTransactionCount", [addr, parent])),
+      code: await network.provider.send("eth_getCode", [addr, parent]),
+      storage: {},
+    };
+  };
+  const txs = [];
+  for (const h of hashes) {
+    const tx = await network.provider.send("eth_getTransactionByHash", [h]);
+    await ensure(tx.from);
+    if (tx.to) await ensure(tx.to);
+    txs.push({ from: tx.from, to: tx.to, value: tx.value, input: tx.input, gas: tx.gas, gasPrice: tx.gasPrice,
+      nonce: tx.nonce, index: Number(tx.transactionIndex) });
+  }
+  txs.sort((a, b) => a.index - b.index);
+  for (const a of touchedAddrs) await ensure(a);
+  await ensure(block.miner);
+  for (const k of rawSlots) {
+    const [addr, slot] = k.split("#");
+    await ensure(addr);
+    accounts[addr.toLowerCase()].storage["0x" + slot] = await network.provider.send("eth_getStorageAt", [addr, "0x" + slot, parent]);
+  }
+  const receipts = [];
+  for (const h of hashes) {
+    const r = await ethers.provider.getTransactionReceipt(h);
+    receipts.push({ hash: h, index: r.index, status: r.status, gasUsed: Number(r.gasUsed) });
+  }
+  const raw = await network.provider.send("eth_getBlockByNumber", ["0x" + block.number.toString(16), false]);
+  const out = {
+    name,
+    block: { number: raw.number, timestamp: raw.timestamp, coinbase: raw.miner, gasLimit: raw.gasLimit,
+      baseFee: raw.baseFeePerGas || "0x0", prevrandao: raw.mixHash, gasUsed: raw.gasUsed },
+    chainId: Number(await network.provider.send("eth_chainId", [])),
+    accounts, txs, receipts: receipts.sort((a, b) => a.index - b.index),
+  };
+  const dir = path.join(OUT, "..", "pevm_blocks");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(out));
+  console.log(`  exported ${name} for pevm: ${Object.keys(accounts).length} accounts, ${rawSlots.size} slots, ${txs.length} txs`);
 }
 
 async function main() {

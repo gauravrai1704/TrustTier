@@ -64,3 +64,4 @@ off-chain/evaluation/data/*.partial.jsonl
 off-chain/evaluation/data/aave_v2_training.npz
 off-chain/evaluation/data/aave_v2_positions.parquet
 .model_size/
+off-chain/evaluation/results/pevm_blocks/

@@ -66,6 +66,20 @@ We implement nine Solidity contracts, an EZKL proving pipeline, a router and a d
 
 \keywords{DeFi, liquidations, zkML, zk-SNARK, EZKL, Halo2, smart contracts, optimistic verification, oracles, parallel execution}
 
+% Numbers shown in the page-1 figure (set from the evaluation).
+\newcommand{\teaserGas}{36\%}
+\newcommand{\teaserReal}{TBD}
+\newcommand{\teaserRealText}{real Aave liquidations\\flagged in advance}
+\newcommand{\teaserPar}{TBD}
+\newcommand{\teaserParText}{parallel speedup on a\\real parallel EVM}
+\begin{teaserfigure}
+  \centering
+  \input{figures/teaser}
+  \caption{TrustTier in one picture. (a) Lending protocols liquidate only once LTV crosses the threshold, and a risk model that could act earlier runs off-chain, unchecked. (b) TrustTier's contract reads every input itself, computes the distance $\delta$ to the boundary and enforces how strongly each decision must be verified: a zero-knowledge proof near the boundary, cheap bonded claims far from it, with bands that widen for volatile collateral. (c) The result.}
+  \Description{Three panels: a crash pushing LTV through the liquidation threshold; the contract reading inputs on-chain and three verification tiers along the distance to the boundary; headline results.}
+  \label{fig:teaser}
+\end{teaserfigure}
+
 \maketitle
 
 {\renewcommand{\thefootnote}{}\footnotetext{Code, data and reproduction scripts: \url{https://github.com/gauravrai1704/TrustTier}}}

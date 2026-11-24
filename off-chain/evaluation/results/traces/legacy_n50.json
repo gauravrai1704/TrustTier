@@ -17,10 +17,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 267029,
+   "gasUsed": 268209,
    "reads": [
-    "LiquidationEngine#270e7751614d4e91a095cd3ace3f4d517c1b37aa711dfeaf72be0b76abd0483a",
-    "LiquidationEngine#9",
+    "LiquidationEngine#6fbf3b49b523bc27464b7dbfa6311951351b1d3efd07aa2ee4d1ce319801a0cf",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#c8d233a0ebef7c9a17d2b0b17eea62cca39002a128ccf419119b4a1a1f1e742d",
     "LendingPool#c8d233a0ebef7c9a17d2b0b17eea62cca39002a128ccf419119b4a1a1f1e7428",
@@ -35,11 +35,11 @@
     "LendingPool#c8d233a0ebef7c9a17d2b0b17eea62cca39002a128ccf419119b4a1a1f1e742b",
     "LendingPool#c8d233a0ebef7c9a17d2b0b17eea62cca39002a128ccf419119b4a1a1f1e742c",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -48,9 +48,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564"
    ],
    "writes": [
-    "LiquidationEngine#270e7751614d4e91a095cd3ace3f4d517c1b37aa711dfeaf72be0b76abd0483a",
-    "LiquidationEngine#270e7751614d4e91a095cd3ace3f4d517c1b37aa711dfeaf72be0b76abd04839",
-    "LiquidationEngine#270e7751614d4e91a095cd3ace3f4d517c1b37aa711dfeaf72be0b76abd0483b",
+    "LiquidationEngine#6fbf3b49b523bc27464b7dbfa6311951351b1d3efd07aa2ee4d1ce319801a0cf",
+    "LiquidationEngine#6fbf3b49b523bc27464b7dbfa6311951351b1d3efd07aa2ee4d1ce319801a0ce",
+    "LiquidationEngine#6fbf3b49b523bc27464b7dbfa6311951351b1d3efd07aa2ee4d1ce319801a0d0",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
@@ -60,9 +60,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x3257dc09cf4867f0f53af4a553b31719c09bd24d"
+    "account:0xf8316462cf01ad192e2c469aa3b80a2b8a03f64f"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 1,
@@ -71,10 +71,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#5ff1be3842b54290a9d10674244dae5848d2371b5314790c54805c086586e1e0",
-    "LiquidationEngine#9",
+    "LiquidationEngine#b705463cf5f7356780ee6e96132d37412c1b5816a4d207b8dcd42c349767458",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#4db623e5c4870b62d3fc9b4e8f893a1a77627d75ab45d9ff7e56ba19564af9a0",
     "LendingPool#4db623e5c4870b62d3fc9b4e8f893a1a77627d75ab45d9ff7e56ba19564af99b",
@@ -89,11 +89,11 @@
     "LendingPool#4db623e5c4870b62d3fc9b4e8f893a1a77627d75ab45d9ff7e56ba19564af99e",
     "LendingPool#4db623e5c4870b62d3fc9b4e8f893a1a77627d75ab45d9ff7e56ba19564af99f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -102,9 +102,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e569"
    ],
    "writes": [
-    "LiquidationEngine#5ff1be3842b54290a9d10674244dae5848d2371b5314790c54805c086586e1e0",
-    "LiquidationEngine#5ff1be3842b54290a9d10674244dae5848d2371b5314790c54805c086586e1df",
-    "LiquidationEngine#5ff1be3842b54290a9d10674244dae5848d2371b5314790c54805c086586e1e1",
+    "LiquidationEngine#b705463cf5f7356780ee6e96132d37412c1b5816a4d207b8dcd42c349767458",
+    "LiquidationEngine#b705463cf5f7356780ee6e96132d37412c1b5816a4d207b8dcd42c349767457",
+    "LiquidationEngine#b705463cf5f7356780ee6e96132d37412c1b5816a4d207b8dcd42c349767459",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e568",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e569",
@@ -114,9 +114,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xba43e47bdfde7da69d538a2a86976de00a672cad"
+    "account:0x72ffcee6ad4a3199b83757c5c47146cd3c26e5d9"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 2,
@@ -125,12 +125,12 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#55664edbebd57273ba1f6d1c017cd920bbceea562d5502a6837280a660edef96",
+    "LiquidationEngine#dd2af3330d298808a303a10bc360333536e7697099bb3fe7200b0c272de66559",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#467a5c61216cad3003bc3395c339807c735d5c3d989ca4bc0ef2a37e14ce267e",
     "LendingPool#467a5c61216cad3003bc3395c339807c735d5c3d989ca4bc0ef2a37e14ce2679",
@@ -145,11 +145,11 @@
     "LendingPool#467a5c61216cad3003bc3395c339807c735d5c3d989ca4bc0ef2a37e14ce267c",
     "LendingPool#467a5c61216cad3003bc3395c339807c735d5c3d989ca4bc0ef2a37e14ce267d",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -158,10 +158,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56e"
    ],
    "writes": [
-    "LiquidationEngine#55664edbebd57273ba1f6d1c017cd920bbceea562d5502a6837280a660edef96",
-    "LiquidationEngine#55664edbebd57273ba1f6d1c017cd920bbceea562d5502a6837280a660edef95",
-    "LiquidationEngine#55664edbebd57273ba1f6d1c017cd920bbceea562d5502a6837280a660edef97",
+    "LiquidationEngine#dd2af3330d298808a303a10bc360333536e7697099bb3fe7200b0c272de66559",
     "LiquidationEngine#dd2af3330d298808a303a10bc360333536e7697099bb3fe7200b0c272de66558",
+    "LiquidationEngine#dd2af3330d298808a303a10bc360333536e7697099bb3fe7200b0c272de6655a",
+    "LiquidationEngine#ad2085924f073c582f946bd77dc0abaa9c2630e9d25fd72a62a7ae1d39c64195",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56d",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56e",
@@ -171,9 +171,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xd2e641c897d958879bb55f0de523467f3463d173"
+    "account:0x36846385578f76648ab5795cc2545833b6895095"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 3,
@@ -182,10 +182,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#2cd9ebf6ff19cdd7ffcc447d7c7d47b5991f5c7392a04512134e765802361fa7",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a5049387d9cb649c59f4bda666105ba636c2a103d8e2b232ba4d125737cd214a",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#e2689cd4a84e23ad2f564004f1c9013e9589d260bde6380aba3ca7e09e4df411",
     "LendingPool#e2689cd4a84e23ad2f564004f1c9013e9589d260bde6380aba3ca7e09e4df40c",
@@ -200,11 +200,11 @@
     "LendingPool#e2689cd4a84e23ad2f564004f1c9013e9589d260bde6380aba3ca7e09e4df40f",
     "LendingPool#e2689cd4a84e23ad2f564004f1c9013e9589d260bde6380aba3ca7e09e4df410",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -213,9 +213,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e573"
    ],
    "writes": [
-    "LiquidationEngine#2cd9ebf6ff19cdd7ffcc447d7c7d47b5991f5c7392a04512134e765802361fa7",
-    "LiquidationEngine#2cd9ebf6ff19cdd7ffcc447d7c7d47b5991f5c7392a04512134e765802361fa6",
-    "LiquidationEngine#2cd9ebf6ff19cdd7ffcc447d7c7d47b5991f5c7392a04512134e765802361fa8",
+    "LiquidationEngine#a5049387d9cb649c59f4bda666105ba636c2a103d8e2b232ba4d125737cd214a",
+    "LiquidationEngine#a5049387d9cb649c59f4bda666105ba636c2a103d8e2b232ba4d125737cd2149",
+    "LiquidationEngine#a5049387d9cb649c59f4bda666105ba636c2a103d8e2b232ba4d125737cd214b",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e572",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e573",
@@ -225,9 +225,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xf79cead2b1cd34ffd135e625de649c25eb5a4c1f"
+    "account:0xb8c612ab21d00724420ff1459d5240b04bd70678"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 4,
@@ -236,13 +236,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#4df3003159b9f39fb9caaf83b69f260ebc46bd137671fe03e7b1e33d3e6d8a0a",
+    "LiquidationEngine#f7ec87cdd76be095e18903c05f30ffa226747789e75e20cc72401476b11a394c",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#38ccf7fe89e68e9cb9e9fc31f6d47173231206ebecc0bf076a9068dce0437183",
     "LendingPool#38ccf7fe89e68e9cb9e9fc31f6d47173231206ebecc0bf076a9068dce043717e",
@@ -257,13 +257,14 @@
     "LendingPool#38ccf7fe89e68e9cb9e9fc31f6d47173231206ebecc0bf076a9068dce0437181",
     "LendingPool#38ccf7fe89e68e9cb9e9fc31f6d47173231206ebecc0bf076a9068dce0437182",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -273,7 +274,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e578"
    ],
    "writes": [
-    "LiquidationEngine#4df3003159b9f39fb9caaf83b69f260ebc46bd137671fe03e7b1e33d3e6d8a0a",
+    "LiquidationEngine#f7ec87cdd76be095e18903c05f30ffa226747789e75e20cc72401476b11a394c",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e577",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e578",
@@ -282,9 +283,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e57b"
    ],
    "balances": [
-    "account:0x3bc9d5b99ccaf9d7b90cc170573179b80cf6ffb8"
+    "account:0x0e917cc6de5c939c682e248c1b3721e9cbe545fc"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 5,
@@ -293,12 +294,12 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#63ad5e8597ed00826582ffe8302b2704b28344c60ae5645ec296a6326e0ed346",
+    "LiquidationEngine#a206051e911305809ddd48cf2baa7ead2c7fb038e505e1d02f9e6c2ce72930d",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#40165e7164257b249280bf839a50283d248062ed7b0e6d8820cb6c506bfcf7d8",
     "LendingPool#40165e7164257b249280bf839a50283d248062ed7b0e6d8820cb6c506bfcf7d3",
@@ -313,11 +314,11 @@
     "LendingPool#40165e7164257b249280bf839a50283d248062ed7b0e6d8820cb6c506bfcf7d6",
     "LendingPool#40165e7164257b249280bf839a50283d248062ed7b0e6d8820cb6c506bfcf7d7",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -326,10 +327,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e57d"
    ],
    "writes": [
-    "LiquidationEngine#63ad5e8597ed00826582ffe8302b2704b28344c60ae5645ec296a6326e0ed346",
-    "LiquidationEngine#63ad5e8597ed00826582ffe8302b2704b28344c60ae5645ec296a6326e0ed345",
-    "LiquidationEngine#63ad5e8597ed00826582ffe8302b2704b28344c60ae5645ec296a6326e0ed347",
+    "LiquidationEngine#a206051e911305809ddd48cf2baa7ead2c7fb038e505e1d02f9e6c2ce72930d",
     "LiquidationEngine#a206051e911305809ddd48cf2baa7ead2c7fb038e505e1d02f9e6c2ce72930c",
+    "LiquidationEngine#a206051e911305809ddd48cf2baa7ead2c7fb038e505e1d02f9e6c2ce72930e",
+    "LiquidationEngine#3757bb026b72bf4f9cbbbf8f2bafe0ea3d356ae6d8f07ef005aafb99b4cbde40",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e57c",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e57d",
@@ -339,9 +340,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xf098247485c5a82e13ed0859061efaa640d48c01"
+    "account:0x341e940349f602a407a5f38d8eadbea636313b00"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 6,
@@ -350,13 +351,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#8a69cd99a9300b6f278a7cd64177087c7a01a605a7305ab8002d8564ae00e34b",
+    "LiquidationEngine#5f3c6c0b1e50e87c0039700bc4a6903edf183a5a76d5ce6710939618d0c56d37",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#af2afaf35ad6da1368c28c91ba52a84b6fc26e5aa0d9b26dc4fa0373e4d12c35",
     "LendingPool#af2afaf35ad6da1368c28c91ba52a84b6fc26e5aa0d9b26dc4fa0373e4d12c30",
@@ -371,13 +372,14 @@
     "LendingPool#af2afaf35ad6da1368c28c91ba52a84b6fc26e5aa0d9b26dc4fa0373e4d12c33",
     "LendingPool#af2afaf35ad6da1368c28c91ba52a84b6fc26e5aa0d9b26dc4fa0373e4d12c34",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -387,7 +389,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e582"
    ],
    "writes": [
-    "LiquidationEngine#8a69cd99a9300b6f278a7cd64177087c7a01a605a7305ab8002d8564ae00e34b",
+    "LiquidationEngine#5f3c6c0b1e50e87c0039700bc4a6903edf183a5a76d5ce6710939618d0c56d37",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e581",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e582",
@@ -396,9 +398,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e585"
    ],
    "balances": [
-    "account:0xa9130044e836f61ab13a2e3762f13404c16a6e72"
+    "account:0x9b6163dc9c4c3f2bbdb3fd5975c6c2866d291e43"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 7,
@@ -407,13 +409,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#3b2dcd766b1e6e901ec8247b9d753cc6a9192a740b545c4df7f412281bec9180",
+    "LiquidationEngine#16420cbe32b58b581cffaefb8a93a11d89da9a0fb022fce8e271d3984cfefd27",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#e03615811ae25b894de73e643038c13c37f602dc1e17ff1a02e5854893f3bd63",
     "LendingPool#e03615811ae25b894de73e643038c13c37f602dc1e17ff1a02e5854893f3bd5e",
@@ -428,13 +430,14 @@
     "LendingPool#e03615811ae25b894de73e643038c13c37f602dc1e17ff1a02e5854893f3bd61",
     "LendingPool#e03615811ae25b894de73e643038c13c37f602dc1e17ff1a02e5854893f3bd62",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -444,7 +447,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e587"
    ],
    "writes": [
-    "LiquidationEngine#3b2dcd766b1e6e901ec8247b9d753cc6a9192a740b545c4df7f412281bec9180",
+    "LiquidationEngine#16420cbe32b58b581cffaefb8a93a11d89da9a0fb022fce8e271d3984cfefd27",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e586",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e587",
@@ -453,9 +456,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e58a"
    ],
    "balances": [
-    "account:0xf3dd482edbbcc067eb414f231cd29b0d43c1bfa6"
+    "account:0x23d9ad45c1f140e07d69e5eb273562da51696072"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 8,
@@ -464,13 +467,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264784,
+   "gasUsed": 267503,
    "reads": [
-    "LiquidationEngine#9a86beb6228bf168307f184cf63c593599ffdab1a9a2399ca6e1c21e6fff27ef",
+    "LiquidationEngine#eaa1832c18f7f80e4eee941d4ad1affa18337e15a87344672494a3a710b1932f",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#4d08cb3ffa33592f3b5eeb877647984f4070d1d2997d57c9aea4c3e34ddd6e93",
     "LendingPool#4d08cb3ffa33592f3b5eeb877647984f4070d1d2997d57c9aea4c3e34ddd6e8e",
@@ -485,13 +488,14 @@
     "LendingPool#4d08cb3ffa33592f3b5eeb877647984f4070d1d2997d57c9aea4c3e34ddd6e91",
     "LendingPool#4d08cb3ffa33592f3b5eeb877647984f4070d1d2997d57c9aea4c3e34ddd6e92",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -501,7 +505,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e58c"
    ],
    "writes": [
-    "LiquidationEngine#9a86beb6228bf168307f184cf63c593599ffdab1a9a2399ca6e1c21e6fff27ef",
+    "LiquidationEngine#eaa1832c18f7f80e4eee941d4ad1affa18337e15a87344672494a3a710b1932f",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e58b",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e58c",
@@ -510,9 +514,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e58f"
    ],
    "balances": [
-    "account:0xc5c4e233b70d1e9de6a6b949982957f4b990ad3b"
+    "account:0xe4165088a621a18881c729f83a6172ad313b8115"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 9,
@@ -521,10 +525,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#551134c3788a756a109c6e227f794518fef985fa2ba3fac727bcd6dac5e98e90",
-    "LiquidationEngine#9",
+    "LiquidationEngine#e0af3347aa7e5af384208c9d29458f902f0ceddbc90963608afa77235658b361",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#86b3fa87ee245373978e0d2d334dbde866c9b8b039036b87c5eb2fd89bcb6bb0",
     "LendingPool#86b3fa87ee245373978e0d2d334dbde866c9b8b039036b87c5eb2fd89bcb6bab",
@@ -539,11 +543,11 @@
     "LendingPool#86b3fa87ee245373978e0d2d334dbde866c9b8b039036b87c5eb2fd89bcb6bae",
     "LendingPool#86b3fa87ee245373978e0d2d334dbde866c9b8b039036b87c5eb2fd89bcb6baf",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -552,9 +556,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e591"
    ],
    "writes": [
-    "LiquidationEngine#551134c3788a756a109c6e227f794518fef985fa2ba3fac727bcd6dac5e98e90",
-    "LiquidationEngine#551134c3788a756a109c6e227f794518fef985fa2ba3fac727bcd6dac5e98e8f",
-    "LiquidationEngine#551134c3788a756a109c6e227f794518fef985fa2ba3fac727bcd6dac5e98e91",
+    "LiquidationEngine#e0af3347aa7e5af384208c9d29458f902f0ceddbc90963608afa77235658b361",
+    "LiquidationEngine#e0af3347aa7e5af384208c9d29458f902f0ceddbc90963608afa77235658b360",
+    "LiquidationEngine#e0af3347aa7e5af384208c9d29458f902f0ceddbc90963608afa77235658b362",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e590",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e591",
@@ -564,9 +568,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x07103726b0fae1754457c9644d7de4d15d7bee07"
+    "account:0x21ff2c576fe2bf5713f5bc17a1d83e622992d7d6"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 10,
@@ -575,13 +579,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#6c675f231855f627a93e11d9f743240c8132e5921217196b16be344917e04fb9",
+    "LiquidationEngine#6ac758b3451d4d5df25347818aca7a69ccd73c13fb19aa4d3a98992b8e38ea5b",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#669beea0e2381f1cf6b3a3f857b6e0ae3b31c4bc1558bc7f3ac7e4091d6aafd1",
     "LendingPool#669beea0e2381f1cf6b3a3f857b6e0ae3b31c4bc1558bc7f3ac7e4091d6aafcc",
@@ -596,13 +600,14 @@
     "LendingPool#669beea0e2381f1cf6b3a3f857b6e0ae3b31c4bc1558bc7f3ac7e4091d6aafcf",
     "LendingPool#669beea0e2381f1cf6b3a3f857b6e0ae3b31c4bc1558bc7f3ac7e4091d6aafd0",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -612,7 +617,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e596"
    ],
    "writes": [
-    "LiquidationEngine#6c675f231855f627a93e11d9f743240c8132e5921217196b16be344917e04fb9",
+    "LiquidationEngine#6ac758b3451d4d5df25347818aca7a69ccd73c13fb19aa4d3a98992b8e38ea5b",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e595",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e596",
@@ -621,9 +626,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e599"
    ],
    "balances": [
-    "account:0x817bf5017750094b81ded57edc9b0e964ef8e6dd"
+    "account:0x69dcee6a17ad4f582edd66c1d3225957ad1b9fff"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 11,
@@ -632,10 +637,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#5d6016397a73f5e079297ac5a36fef17b4d9c3831618e63ab105738020ddd721",
-    "LiquidationEngine#9",
+    "LiquidationEngine#10a81eed9d63d16face5e76357905348e6253d3394086026bb2bf2145d7cc24a",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#d9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec3314",
     "LendingPool#d9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec330f",
@@ -650,11 +655,11 @@
     "LendingPool#d9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec3312",
     "LendingPool#d9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec3313",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -663,9 +668,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e59b"
    ],
    "writes": [
-    "LiquidationEngine#5d6016397a73f5e079297ac5a36fef17b4d9c3831618e63ab105738020ddd721",
-    "LiquidationEngine#5d6016397a73f5e079297ac5a36fef17b4d9c3831618e63ab105738020ddd720",
-    "LiquidationEngine#5d6016397a73f5e079297ac5a36fef17b4d9c3831618e63ab105738020ddd722",
+    "LiquidationEngine#10a81eed9d63d16face5e76357905348e6253d3394086026bb2bf2145d7cc24a",
+    "LiquidationEngine#10a81eed9d63d16face5e76357905348e6253d3394086026bb2bf2145d7cc249",
+    "LiquidationEngine#10a81eed9d63d16face5e76357905348e6253d3394086026bb2bf2145d7cc24b",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e59a",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e59b",
@@ -675,9 +680,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x14ace538eb48b6e672c435bddebc7681d4827831"
+    "account:0xed853b261e7ec4770789bcba0edc8f9f39172fb3"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 12,
@@ -686,10 +691,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#4c711c77a2730b2744c96ef60e2967c2b4247d6a372f8b2e95c748d1459b2381",
-    "LiquidationEngine#9",
+    "LiquidationEngine#154ef5b709dcdc8b49a2af6408b8a1af209c39b5fa796f03680257c97692546f",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#57aaafa65c4e563d39fff90096a5fa76d42117f53d87ef870784e64d63a8a170",
     "LendingPool#57aaafa65c4e563d39fff90096a5fa76d42117f53d87ef870784e64d63a8a16b",
@@ -704,11 +709,11 @@
     "LendingPool#57aaafa65c4e563d39fff90096a5fa76d42117f53d87ef870784e64d63a8a16e",
     "LendingPool#57aaafa65c4e563d39fff90096a5fa76d42117f53d87ef870784e64d63a8a16f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -717,9 +722,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a0"
    ],
    "writes": [
-    "LiquidationEngine#4c711c77a2730b2744c96ef60e2967c2b4247d6a372f8b2e95c748d1459b2381",
-    "LiquidationEngine#4c711c77a2730b2744c96ef60e2967c2b4247d6a372f8b2e95c748d1459b2380",
-    "LiquidationEngine#4c711c77a2730b2744c96ef60e2967c2b4247d6a372f8b2e95c748d1459b2382",
+    "LiquidationEngine#154ef5b709dcdc8b49a2af6408b8a1af209c39b5fa796f03680257c97692546f",
+    "LiquidationEngine#154ef5b709dcdc8b49a2af6408b8a1af209c39b5fa796f03680257c97692546e",
+    "LiquidationEngine#154ef5b709dcdc8b49a2af6408b8a1af209c39b5fa796f03680257c976925470",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e59f",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a0",
@@ -729,9 +734,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xbc58984e70882faf9b76f620285e619f1a024e2a"
+    "account:0x91d4abd69c9a2debd55ef1f16f8b570e4272dac9"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 13,
@@ -740,12 +745,12 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#d8dac8cb0b26825dac24b42aca725ffacbadc03e2a42734896eb984ce196259e",
+    "LiquidationEngine#fb3ec49021610accdbb5331dfb9427abd3a48df4a63296fa21c9774e949ef612",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#ddd2ed02835f51d041d738f145bf914e284838547c9bcc952ea4f9de82c9f098",
     "LendingPool#ddd2ed02835f51d041d738f145bf914e284838547c9bcc952ea4f9de82c9f093",
@@ -760,11 +765,11 @@
     "LendingPool#ddd2ed02835f51d041d738f145bf914e284838547c9bcc952ea4f9de82c9f096",
     "LendingPool#ddd2ed02835f51d041d738f145bf914e284838547c9bcc952ea4f9de82c9f097",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -773,10 +778,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a5"
    ],
    "writes": [
-    "LiquidationEngine#d8dac8cb0b26825dac24b42aca725ffacbadc03e2a42734896eb984ce196259e",
-    "LiquidationEngine#d8dac8cb0b26825dac24b42aca725ffacbadc03e2a42734896eb984ce196259d",
-    "LiquidationEngine#d8dac8cb0b26825dac24b42aca725ffacbadc03e2a42734896eb984ce196259f",
+    "LiquidationEngine#fb3ec49021610accdbb5331dfb9427abd3a48df4a63296fa21c9774e949ef612",
     "LiquidationEngine#fb3ec49021610accdbb5331dfb9427abd3a48df4a63296fa21c9774e949ef611",
+    "LiquidationEngine#fb3ec49021610accdbb5331dfb9427abd3a48df4a63296fa21c9774e949ef613",
+    "LiquidationEngine#63a95b9616c622c07053963654670b5e448d2e5bc2586b50f21c88e28c6e272a",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a4",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a5",
@@ -786,9 +791,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x545c25ac59d81c65e25164e307c2355732299ef9"
+    "account:0x9a462085d293484a904963f99dd9c27d37a133c8"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 14,
@@ -797,13 +802,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264796,
+   "gasUsed": 267515,
    "reads": [
-    "LiquidationEngine#bb1d54df21a392c2fb7cc63b608243731e1f545ff11732b4dc18d3245b8446c7",
+    "LiquidationEngine#f6c1fdf8e88daefcde180aece33b25aea92c0bed92258e7fbdaca3b42868bcb3",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#5a24c9b3971c014c51c7c161d38b480cbcde22ab593a7a6bb0c9e5a9763a6f1b",
     "LendingPool#5a24c9b3971c014c51c7c161d38b480cbcde22ab593a7a6bb0c9e5a9763a6f16",
@@ -818,13 +823,14 @@
     "LendingPool#5a24c9b3971c014c51c7c161d38b480cbcde22ab593a7a6bb0c9e5a9763a6f19",
     "LendingPool#5a24c9b3971c014c51c7c161d38b480cbcde22ab593a7a6bb0c9e5a9763a6f1a",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -834,7 +840,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5aa"
    ],
    "writes": [
-    "LiquidationEngine#bb1d54df21a392c2fb7cc63b608243731e1f545ff11732b4dc18d3245b8446c7",
+    "LiquidationEngine#f6c1fdf8e88daefcde180aece33b25aea92c0bed92258e7fbdaca3b42868bcb3",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5a9",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5aa",
@@ -843,9 +849,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ad"
    ],
    "balances": [
-    "account:0x4b4de4b2eebc49929a203fdbb21a0e3a9bbad44b"
+    "account:0x220c25ee8302edd423bf554c09412a13e842e805"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 15,
@@ -854,12 +860,12 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320455,
+   "gasUsed": 321667,
    "reads": [
-    "LiquidationEngine#f77830ee6ca813461e84e66f2fead14ff7f40269cd63d8faab5b6ce1c3d8c07f",
+    "LiquidationEngine#35c0ef8c6f7488ebe28ad34a3af68b3aa3aea0693e227054e9ec90bd504f66d3",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#4e788733fe0bff9af5f3e3a353367490c603293e53707fe7e4e0071b9ed497db",
     "LendingPool#4e788733fe0bff9af5f3e3a353367490c603293e53707fe7e4e0071b9ed497d6",
@@ -874,11 +880,11 @@
     "LendingPool#4e788733fe0bff9af5f3e3a353367490c603293e53707fe7e4e0071b9ed497d9",
     "LendingPool#4e788733fe0bff9af5f3e3a353367490c603293e53707fe7e4e0071b9ed497da",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -887,10 +893,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5af"
    ],
    "writes": [
-    "LiquidationEngine#f77830ee6ca813461e84e66f2fead14ff7f40269cd63d8faab5b6ce1c3d8c07f",
-    "LiquidationEngine#f77830ee6ca813461e84e66f2fead14ff7f40269cd63d8faab5b6ce1c3d8c07e",
-    "LiquidationEngine#f77830ee6ca813461e84e66f2fead14ff7f40269cd63d8faab5b6ce1c3d8c080",
+    "LiquidationEngine#35c0ef8c6f7488ebe28ad34a3af68b3aa3aea0693e227054e9ec90bd504f66d3",
     "LiquidationEngine#35c0ef8c6f7488ebe28ad34a3af68b3aa3aea0693e227054e9ec90bd504f66d2",
+    "LiquidationEngine#35c0ef8c6f7488ebe28ad34a3af68b3aa3aea0693e227054e9ec90bd504f66d4",
+    "LiquidationEngine#3acbbd99b1d795e2737bd4514a5a2e4c70b9b25dcfdfbb7fdeb840da20f59d93",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ae",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5af",
@@ -900,9 +906,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xd7097a8be1a6357f941884121ad8a1457ea9dff6"
+    "account:0x346518500d395c702f5fa359c3d4b329ea2d4701"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 16,
@@ -911,10 +917,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#9e6c92d7be355807bd948171438a5e65aaf9e4c36f1405c1b9ca25d27c4ea3a1",
-    "LiquidationEngine#9",
+    "LiquidationEngine#ba9d637f252776d5e1b3534bbd7554a1265a4ef0539d9ca50abe118598a6973d",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#2a32391a76c35a36352b711f9152c0d0a340cd686850c8ef25fbb11c71b89e80",
     "LendingPool#2a32391a76c35a36352b711f9152c0d0a340cd686850c8ef25fbb11c71b89e7b",
@@ -929,11 +935,11 @@
     "LendingPool#2a32391a76c35a36352b711f9152c0d0a340cd686850c8ef25fbb11c71b89e7e",
     "LendingPool#2a32391a76c35a36352b711f9152c0d0a340cd686850c8ef25fbb11c71b89e7f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -942,9 +948,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b4"
    ],
    "writes": [
-    "LiquidationEngine#9e6c92d7be355807bd948171438a5e65aaf9e4c36f1405c1b9ca25d27c4ea3a1",
-    "LiquidationEngine#9e6c92d7be355807bd948171438a5e65aaf9e4c36f1405c1b9ca25d27c4ea3a0",
-    "LiquidationEngine#9e6c92d7be355807bd948171438a5e65aaf9e4c36f1405c1b9ca25d27c4ea3a2",
+    "LiquidationEngine#ba9d637f252776d5e1b3534bbd7554a1265a4ef0539d9ca50abe118598a6973d",
+    "LiquidationEngine#ba9d637f252776d5e1b3534bbd7554a1265a4ef0539d9ca50abe118598a6973c",
+    "LiquidationEngine#ba9d637f252776d5e1b3534bbd7554a1265a4ef0539d9ca50abe118598a6973e",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b3",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b4",
@@ -954,9 +960,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xa9d9f9d0aa214867b9f3aa5e618d4f402e2071e1"
+    "account:0x5ff2b6e3bd50d8436a80d3137a690df9cbb80521"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 17,
@@ -965,10 +971,10 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#37877ab6ac9e279d19a4db3294b259b5a4163c0ed597627ae79e33d80cde4db9",
-    "LiquidationEngine#9",
+    "LiquidationEngine#e399baa2fabbab2a0309615b124a802277bab50ec0ca3452a00889e216c4b903",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#23bf72df16f8335be9a3eddfb5ef1c739b12847d13a384ec83f578699d38eb8e",
     "LendingPool#23bf72df16f8335be9a3eddfb5ef1c739b12847d13a384ec83f578699d38eb89",
@@ -983,11 +989,11 @@
     "LendingPool#23bf72df16f8335be9a3eddfb5ef1c739b12847d13a384ec83f578699d38eb8c",
     "LendingPool#23bf72df16f8335be9a3eddfb5ef1c739b12847d13a384ec83f578699d38eb8d",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -996,9 +1002,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b9"
    ],
    "writes": [
-    "LiquidationEngine#37877ab6ac9e279d19a4db3294b259b5a4163c0ed597627ae79e33d80cde4db9",
-    "LiquidationEngine#37877ab6ac9e279d19a4db3294b259b5a4163c0ed597627ae79e33d80cde4db8",
-    "LiquidationEngine#37877ab6ac9e279d19a4db3294b259b5a4163c0ed597627ae79e33d80cde4dba",
+    "LiquidationEngine#e399baa2fabbab2a0309615b124a802277bab50ec0ca3452a00889e216c4b903",
+    "LiquidationEngine#e399baa2fabbab2a0309615b124a802277bab50ec0ca3452a00889e216c4b902",
+    "LiquidationEngine#e399baa2fabbab2a0309615b124a802277bab50ec0ca3452a00889e216c4b904",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b8",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5b9",
@@ -1008,9 +1014,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x8894e4aa7e7d01bbb882f315dab25b8c17845550"
+    "account:0x7519d306966d39fb3f02663a8e9b5c11b1d453de"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 18,
@@ -1019,10 +1025,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#fba2bf5b1dd468baf16221045792a70d5cdd656b9f3da14b127c3e81dc5d6de3",
-    "LiquidationEngine#9",
+    "LiquidationEngine#1a49be1e7ea084651fd665847100d28826db0b17160863a99534933cbbd2dcf",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#755311b9e2cee471a91b161ccc5deed933d844b5af2b885543cc3c04eb640988",
     "LendingPool#755311b9e2cee471a91b161ccc5deed933d844b5af2b885543cc3c04eb640983",
@@ -1037,11 +1043,11 @@
     "LendingPool#755311b9e2cee471a91b161ccc5deed933d844b5af2b885543cc3c04eb640986",
     "LendingPool#755311b9e2cee471a91b161ccc5deed933d844b5af2b885543cc3c04eb640987",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1050,9 +1056,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5be"
    ],
    "writes": [
-    "LiquidationEngine#fba2bf5b1dd468baf16221045792a70d5cdd656b9f3da14b127c3e81dc5d6de3",
-    "LiquidationEngine#fba2bf5b1dd468baf16221045792a70d5cdd656b9f3da14b127c3e81dc5d6de2",
-    "LiquidationEngine#fba2bf5b1dd468baf16221045792a70d5cdd656b9f3da14b127c3e81dc5d6de4",
+    "LiquidationEngine#1a49be1e7ea084651fd665847100d28826db0b17160863a99534933cbbd2dcf",
+    "LiquidationEngine#1a49be1e7ea084651fd665847100d28826db0b17160863a99534933cbbd2dce",
+    "LiquidationEngine#1a49be1e7ea084651fd665847100d28826db0b17160863a99534933cbbd2dd0",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5bd",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5be",
@@ -1062,9 +1068,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xdec8022ee8bdfb449b2bc3fa8cc4df7d1a887749"
+    "account:0x63752c2cddeb8a61fed98fdc7449d94f0230e426"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 19,
@@ -1073,13 +1079,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#2920f2398030b3343ee0b00293fa1b4df4983e83e02f5dd1df737c301e2cd072",
+    "LiquidationEngine#a0272111609cfa27a441fa15273fba60a697b3bb82abb7269d1e8cbfaeef51cc",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#b45c265061aa22e7658e9b26b3853f5506e5bc5b9f4d73625eb6f5e4ce181e13",
     "LendingPool#b45c265061aa22e7658e9b26b3853f5506e5bc5b9f4d73625eb6f5e4ce181e0e",
@@ -1094,13 +1100,14 @@
     "LendingPool#b45c265061aa22e7658e9b26b3853f5506e5bc5b9f4d73625eb6f5e4ce181e11",
     "LendingPool#b45c265061aa22e7658e9b26b3853f5506e5bc5b9f4d73625eb6f5e4ce181e12",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1110,7 +1117,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c3"
    ],
    "writes": [
-    "LiquidationEngine#2920f2398030b3343ee0b00293fa1b4df4983e83e02f5dd1df737c301e2cd072",
+    "LiquidationEngine#a0272111609cfa27a441fa15273fba60a697b3bb82abb7269d1e8cbfaeef51cc",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c2",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c3",
@@ -1119,9 +1126,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c6"
    ],
    "balances": [
-    "account:0x1cc20de44ea58965c50b041ba2dbad2eb15d406e"
+    "account:0x0060b0b0fa9ba1261f1549b59d3730d99dc8c74c"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 20,
@@ -1130,12 +1137,12 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#3377e215baa0ca35d3616f499e5c09359a769b94ce0637346960541be030732c",
+    "LiquidationEngine#e08c955e5efff0d87732e6655002ef18ef6cad920399de609dbb470f9b226660",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#2d9f8353bca53bc9b195aa186ab6d98b49a9120c00257ee2c7d860c26f864ef",
     "LendingPool#2d9f8353bca53bc9b195aa186ab6d98b49a9120c00257ee2c7d860c26f864ea",
@@ -1150,11 +1157,11 @@
     "LendingPool#2d9f8353bca53bc9b195aa186ab6d98b49a9120c00257ee2c7d860c26f864ed",
     "LendingPool#2d9f8353bca53bc9b195aa186ab6d98b49a9120c00257ee2c7d860c26f864ee",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1163,10 +1170,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c8"
    ],
    "writes": [
-    "LiquidationEngine#3377e215baa0ca35d3616f499e5c09359a769b94ce0637346960541be030732c",
-    "LiquidationEngine#3377e215baa0ca35d3616f499e5c09359a769b94ce0637346960541be030732b",
-    "LiquidationEngine#3377e215baa0ca35d3616f499e5c09359a769b94ce0637346960541be030732d",
+    "LiquidationEngine#e08c955e5efff0d87732e6655002ef18ef6cad920399de609dbb470f9b226660",
     "LiquidationEngine#e08c955e5efff0d87732e6655002ef18ef6cad920399de609dbb470f9b22665f",
+    "LiquidationEngine#e08c955e5efff0d87732e6655002ef18ef6cad920399de609dbb470f9b226661",
+    "LiquidationEngine#e3e8d4d0c0a4c6954d73282fe4432276404522c9fcca5859a98c1b050481265",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c7",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5c8",
@@ -1176,9 +1183,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x4aa824ac5d841450615fd20170144cfac42dc64b"
+    "account:0xc76b18a4a9adc222b43e67f5554e20650b07819a"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 21,
@@ -1187,12 +1194,12 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320455,
+   "gasUsed": 321667,
    "reads": [
-    "LiquidationEngine#591a7551fcdfca13c6240947c6945b1b81f85a820d3ef46ea582217b1dd8071a",
+    "LiquidationEngine#7168f6bbe73ace5e8cd185ae572d98139e24d2e7580b476484635c9f54ecf577",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#80f14989282b60fa53cdd4f20dddf40419d0398091709cceef4ea6608cb53a8b",
     "LendingPool#80f14989282b60fa53cdd4f20dddf40419d0398091709cceef4ea6608cb53a86",
@@ -1207,11 +1214,11 @@
     "LendingPool#80f14989282b60fa53cdd4f20dddf40419d0398091709cceef4ea6608cb53a89",
     "LendingPool#80f14989282b60fa53cdd4f20dddf40419d0398091709cceef4ea6608cb53a8a",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1220,10 +1227,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5cd"
    ],
    "writes": [
-    "LiquidationEngine#591a7551fcdfca13c6240947c6945b1b81f85a820d3ef46ea582217b1dd8071a",
-    "LiquidationEngine#591a7551fcdfca13c6240947c6945b1b81f85a820d3ef46ea582217b1dd80719",
-    "LiquidationEngine#591a7551fcdfca13c6240947c6945b1b81f85a820d3ef46ea582217b1dd8071b",
+    "LiquidationEngine#7168f6bbe73ace5e8cd185ae572d98139e24d2e7580b476484635c9f54ecf577",
     "LiquidationEngine#7168f6bbe73ace5e8cd185ae572d98139e24d2e7580b476484635c9f54ecf576",
+    "LiquidationEngine#7168f6bbe73ace5e8cd185ae572d98139e24d2e7580b476484635c9f54ecf578",
+    "LiquidationEngine#44e03dbd624a27d622b68a614bb2fcdc0a3c0d48a3e0952eb6bb06da342d3593",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5cc",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5cd",
@@ -1233,9 +1240,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x9c2f4acbf07a240aa9451d2bb33e4781f3f0921f"
+    "account:0x4e1f318f3342673324cdf116a4d87366bfd8062f"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 22,
@@ -1244,13 +1251,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#74c83704300c65b1de76b9ee7537f3f330650a1d59eb262898de510c0c350be3",
+    "LiquidationEngine#84b44b4b915a5e8b8f05e8c5b5eab937eeca6a50a7c3617f70b593bb58db0177",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#f7459e621ec1fc60fd62c436d4281de72cb9f48787dc9c8288a3050292b09009",
     "LendingPool#f7459e621ec1fc60fd62c436d4281de72cb9f48787dc9c8288a3050292b09004",
@@ -1265,13 +1272,14 @@
     "LendingPool#f7459e621ec1fc60fd62c436d4281de72cb9f48787dc9c8288a3050292b09007",
     "LendingPool#f7459e621ec1fc60fd62c436d4281de72cb9f48787dc9c8288a3050292b09008",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1281,7 +1289,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d2"
    ],
    "writes": [
-    "LiquidationEngine#74c83704300c65b1de76b9ee7537f3f330650a1d59eb262898de510c0c350be3",
+    "LiquidationEngine#84b44b4b915a5e8b8f05e8c5b5eab937eeca6a50a7c3617f70b593bb58db0177",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d1",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d2",
@@ -1290,9 +1298,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d5"
    ],
    "balances": [
-    "account:0xd5ad8384384f36036d1f7a1ab50e7d42fcab4560"
+    "account:0x62c824545c2353c5ce5fc6ed59bed7382f5c510e"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 23,
@@ -1301,13 +1309,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264796,
+   "gasUsed": 267515,
    "reads": [
-    "LiquidationEngine#69f09d401b82a0aed5dd3c28881a44b8c61e4b4e2343b6dbf2c97c18fc9b70a4",
+    "LiquidationEngine#f862e31c060b91f4cdafa9376ea8e63d83d8cf50bceec82b7f106cef25b3d70f",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#9062a4b4dbb38897d7030e75266746773c25296ddcc4429a1573d7e14899dc4f",
     "LendingPool#9062a4b4dbb38897d7030e75266746773c25296ddcc4429a1573d7e14899dc4a",
@@ -1322,13 +1330,14 @@
     "LendingPool#9062a4b4dbb38897d7030e75266746773c25296ddcc4429a1573d7e14899dc4d",
     "LendingPool#9062a4b4dbb38897d7030e75266746773c25296ddcc4429a1573d7e14899dc4e",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1338,7 +1347,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d7"
    ],
    "writes": [
-    "LiquidationEngine#69f09d401b82a0aed5dd3c28881a44b8c61e4b4e2343b6dbf2c97c18fc9b70a4",
+    "LiquidationEngine#f862e31c060b91f4cdafa9376ea8e63d83d8cf50bceec82b7f106cef25b3d70f",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d6",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5d7",
@@ -1347,9 +1356,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5da"
    ],
    "balances": [
-    "account:0x1f731c1d5a4a19135aef129a39651724a5320635"
+    "account:0x4cf38742c126bec3c468bc4f097298080f17de26"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 24,
@@ -1358,10 +1367,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#d421a5181c571bba3f01190c922c3b2a896fc1d84e86c9f17ac10e67ebef8b5d",
-    "LiquidationEngine#9",
+    "LiquidationEngine#fd54ff1ed53f34a900b24c5ba64f85761163b5d82d98a47b9bd80e45466993c6",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#cc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b6887934",
     "LendingPool#cc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b688792f",
@@ -1376,11 +1385,11 @@
     "LendingPool#cc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b6887932",
     "LendingPool#cc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b6887933",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1389,9 +1398,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5dc"
    ],
    "writes": [
-    "LiquidationEngine#d421a5181c571bba3f01190c922c3b2a896fc1d84e86c9f17ac10e67ebef8b5d",
-    "LiquidationEngine#d421a5181c571bba3f01190c922c3b2a896fc1d84e86c9f17ac10e67ebef8b5c",
-    "LiquidationEngine#d421a5181c571bba3f01190c922c3b2a896fc1d84e86c9f17ac10e67ebef8b5e",
+    "LiquidationEngine#fd54ff1ed53f34a900b24c5ba64f85761163b5d82d98a47b9bd80e45466993c6",
+    "LiquidationEngine#fd54ff1ed53f34a900b24c5ba64f85761163b5d82d98a47b9bd80e45466993c5",
+    "LiquidationEngine#fd54ff1ed53f34a900b24c5ba64f85761163b5d82d98a47b9bd80e45466993c7",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5db",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5dc",
@@ -1401,9 +1410,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x72936b3a4759faa5a044d5343930e6178dca580c"
+    "account:0x163582a0baf0613b3c1c770107459abdb557b10b"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 25,
@@ -1412,13 +1421,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264796,
+   "gasUsed": 267515,
    "reads": [
-    "LiquidationEngine#474b71661ba4f296f0558dc263a9e7087ad32825e7e3e721d7824c779a060707",
+    "LiquidationEngine#3aae3b634cb9b99b51566b75af7ff73cac8547b09fca90ff6208ea0c2fb59fec",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#31ff9da46623ded696608610c3749320b1cb2c2dfd644b1139da5367a8e616d4",
     "LendingPool#31ff9da46623ded696608610c3749320b1cb2c2dfd644b1139da5367a8e616cf",
@@ -1433,13 +1442,14 @@
     "LendingPool#31ff9da46623ded696608610c3749320b1cb2c2dfd644b1139da5367a8e616d2",
     "LendingPool#31ff9da46623ded696608610c3749320b1cb2c2dfd644b1139da5367a8e616d3",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1449,7 +1459,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e1"
    ],
    "writes": [
-    "LiquidationEngine#474b71661ba4f296f0558dc263a9e7087ad32825e7e3e721d7824c779a060707",
+    "LiquidationEngine#3aae3b634cb9b99b51566b75af7ff73cac8547b09fca90ff6208ea0c2fb59fec",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e1",
@@ -1458,9 +1468,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e4"
    ],
    "balances": [
-    "account:0x6932d690a55ff072b3aaa9864aeb7d671fc79bfd"
+    "account:0x0a7a6c109c92ac728ef3860d82d39db6a27fbed0"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 26,
@@ -1469,13 +1479,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#63caefc17d48133f84416d28f0ac6ad3113dbdfb2eaca8cf300e18df8b373fbb",
+    "LiquidationEngine#5c1068c15d0014786adff47666a6f741765d11ba76b450cc40b635343b70372a",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#7d8f31d22c75db1e8e364ca358d5a3691a36535d438f852fd3533a53c8f16ad4",
     "LendingPool#7d8f31d22c75db1e8e364ca358d5a3691a36535d438f852fd3533a53c8f16acf",
@@ -1490,13 +1500,14 @@
     "LendingPool#7d8f31d22c75db1e8e364ca358d5a3691a36535d438f852fd3533a53c8f16ad2",
     "LendingPool#7d8f31d22c75db1e8e364ca358d5a3691a36535d438f852fd3533a53c8f16ad3",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1506,7 +1517,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e6"
    ],
    "writes": [
-    "LiquidationEngine#63caefc17d48133f84416d28f0ac6ad3113dbdfb2eaca8cf300e18df8b373fbb",
+    "LiquidationEngine#5c1068c15d0014786adff47666a6f741765d11ba76b450cc40b635343b70372a",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e5",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e6",
@@ -1515,9 +1526,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5e9"
    ],
    "balances": [
-    "account:0x9044fcfcd4bed03351db936d1683154c60d1471a"
+    "account:0xffb21a07dddecc62a43ebdbd13896594eae03386"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 27,
@@ -1526,13 +1537,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#a7d649518832acac3aec0a3a1c8c99f8e737fd04d44177e8b9542b8e88ec4e49",
+    "LiquidationEngine#5b1cbcad200ce926e5f5a9dc769f5bf6b891b3955aac7ec4238aa9877c7c6487",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#4a7072cae31c8066404bff29911e471dd7b488d543a218806da51870552a74c0",
     "LendingPool#4a7072cae31c8066404bff29911e471dd7b488d543a218806da51870552a74bb",
@@ -1547,13 +1558,14 @@
     "LendingPool#4a7072cae31c8066404bff29911e471dd7b488d543a218806da51870552a74be",
     "LendingPool#4a7072cae31c8066404bff29911e471dd7b488d543a218806da51870552a74bf",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1563,7 +1575,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5eb"
    ],
    "writes": [
-    "LiquidationEngine#a7d649518832acac3aec0a3a1c8c99f8e737fd04d44177e8b9542b8e88ec4e49",
+    "LiquidationEngine#5b1cbcad200ce926e5f5a9dc769f5bf6b891b3955aac7ec4238aa9877c7c6487",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ea",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5eb",
@@ -1572,9 +1584,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ee"
    ],
    "balances": [
-    "account:0x3126f3b5590e04fdbca2307a88877e4a22becd22"
+    "account:0x06f876ed7e4084332110b728c66c3551eb6a07f7"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 28,
@@ -1583,13 +1595,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#2b66750ad81d2c4a0a0ad3fe62fe97e0506e09b7b878f08f5caf5fc39cb69bfd",
+    "LiquidationEngine#e507abdd9f918da3cb66dcd78a764d90f4fa5ae10debe885ddffc4f6256ef193",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#d9ae7388d2083c2e208c0dfdf9b10bc72bbfb00d63d88b3c7fd7c315bfc1cf45",
     "LendingPool#d9ae7388d2083c2e208c0dfdf9b10bc72bbfb00d63d88b3c7fd7c315bfc1cf40",
@@ -1604,13 +1616,14 @@
     "LendingPool#d9ae7388d2083c2e208c0dfdf9b10bc72bbfb00d63d88b3c7fd7c315bfc1cf43",
     "LendingPool#d9ae7388d2083c2e208c0dfdf9b10bc72bbfb00d63d88b3c7fd7c315bfc1cf44",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1620,7 +1633,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f0"
    ],
    "writes": [
-    "LiquidationEngine#2b66750ad81d2c4a0a0ad3fe62fe97e0506e09b7b878f08f5caf5fc39cb69bfd",
+    "LiquidationEngine#e507abdd9f918da3cb66dcd78a764d90f4fa5ae10debe885ddffc4f6256ef193",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ef",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f0",
@@ -1629,9 +1642,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f3"
    ],
    "balances": [
-    "account:0xd38bdd6cccce5b7559bafc3b1fbe2bac406a51a7"
+    "account:0xd7bdf3cd366804c5cdc77141667394f3979ae6c1"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 29,
@@ -1640,10 +1653,10 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#2fb3c9afecd3f0d43923381d3e9f60168c039b98f0b7120382e81b682b7bc317",
-    "LiquidationEngine#9",
+    "LiquidationEngine#7b6f1ece0cbe5122a575776770f0494c2d57ed2a50e36c2ba0d811d70ee03b65",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#74a5fbcb419ab7dbacbb2c92a4e163730f0da5c72b911deecf4f05a6b327d0a9",
     "LendingPool#74a5fbcb419ab7dbacbb2c92a4e163730f0da5c72b911deecf4f05a6b327d0a4",
@@ -1658,11 +1671,11 @@
     "LendingPool#74a5fbcb419ab7dbacbb2c92a4e163730f0da5c72b911deecf4f05a6b327d0a7",
     "LendingPool#74a5fbcb419ab7dbacbb2c92a4e163730f0da5c72b911deecf4f05a6b327d0a8",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1671,9 +1684,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f5"
    ],
    "writes": [
-    "LiquidationEngine#2fb3c9afecd3f0d43923381d3e9f60168c039b98f0b7120382e81b682b7bc317",
-    "LiquidationEngine#2fb3c9afecd3f0d43923381d3e9f60168c039b98f0b7120382e81b682b7bc316",
-    "LiquidationEngine#2fb3c9afecd3f0d43923381d3e9f60168c039b98f0b7120382e81b682b7bc318",
+    "LiquidationEngine#7b6f1ece0cbe5122a575776770f0494c2d57ed2a50e36c2ba0d811d70ee03b65",
+    "LiquidationEngine#7b6f1ece0cbe5122a575776770f0494c2d57ed2a50e36c2ba0d811d70ee03b64",
+    "LiquidationEngine#7b6f1ece0cbe5122a575776770f0494c2d57ed2a50e36c2ba0d811d70ee03b66",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f4",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f5",
@@ -1683,9 +1696,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x88eef7333003b1fd8aef6b77496918a46860de8a"
+    "account:0x1d4f8dacea4465a23e6d84205ace139b55c156ca"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 30,
@@ -1694,10 +1707,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#dae089abd7155aa13ce498edb0d7a7156b783d015031f10c9a3d4f5fcb518972",
-    "LiquidationEngine#9",
+    "LiquidationEngine#b91432bedff11256dbe14161d3606a2657bc9dacf8742f6b817d871dd53fb977",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#dc686ec4a0ff239c70e7c7c36e8f853eced3bc8618f48d2b816da2a743112383",
     "LendingPool#dc686ec4a0ff239c70e7c7c36e8f853eced3bc8618f48d2b816da2a74311237e",
@@ -1712,11 +1725,11 @@
     "LendingPool#dc686ec4a0ff239c70e7c7c36e8f853eced3bc8618f48d2b816da2a743112381",
     "LendingPool#dc686ec4a0ff239c70e7c7c36e8f853eced3bc8618f48d2b816da2a743112382",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1725,9 +1738,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5fa"
    ],
    "writes": [
-    "LiquidationEngine#dae089abd7155aa13ce498edb0d7a7156b783d015031f10c9a3d4f5fcb518972",
-    "LiquidationEngine#dae089abd7155aa13ce498edb0d7a7156b783d015031f10c9a3d4f5fcb518971",
-    "LiquidationEngine#dae089abd7155aa13ce498edb0d7a7156b783d015031f10c9a3d4f5fcb518973",
+    "LiquidationEngine#b91432bedff11256dbe14161d3606a2657bc9dacf8742f6b817d871dd53fb977",
+    "LiquidationEngine#b91432bedff11256dbe14161d3606a2657bc9dacf8742f6b817d871dd53fb976",
+    "LiquidationEngine#b91432bedff11256dbe14161d3606a2657bc9dacf8742f6b817d871dd53fb978",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5f9",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5fa",
@@ -1737,9 +1750,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x6aa49bceee860bd4e658d365e0fdebd540bacc7a"
+    "account:0x883b40b466165ae51fcfcbab5bf4f3e8c9694940"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 31,
@@ -1748,13 +1761,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#29a445d2adf5afc56852046a650e9f7f74d7c2bdc084264817d4b4718b0a7bdb",
+    "LiquidationEngine#c18c762cd57b960f55a02c55bb27432df7a820d284ca9c1007828f75083f19af",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#950e937492ee34259869433cf638f9ddc3db789216033729827dca31e9130b2d",
     "LendingPool#950e937492ee34259869433cf638f9ddc3db789216033729827dca31e9130b28",
@@ -1769,13 +1782,14 @@
     "LendingPool#950e937492ee34259869433cf638f9ddc3db789216033729827dca31e9130b2b",
     "LendingPool#950e937492ee34259869433cf638f9ddc3db789216033729827dca31e9130b2c",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1785,7 +1799,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ff"
    ],
    "writes": [
-    "LiquidationEngine#29a445d2adf5afc56852046a650e9f7f74d7c2bdc084264817d4b4718b0a7bdb",
+    "LiquidationEngine#c18c762cd57b960f55a02c55bb27432df7a820d284ca9c1007828f75083f19af",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5fe",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5ff",
@@ -1794,9 +1808,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e602"
    ],
    "balances": [
-    "account:0xf35dc0a8f1c86c535c8dc842527d3da91c961890"
+    "account:0x4e2a2ee1ac50c561a24352c4b11bb8ff06d94b62"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 32,
@@ -1805,13 +1819,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#242de898f09cc489709572640b0282694d1e57aeee4f2782dfed2fec0d973453",
+    "LiquidationEngine#59b085cd4aa50a5e34d1d7817f076ef2fadcebca100de5aa37c8a83c8e2ed5a6",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#2ad561dc52a39ba65c35d8ffc50780b2be420e6593582aa43068d94afe08aa10",
     "LendingPool#2ad561dc52a39ba65c35d8ffc50780b2be420e6593582aa43068d94afe08aa0b",
@@ -1826,13 +1840,14 @@
     "LendingPool#2ad561dc52a39ba65c35d8ffc50780b2be420e6593582aa43068d94afe08aa0e",
     "LendingPool#2ad561dc52a39ba65c35d8ffc50780b2be420e6593582aa43068d94afe08aa0f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -1842,7 +1857,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e604"
    ],
    "writes": [
-    "LiquidationEngine#242de898f09cc489709572640b0282694d1e57aeee4f2782dfed2fec0d973453",
+    "LiquidationEngine#59b085cd4aa50a5e34d1d7817f076ef2fadcebca100de5aa37c8a83c8e2ed5a6",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e603",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e604",
@@ -1851,9 +1866,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e607"
    ],
    "balances": [
-    "account:0x313095ca3cd9b685e9bdd535cb37ff2705d74bdb"
+    "account:0xb5b4bf33dfde6ff56ea7799c64364019fc6e4050"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 33,
@@ -1862,10 +1877,10 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#977a47af6886c81cccba9ceb5316ec9b4027c59ac276de3e2cb39ec8af72ee7c",
-    "LiquidationEngine#9",
+    "LiquidationEngine#52fb6a28cb3c239105f8f829bc7376f939b6bfb040c470bdc2bda0af2e784b95",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#12bd632ff333b55931f9f8bda8b4ed27e86687f88c95871969d72474fb428c19",
     "LendingPool#12bd632ff333b55931f9f8bda8b4ed27e86687f88c95871969d72474fb428c14",
@@ -1880,11 +1895,11 @@
     "LendingPool#12bd632ff333b55931f9f8bda8b4ed27e86687f88c95871969d72474fb428c17",
     "LendingPool#12bd632ff333b55931f9f8bda8b4ed27e86687f88c95871969d72474fb428c18",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1893,9 +1908,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e609"
    ],
    "writes": [
-    "LiquidationEngine#977a47af6886c81cccba9ceb5316ec9b4027c59ac276de3e2cb39ec8af72ee7c",
-    "LiquidationEngine#977a47af6886c81cccba9ceb5316ec9b4027c59ac276de3e2cb39ec8af72ee7b",
-    "LiquidationEngine#977a47af6886c81cccba9ceb5316ec9b4027c59ac276de3e2cb39ec8af72ee7d",
+    "LiquidationEngine#52fb6a28cb3c239105f8f829bc7376f939b6bfb040c470bdc2bda0af2e784b95",
+    "LiquidationEngine#52fb6a28cb3c239105f8f829bc7376f939b6bfb040c470bdc2bda0af2e784b94",
+    "LiquidationEngine#52fb6a28cb3c239105f8f829bc7376f939b6bfb040c470bdc2bda0af2e784b96",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e608",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e609",
@@ -1905,9 +1920,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xb38fc09212eee7702d127eda357d6d26957a4ee7"
+    "account:0x5251f77a17c362875d5aabe468961cbc454ff7da"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 34,
@@ -1916,12 +1931,12 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320455,
+   "gasUsed": 321667,
    "reads": [
-    "LiquidationEngine#693426d4b4e14c633fef30f9078c13e548d510bd2b9ddbd4fbb6d7db48c3d9b5",
+    "LiquidationEngine#c6f8da1eb0f77655af0d84a5a72156e0ffb5e7022a0646de15af772ded576068",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#d6e773d900ec812417038da9baf6d960fcc201dd4bfa0d6323c29c7f6d7d874f",
     "LendingPool#d6e773d900ec812417038da9baf6d960fcc201dd4bfa0d6323c29c7f6d7d874a",
@@ -1936,11 +1951,11 @@
     "LendingPool#d6e773d900ec812417038da9baf6d960fcc201dd4bfa0d6323c29c7f6d7d874d",
     "LendingPool#d6e773d900ec812417038da9baf6d960fcc201dd4bfa0d6323c29c7f6d7d874e",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -1949,10 +1964,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e60e"
    ],
    "writes": [
-    "LiquidationEngine#693426d4b4e14c633fef30f9078c13e548d510bd2b9ddbd4fbb6d7db48c3d9b5",
-    "LiquidationEngine#693426d4b4e14c633fef30f9078c13e548d510bd2b9ddbd4fbb6d7db48c3d9b4",
-    "LiquidationEngine#693426d4b4e14c633fef30f9078c13e548d510bd2b9ddbd4fbb6d7db48c3d9b6",
+    "LiquidationEngine#c6f8da1eb0f77655af0d84a5a72156e0ffb5e7022a0646de15af772ded576068",
     "LiquidationEngine#c6f8da1eb0f77655af0d84a5a72156e0ffb5e7022a0646de15af772ded576067",
+    "LiquidationEngine#c6f8da1eb0f77655af0d84a5a72156e0ffb5e7022a0646de15af772ded576069",
+    "LiquidationEngine#5c803e1db6902b36029c98ad9ad0b0e757a990b4aca3bbcc2e6be55d61e8523d",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e60d",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e60e",
@@ -1962,9 +1977,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xd191c6954e5645f5adc44b67ffc75bcaa553d845"
+    "account:0xed1cf58120e95c85a0c44482808e7bbbdb4101cd"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 35,
@@ -1973,10 +1988,10 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#c0da782485e77ae272268ae0a3ff44c1552ecb60b3743924de17a815e0a3cfd8",
-    "LiquidationEngine#9",
+    "LiquidationEngine#26b4a10d0f0b04925c23bd4480ee147c916e5e87a7d68206a533dad160ac81e3",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc610",
     "LendingPool#7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60b",
@@ -1991,11 +2006,11 @@
     "LendingPool#7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60e",
     "LendingPool#7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2004,9 +2019,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e613"
    ],
    "writes": [
-    "LiquidationEngine#c0da782485e77ae272268ae0a3ff44c1552ecb60b3743924de17a815e0a3cfd8",
-    "LiquidationEngine#c0da782485e77ae272268ae0a3ff44c1552ecb60b3743924de17a815e0a3cfd7",
-    "LiquidationEngine#c0da782485e77ae272268ae0a3ff44c1552ecb60b3743924de17a815e0a3cfd9",
+    "LiquidationEngine#26b4a10d0f0b04925c23bd4480ee147c916e5e87a7d68206a533dad160ac81e3",
+    "LiquidationEngine#26b4a10d0f0b04925c23bd4480ee147c916e5e87a7d68206a533dad160ac81e2",
+    "LiquidationEngine#26b4a10d0f0b04925c23bd4480ee147c916e5e87a7d68206a533dad160ac81e4",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e612",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e613",
@@ -2016,9 +2031,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x81df48f1ff4fba4b0f9ee44d430e1dadec4ef2b5"
+    "account:0x77efbdffd79a00624bec8ed7e6481340d2402503"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 36,
@@ -2027,13 +2042,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264796,
+   "gasUsed": 267515,
    "reads": [
-    "LiquidationEngine#72edfe78b2d259e5f8bedbff15cf4b63a3c5a819f9534071bf934e42aac19df7",
+    "LiquidationEngine#2ddd05873c3fef7c1c99202ed0e35ef9973e6d947ec745875f730f32ce6df88b",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#6280e9caec09c2f0007c3f9e61e9e1a060188c72cdbb510e12183e12d0752cf4",
     "LendingPool#6280e9caec09c2f0007c3f9e61e9e1a060188c72cdbb510e12183e12d0752cef",
@@ -2048,13 +2063,14 @@
     "LendingPool#6280e9caec09c2f0007c3f9e61e9e1a060188c72cdbb510e12183e12d0752cf2",
     "LendingPool#6280e9caec09c2f0007c3f9e61e9e1a060188c72cdbb510e12183e12d0752cf3",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2064,7 +2080,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e618"
    ],
    "writes": [
-    "LiquidationEngine#72edfe78b2d259e5f8bedbff15cf4b63a3c5a819f9534071bf934e42aac19df7",
+    "LiquidationEngine#2ddd05873c3fef7c1c99202ed0e35ef9973e6d947ec745875f730f32ce6df88b",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e617",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e618",
@@ -2073,9 +2089,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e61b"
    ],
    "balances": [
-    "account:0x3b5d6102b117aaa98ea06fcb63ec19e018fa51b3"
+    "account:0x9e594c30c905e7f5f92d3b3fa00d0a276d8fd442"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 37,
@@ -2084,12 +2100,12 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#9fe279e833bcb8beab045538c3e47062dba2173d3cb9299210a3ae3478eac49e",
+    "LiquidationEngine#f8851ce6c4310b9be6bca97e0096f86a6320988daa397e63ba810d131bf2e105",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#2b00120b81607971383f6f5676c1551d6bb27be3f263689fd3630e1a5be1401d",
     "LendingPool#2b00120b81607971383f6f5676c1551d6bb27be3f263689fd3630e1a5be14018",
@@ -2104,11 +2120,11 @@
     "LendingPool#2b00120b81607971383f6f5676c1551d6bb27be3f263689fd3630e1a5be1401b",
     "LendingPool#2b00120b81607971383f6f5676c1551d6bb27be3f263689fd3630e1a5be1401c",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2117,10 +2133,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e61d"
    ],
    "writes": [
-    "LiquidationEngine#9fe279e833bcb8beab045538c3e47062dba2173d3cb9299210a3ae3478eac49e",
-    "LiquidationEngine#9fe279e833bcb8beab045538c3e47062dba2173d3cb9299210a3ae3478eac49d",
-    "LiquidationEngine#9fe279e833bcb8beab045538c3e47062dba2173d3cb9299210a3ae3478eac49f",
+    "LiquidationEngine#f8851ce6c4310b9be6bca97e0096f86a6320988daa397e63ba810d131bf2e105",
     "LiquidationEngine#f8851ce6c4310b9be6bca97e0096f86a6320988daa397e63ba810d131bf2e104",
+    "LiquidationEngine#f8851ce6c4310b9be6bca97e0096f86a6320988daa397e63ba810d131bf2e106",
+    "LiquidationEngine#63dac8ac72609a2437a2da33ae5c3341a805b2815f084aeb7a66b5dcf5c8eb59",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e61c",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e61d",
@@ -2130,9 +2146,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xd330ede632cfb8367a966654c7d8a6c759f41c3c"
+    "account:0xd3d8c05cc894f35326ca89bb539ed3a6c2e41830"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 38,
@@ -2141,13 +2157,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#32f57031be3980b83490b6329e2e3b7ce475446e73fbb98d0754c951129bba35",
+    "LiquidationEngine#24122b1af4725de4d15c86646f3f70018cddcad0f9cdddaa5a7645e74d8861c1",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#6f153c7bec1b961778a44c5a2c99b1e110e89aa94705c74c316b7331a3d8406a",
     "LendingPool#6f153c7bec1b961778a44c5a2c99b1e110e89aa94705c74c316b7331a3d84065",
@@ -2162,13 +2178,14 @@
     "LendingPool#6f153c7bec1b961778a44c5a2c99b1e110e89aa94705c74c316b7331a3d84068",
     "LendingPool#6f153c7bec1b961778a44c5a2c99b1e110e89aa94705c74c316b7331a3d84069",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2178,7 +2195,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e622"
    ],
    "writes": [
-    "LiquidationEngine#32f57031be3980b83490b6329e2e3b7ce475446e73fbb98d0754c951129bba35",
+    "LiquidationEngine#24122b1af4725de4d15c86646f3f70018cddcad0f9cdddaa5a7645e74d8861c1",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e621",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e622",
@@ -2187,9 +2204,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e625"
    ],
    "balances": [
-    "account:0xd67e8670d0de817a42d3fde259453b435d640c64"
+    "account:0xe6fe8f93b3626b4c3e241321d31c310d4840bfba"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 39,
@@ -2198,13 +2215,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#2f8d0863d1503b48b8db94a588745baa1aa34f821c792ce05db827ed7b5f1390",
+    "LiquidationEngine#b7064c5f72f646cc2b351a32c2d7a23de23e6f2991c92d1bb345e0365ef90525",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#7f0d1b48082df3e2dc522530de36c82247a22429eca92f4f18d0e2f55931d68e",
     "LendingPool#7f0d1b48082df3e2dc522530de36c82247a22429eca92f4f18d0e2f55931d689",
@@ -2219,13 +2236,14 @@
     "LendingPool#7f0d1b48082df3e2dc522530de36c82247a22429eca92f4f18d0e2f55931d68c",
     "LendingPool#7f0d1b48082df3e2dc522530de36c82247a22429eca92f4f18d0e2f55931d68d",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2235,7 +2253,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e627"
    ],
    "writes": [
-    "LiquidationEngine#2f8d0863d1503b48b8db94a588745baa1aa34f821c792ce05db827ed7b5f1390",
+    "LiquidationEngine#b7064c5f72f646cc2b351a32c2d7a23de23e6f2991c92d1bb345e0365ef90525",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e626",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e627",
@@ -2244,9 +2262,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e62a"
    ],
    "balances": [
-    "account:0xf7ac77ccc709f02a4ca3674932ff3fde840d9799"
+    "account:0xb72efe328ec7567495902022b74eaedba74490b0"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 40,
@@ -2255,10 +2273,10 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#5b84bb9e0f5aa9cc45a8bb66468db5d4816d1e75ff86b5e1f1dd8d144dab8098",
-    "LiquidationEngine#9",
+    "LiquidationEngine#afafe8948a4ed9d478b1e9a5780b119b5edd00ea7d07bc35bef7c814824eb94c",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#edc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567648",
     "LendingPool#edc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567643",
@@ -2273,11 +2291,11 @@
     "LendingPool#edc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567646",
     "LendingPool#edc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567647",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2286,9 +2304,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e62c"
    ],
    "writes": [
-    "LiquidationEngine#5b84bb9e0f5aa9cc45a8bb66468db5d4816d1e75ff86b5e1f1dd8d144dab8098",
-    "LiquidationEngine#5b84bb9e0f5aa9cc45a8bb66468db5d4816d1e75ff86b5e1f1dd8d144dab8097",
-    "LiquidationEngine#5b84bb9e0f5aa9cc45a8bb66468db5d4816d1e75ff86b5e1f1dd8d144dab8099",
+    "LiquidationEngine#afafe8948a4ed9d478b1e9a5780b119b5edd00ea7d07bc35bef7c814824eb94c",
+    "LiquidationEngine#afafe8948a4ed9d478b1e9a5780b119b5edd00ea7d07bc35bef7c814824eb94b",
+    "LiquidationEngine#afafe8948a4ed9d478b1e9a5780b119b5edd00ea7d07bc35bef7c814824eb94d",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e62b",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e62c",
@@ -2298,9 +2316,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x7fb0fd5eb0c880b25f780841c8164fbb8361775f"
+    "account:0x0e955e75584db70bc95844f29ba87e5e90fe90e7"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 41,
@@ -2309,12 +2327,12 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320455,
+   "gasUsed": 321667,
    "reads": [
-    "LiquidationEngine#40f1108237696bbe60a17fe2a155c116be4dd3f1a51814bfd40efec622f2b4bd",
+    "LiquidationEngine#86dcaef5b371562e25da7df8ee32083c9239bda56e7f70e4165f067bec093bc4",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#2480fe25ee21f0b2bc289ccff6df415947190b288094ab9f0cbd50f7b814fd63",
     "LendingPool#2480fe25ee21f0b2bc289ccff6df415947190b288094ab9f0cbd50f7b814fd5e",
@@ -2329,11 +2347,11 @@
     "LendingPool#2480fe25ee21f0b2bc289ccff6df415947190b288094ab9f0cbd50f7b814fd61",
     "LendingPool#2480fe25ee21f0b2bc289ccff6df415947190b288094ab9f0cbd50f7b814fd62",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2342,10 +2360,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e631"
    ],
    "writes": [
-    "LiquidationEngine#40f1108237696bbe60a17fe2a155c116be4dd3f1a51814bfd40efec622f2b4bd",
-    "LiquidationEngine#40f1108237696bbe60a17fe2a155c116be4dd3f1a51814bfd40efec622f2b4bc",
-    "LiquidationEngine#40f1108237696bbe60a17fe2a155c116be4dd3f1a51814bfd40efec622f2b4be",
+    "LiquidationEngine#86dcaef5b371562e25da7df8ee32083c9239bda56e7f70e4165f067bec093bc4",
     "LiquidationEngine#86dcaef5b371562e25da7df8ee32083c9239bda56e7f70e4165f067bec093bc3",
+    "LiquidationEngine#86dcaef5b371562e25da7df8ee32083c9239bda56e7f70e4165f067bec093bc5",
+    "LiquidationEngine#41855fb39c7a9bc7dd5224540bf31aa8c51aa701281698eb9b0450eb341e390c",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e630",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e631",
@@ -2355,9 +2373,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x7f9fa84b8b00d05443850a148ee8add0990768c0"
+    "account:0x6756449b5a66e82914698da669e4c62210cfc631"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 42,
@@ -2366,13 +2384,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264784,
+   "gasUsed": 267503,
    "reads": [
-    "LiquidationEngine#335c01f32f99d35cb64d8289b566f377b69a60a868ff865828ab37e34e93e1dc",
+    "LiquidationEngine#b500998a2231b583e908a1b39c18018d38ac385329d6bf58b8879659d91d392f",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#68fb8e7cad479ccc9244a179d64897454189fd25db04e15d3a5135327a175980",
     "LendingPool#68fb8e7cad479ccc9244a179d64897454189fd25db04e15d3a5135327a17597b",
@@ -2387,13 +2405,14 @@
     "LendingPool#68fb8e7cad479ccc9244a179d64897454189fd25db04e15d3a5135327a17597e",
     "LendingPool#68fb8e7cad479ccc9244a179d64897454189fd25db04e15d3a5135327a17597f",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2403,7 +2422,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e636"
    ],
    "writes": [
-    "LiquidationEngine#335c01f32f99d35cb64d8289b566f377b69a60a868ff865828ab37e34e93e1dc",
+    "LiquidationEngine#b500998a2231b583e908a1b39c18018d38ac385329d6bf58b8879659d91d392f",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e635",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e636",
@@ -2412,9 +2431,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e639"
    ],
    "balances": [
-    "account:0xab5360e2dd532f6b820037831c147de74c49d8ee"
+    "account:0xef89a744428a31b7c38b151998118fc79694ce8f"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 43,
@@ -2423,10 +2442,10 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#6a9911425952520efa6de3784a0ac63c35d3c5bb392028ea0beb0dc41a191958",
-    "LiquidationEngine#9",
+    "LiquidationEngine#52c2086a203f40e709b1346663401f6c737b2fce5878601fcf875b047fed5fb7",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#fc80cd5fe514767bc6e66ec558e68a5429ea70b50fa6caa3b53fc9278e918637",
     "LendingPool#fc80cd5fe514767bc6e66ec558e68a5429ea70b50fa6caa3b53fc9278e918632",
@@ -2441,11 +2460,11 @@
     "LendingPool#fc80cd5fe514767bc6e66ec558e68a5429ea70b50fa6caa3b53fc9278e918635",
     "LendingPool#fc80cd5fe514767bc6e66ec558e68a5429ea70b50fa6caa3b53fc9278e918636",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2454,9 +2473,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e63b"
    ],
    "writes": [
-    "LiquidationEngine#6a9911425952520efa6de3784a0ac63c35d3c5bb392028ea0beb0dc41a191958",
-    "LiquidationEngine#6a9911425952520efa6de3784a0ac63c35d3c5bb392028ea0beb0dc41a191957",
-    "LiquidationEngine#6a9911425952520efa6de3784a0ac63c35d3c5bb392028ea0beb0dc41a191959",
+    "LiquidationEngine#52c2086a203f40e709b1346663401f6c737b2fce5878601fcf875b047fed5fb7",
+    "LiquidationEngine#52c2086a203f40e709b1346663401f6c737b2fce5878601fcf875b047fed5fb6",
+    "LiquidationEngine#52c2086a203f40e709b1346663401f6c737b2fce5878601fcf875b047fed5fb8",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e63a",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e63b",
@@ -2466,9 +2485,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xc346f6d2277ec5fe760c601662b1250af70ebb29"
+    "account:0xe315e6978e331528c46f34a72f9cd7701a2996be"
    ],
-   "steps": 5492
+   "steps": 5837
   },
   {
    "index": 44,
@@ -2477,13 +2496,13 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264808,
+   "gasUsed": 267527,
    "reads": [
-    "LiquidationEngine#f47a2f56f0955e689cdfc6405887e0f3452b74fbb1c4f20652e6c211a96d68b4",
+    "LiquidationEngine#860664a00dfe3a81038e4b9982a4dc19c019348163140cd91ec907f8a04990df",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#b4595228ef9d6fd2aeb7154fa18462681cdc944621830181269e75d4b39a88a",
     "LendingPool#b4595228ef9d6fd2aeb7154fa18462681cdc944621830181269e75d4b39a885",
@@ -2498,13 +2517,14 @@
     "LendingPool#b4595228ef9d6fd2aeb7154fa18462681cdc944621830181269e75d4b39a888",
     "LendingPool#b4595228ef9d6fd2aeb7154fa18462681cdc944621830181269e75d4b39a889",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2514,7 +2534,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e640"
    ],
    "writes": [
-    "LiquidationEngine#f47a2f56f0955e689cdfc6405887e0f3452b74fbb1c4f20652e6c211a96d68b4",
+    "LiquidationEngine#860664a00dfe3a81038e4b9982a4dc19c019348163140cd91ec907f8a04990df",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e63f",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e640",
@@ -2523,9 +2543,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e643"
    ],
    "balances": [
-    "account:0x9a13aaa2079bef06e7656b35330858fd606c054f"
+    "account:0x05c11d2ad377bf06633c85c98312e4640719cbb9"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 45,
@@ -2534,13 +2554,13 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#51a73f098f8eb113468838cd83eeb94a3acc7b32d37eb9e0a2d02ac7fe5ae673",
+    "LiquidationEngine#7a25df128260f11398f51be7070910b502921b3ad0cc78db6387cf899ea120f5",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#71b77ca6c28942a6a5831a75c27e59515f05848f3eb905d816d90fe6792b6dac",
     "LendingPool#71b77ca6c28942a6a5831a75c27e59515f05848f3eb905d816d90fe6792b6da7",
@@ -2555,13 +2575,14 @@
     "LendingPool#71b77ca6c28942a6a5831a75c27e59515f05848f3eb905d816d90fe6792b6daa",
     "LendingPool#71b77ca6c28942a6a5831a75c27e59515f05848f3eb905d816d90fe6792b6dab",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2571,7 +2592,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e645"
    ],
    "writes": [
-    "LiquidationEngine#51a73f098f8eb113468838cd83eeb94a3acc7b32d37eb9e0a2d02ac7fe5ae673",
+    "LiquidationEngine#7a25df128260f11398f51be7070910b502921b3ad0cc78db6387cf899ea120f5",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e644",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e645",
@@ -2580,9 +2601,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e648"
    ],
    "balances": [
-    "account:0x095627a2ae01e9dafd086d02a07de3e0c5982854"
+    "account:0x4503b56dc985295f160d2b3487c22b6a757449a0"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 46,
@@ -2591,13 +2612,13 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 264820,
+   "gasUsed": 267539,
    "reads": [
-    "LiquidationEngine#f4f95248eca59b48e9cd3638622a015b64dafb646d244700610e94a2243ae99f",
+    "LiquidationEngine#ddaad61099ff76f5feb0e0b828fc01d0ca3774aac4e783369f898dd8076a6f7d",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
     "LiquidationEngine#5",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#f3acc69a9031f5037951ce1c99fcf7752f2d0ceae99c0b9690d37b7553f5f044",
     "LendingPool#f3acc69a9031f5037951ce1c99fcf7752f2d0ceae99c0b9690d37b7553f5f03f",
@@ -2612,13 +2633,14 @@
     "LendingPool#f3acc69a9031f5037951ce1c99fcf7752f2d0ceae99c0b9690d37b7553f5f042",
     "LendingPool#f3acc69a9031f5037951ce1c99fcf7752f2d0ceae99c0b9690d37b7553f5f043",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
+    "LiquidationEngine#6",
     "LiquidationEngine#3",
     "Tier2Verifier#d6358ba4704dc2ef53593ece91b12eac26ff6c59b3ec43fba82898b4c5bd13f9",
     "Tier2Verifier#0",
@@ -2628,7 +2650,7 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64a"
    ],
    "writes": [
-    "LiquidationEngine#f4f95248eca59b48e9cd3638622a015b64dafb646d244700610e94a2243ae99f",
+    "LiquidationEngine#ddaad61099ff76f5feb0e0b828fc01d0ca3774aac4e783369f898dd8076a6f7d",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e649",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64a",
@@ -2637,9 +2659,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64d"
    ],
    "balances": [
-    "account:0x35eadd51481edbb71c0b67854d474743629f86af"
+    "account:0x3ef26192d380ea0adc8b10c4b6cdc120f1201a18"
    ],
-   "steps": 6166
+   "steps": 6305
   },
   {
    "index": 47,
@@ -2648,12 +2670,12 @@
    "market": 1,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#6422c4859a0e1cfb624515c5474fb4780841aa90bef78e8ffd8411f6df3c00a8",
+    "LiquidationEngine#61aa25cf391356ba640a4a503ee096a9320b1458703836411a4cfd64367cc407",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#bdbfd5fe12b0725f9a86effbf0320821eb71455f8b2a1271fae01b3621e6f177",
     "LendingPool#bdbfd5fe12b0725f9a86effbf0320821eb71455f8b2a1271fae01b3621e6f172",
@@ -2668,11 +2690,11 @@
     "LendingPool#bdbfd5fe12b0725f9a86effbf0320821eb71455f8b2a1271fae01b3621e6f175",
     "LendingPool#bdbfd5fe12b0725f9a86effbf0320821eb71455f8b2a1271fae01b3621e6f176",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e567",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:WBTC#1",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:WBTC#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:WBTC#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2681,10 +2703,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64f"
    ],
    "writes": [
-    "LiquidationEngine#6422c4859a0e1cfb624515c5474fb4780841aa90bef78e8ffd8411f6df3c00a8",
-    "LiquidationEngine#6422c4859a0e1cfb624515c5474fb4780841aa90bef78e8ffd8411f6df3c00a7",
-    "LiquidationEngine#6422c4859a0e1cfb624515c5474fb4780841aa90bef78e8ffd8411f6df3c00a9",
+    "LiquidationEngine#61aa25cf391356ba640a4a503ee096a9320b1458703836411a4cfd64367cc407",
     "LiquidationEngine#61aa25cf391356ba640a4a503ee096a9320b1458703836411a4cfd64367cc406",
+    "LiquidationEngine#61aa25cf391356ba640a4a503ee096a9320b1458703836411a4cfd64367cc408",
+    "LiquidationEngine#1e3dcd93811a15ec9f36f04603879a32c5170fc20534b809651c2612846b4069",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64e",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e64f",
@@ -2694,9 +2716,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0x584642d5dfd29c60da1c92aaceeb2d70815e4344"
+    "account:0x58e5485d51e8ab0d7f3f2261bd7395177f71aa6c"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 48,
@@ -2705,12 +2727,12 @@
    "market": 0,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 320467,
+   "gasUsed": 321679,
    "reads": [
-    "LiquidationEngine#e02ca69cf2f93f7a389d26d1c6b52e01a88a074c056dfe4bf6a3c69d4a8041e3",
+    "LiquidationEngine#1341e158d1184a2eb4edb96b016176e1c5ad075baae6651557fb93ae3925007b",
     "LiquidationEngine#1",
     "ModelRegistry#4f0ba3d8d83bdfec86254bf81e4429a1238bbe6778552b8cb571ada659d18168",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#41cb80f82badddd72e38fda86a7cbba38fafd9735ef98c7795abbbaf2b149567",
     "LendingPool#41cb80f82badddd72e38fda86a7cbba38fafd9735ef98c7795abbbaf2b149562",
@@ -2725,11 +2747,11 @@
     "LendingPool#41cb80f82badddd72e38fda86a7cbba38fafd9735ef98c7795abbbaf2b149565",
     "LendingPool#41cb80f82badddd72e38fda86a7cbba38fafd9735ef98c7795abbbaf2b149566",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:ETH#1",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:ETH#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:ETH#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2738,10 +2760,10 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e654"
    ],
    "writes": [
-    "LiquidationEngine#e02ca69cf2f93f7a389d26d1c6b52e01a88a074c056dfe4bf6a3c69d4a8041e3",
-    "LiquidationEngine#e02ca69cf2f93f7a389d26d1c6b52e01a88a074c056dfe4bf6a3c69d4a8041e2",
-    "LiquidationEngine#e02ca69cf2f93f7a389d26d1c6b52e01a88a074c056dfe4bf6a3c69d4a8041e4",
+    "LiquidationEngine#1341e158d1184a2eb4edb96b016176e1c5ad075baae6651557fb93ae3925007b",
     "LiquidationEngine#1341e158d1184a2eb4edb96b016176e1c5ad075baae6651557fb93ae3925007a",
+    "LiquidationEngine#1341e158d1184a2eb4edb96b016176e1c5ad075baae6651557fb93ae3925007c",
+    "LiquidationEngine#23e995b0ea7a69c30e45fb21cd9d4e2adf7852a8949479c1017e50a0a5021d51",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e653",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e654",
@@ -2751,9 +2773,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xcd9e3d20ae8a44730d4268b5d05959066b04f206"
+    "account:0xd3672c2b61b6db316bb67776c75098141770bf64"
    ],
-   "steps": 5717
+   "steps": 6068
   },
   {
    "index": 49,
@@ -2762,10 +2784,10 @@
    "market": 2,
    "duplicate": false,
    "status": 1,
-   "gasUsed": 249929,
+   "gasUsed": 251109,
    "reads": [
-    "LiquidationEngine#980f427e00e74f6d338adfccc7468518c8c8ea00836d0dce98c5fe154e17bf2c",
-    "LiquidationEngine#9",
+    "LiquidationEngine#a48544818c2c710afa9849c61ec9c60e8acdb3eaa2885f33b37e118cc8fd04ad",
+    "LiquidationEngine#a",
     "LiquidationEngine#4",
     "LendingPool#8f331abe73332f95a25873e8b430885974c0409691f89d643119a11623a7924f",
     "LendingPool#8f331abe73332f95a25873e8b430885974c0409691f89d643119a11623a7924a",
@@ -2780,11 +2802,11 @@
     "LendingPool#8f331abe73332f95a25873e8b430885974c0409691f89d643119a11623a7924d",
     "LendingPool#8f331abe73332f95a25873e8b430885974c0409691f89d643119a11623a7924e",
     "LendingPool#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56a",
-    "LiquidationEngine#7",
+    "LiquidationEngine#8",
     "VolFeed:LINK#1",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28c",
     "VolFeed:LINK#679795a0195a1b76cdebb7c51d74e058aee92919b8c3389af86ef24535e8a28d",
-    "LiquidationEngine#6",
+    "LiquidationEngine#7",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0",
     "PriceFeed:LINK#e90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e1",
     "LiquidationEngine#2",
@@ -2793,9 +2815,9 @@
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e659"
    ],
    "writes": [
-    "LiquidationEngine#980f427e00e74f6d338adfccc7468518c8c8ea00836d0dce98c5fe154e17bf2c",
-    "LiquidationEngine#980f427e00e74f6d338adfccc7468518c8c8ea00836d0dce98c5fe154e17bf2b",
-    "LiquidationEngine#980f427e00e74f6d338adfccc7468518c8c8ea00836d0dce98c5fe154e17bf2d",
+    "LiquidationEngine#a48544818c2c710afa9849c61ec9c60e8acdb3eaa2885f33b37e118cc8fd04ad",
+    "LiquidationEngine#a48544818c2c710afa9849c61ec9c60e8acdb3eaa2885f33b37e118cc8fd04ac",
+    "LiquidationEngine#a48544818c2c710afa9849c61ec9c60e8acdb3eaa2885f33b37e118cc8fd04ae",
     "TierAuditLog#0",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e658",
     "TierAuditLog#290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e659",
@@ -2805,9 +2827,9 @@
    ],
    "balances": [
     "LiquidationEngine",
-    "account:0xe0cfda03b76c8ae5941ce67b13099069c633ea41"
+    "account:0x8f2dc8ec0b8365b1bc54dfb87d92757f295b98d2"
    ],
-   "steps": 5492
+   "steps": 5837
   }
  ]
 }
