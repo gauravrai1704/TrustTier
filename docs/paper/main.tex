@@ -55,6 +55,7 @@
 \renewcommand{\shortauthors}{Rai, Sharma and Gupta}
 
 \begin{abstract}
+{\renewcommand{\thefootnote}{}\footnotetext{Code, data and reproduction scripts: \url{https://github.com/gauravrai1704/TrustTier}}}%
 Decentralized finance (DeFi) lending protocols liquidate a borrower only once the loan-to-value ratio crosses a fixed threshold. In a crash this acts too late, after a position is already insolvent. A risk model that also sees volatility and momentum can act earlier, with a smaller soft liquidation, but its verdicts usually come from an operator nobody can audit. Zero-knowledge machine learning (zkML) can prove that a verdict came from a committed model, yet a proof-verified decision costs about 1.0\,M gas, too much to pay for every position.
 
 TrustTier spends verification only where a decision is risky. A position far from its liquidation boundary may be decided by a bonded heuristic claim (Tier~0), one approaching it by a bonded, salted commitment to a registered model's output (Tier~1), and one at the boundary only by an on-chain-verified Halo2 zero-knowledge succinct non-interactive argument of knowledge (zk-SNARK) of the model's inference (Tier~2). Cheap claims remain accountable: for one hour anyone can slash a false claim with a proof, the bond scales with the base fee so that slashing always pays, challenges are committed before they are revealed, and a Tier-1 claimant must open its commitment or forfeit its bond. Only a verified Tier-2 approval lets the liquidator act.
@@ -116,7 +117,7 @@ We implement nine Solidity contracts, an EZKL proving pipeline, a router and a d
 
 \maketitle
 
-{\renewcommand{\thefootnote}{}\footnotetext{Code, data and reproduction scripts: \url{https://github.com/gauravrai1704/TrustTier}}}
+
 
 %% ===================================================================
 \section{Introduction}
