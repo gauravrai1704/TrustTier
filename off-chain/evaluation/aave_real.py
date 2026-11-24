@@ -70,6 +70,7 @@ def load_snapshots():
         if d is not None:
             d["sample"] = name
             d["user"] = d["user"].str.lower()
+            d = d.drop_duplicates(["user", "day"], keep="last")
             parts.append(d)
     df = pd.concat(parts, ignore_index=True)
     if len(parts) == 2:
