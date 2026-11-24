@@ -54,7 +54,7 @@ contract OnChainMLPBaseline {
     /// Set or replace the model (their "L1 Set/Update Params" step).
     function setParams(uint16[] calldata layers_, int256[] calldata params_) external {
         if (msg.sender != owner) revert NotOwner();
-        uint256 n;
+        uint256 n = 0;
         for (uint256 l = 0; l + 1 < layers_.length; l++) n += uint256(layers_[l]) * layers_[l + 1] + layers_[l + 1];
         if (layers_.length < 2 || layers_[layers_.length - 1] != 1 || n != params_.length) revert BadShape();
         layers = layers_;
@@ -82,7 +82,7 @@ contract OnChainMLPBaseline {
         uint16[] memory ls = layers;
         int256[] memory a = new int256[](q.length);
         for (uint256 i = 0; i < q.length; i++) a[i] = int256(q[i]) * SCALE / int256(Q_ONE);
-        uint256 p;
+        uint256 p = 0;
         for (uint256 l = 0; l + 1 < ls.length; l++) {
             uint256 nIn = ls[l];
             uint256 nOut = ls[l + 1];
