@@ -29,11 +29,12 @@ Outputs (written to this directory):
     fidelity.json  - circuit vs ONNX label agreement on random inputs
 
 CAVEATS:
-1. The SRS is self-generated (ezkl.gen_srs), not from a public ceremony:
-   fine for local development and a testnet demo; production must use a
-   ceremony SRS (ezkl.get_srs). kzg.srs is shipped so make_proving_key.py can
-   rebuild pk.key deterministically.
-2. create_evm_verifier's internal solc sanity check may fail without network
+1. The SRS is the public one derived from the Perpetual Powers of Tau
+   ceremony (ezkl.get_srs); kzg.srs is shipped so make_proving_key.py can
+   rebuild pk.key without network access.
+2. Weights are hashed into public instance 0 (param_visibility "hashed/public"):
+   LiquidationEngine must be deployed with that hash (samples.json "weights_hash").
+3. create_evm_verifier's internal solc sanity check may fail without network
    access; Verifier.sol is written before that check, and Hardhat compiles it.
 """
 
@@ -144,7 +145,10 @@ def main():
     step("1/9 Generating circuit settings")
     run_args = ezkl.PyRunArgs()
     run_args.input_visibility = "public"    # features are public chain data, checked on-chain
-    run_args.param_visibility = "private"   # model weights stay confidential
+    # Model weights stay private, but the circuit Poseidon-hashes them into a
+    # public instance (instance 0): a proof made with any other weights carries
+    # a different hash, which LiquidationEngine rejects (tier2WeightsHash).
+    run_args.param_visibility = "hashed/public"
     run_args.output_visibility = "public"   # the label/probabilities are the claim
     run_args.num_inner_cols = 1             # keeps the verifier under the 24 KB contract limit
     ezkl.gen_settings(ONNX_PATH, SETTINGS_PATH, run_args)
@@ -169,8 +173,14 @@ def main():
     step("3/9 Compiling circuit")
     ezkl.compile_circuit(ONNX_PATH, COMPILED_PATH, SETTINGS_PATH)
 
-    step("4/9 Generating structured reference string (local, self-generated)")
-    ezkl.gen_srs(SRS_PATH, logrows)
+    step("4/9 Fetching the public KZG structured reference string")
+    # Derived from the Perpetual Powers of Tau ceremony (downloaded by EZKL
+    # from kzg.ezkl.xyz): no secret of ours is involved in the setup.
+    async def _get_srs():
+        return await ezkl.get_srs(settings_path=SETTINGS_PATH, srs_path=SRS_PATH)
+
+    if not asyncio.run(_get_srs()):
+        sys.exit("could not fetch the public SRS")
 
     step("5/9 Setup (proving + verification keys)")
     t0 = time.time()
@@ -236,8 +246,11 @@ def main():
                     "proving_seconds": round(p.seconds, 1)})
         print(f"  {s['name']}: q={q} label={p.label} {len(p.proof)} proof bytes {p.seconds:.1f}s")
     with open(SAMPLES_PATH, "w") as f:
-        json.dump({"instance_layout": ["q_ltv", "q_vol", "q_mom", "q_topup", "q_age", "label",
+        weights_hash = out[0]["public_inputs"][0]
+        assert all(o["public_inputs"][0] == weights_hash for o in out), "weights hash differs across proofs"
+        json.dump({"instance_layout": ["weights_hash", "q_ltv", "q_vol", "q_mom", "q_topup", "q_age", "label",
                                        "p_low_x2^10", "p_high_x2^10"],
+                   "weights_hash": weights_hash,
                    "units": "USD and prices with 8 decimals; vol_answer in percent with vol_decimals decimals",
                    "samples": out}, f, indent=2)
 

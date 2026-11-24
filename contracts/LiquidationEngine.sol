@@ -29,13 +29,16 @@ import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
 ///   delta = liquidation threshold - LTV.
 ///
 /// TIERS (enforced on-chain from delta, not chosen by a trusted router)
-///   - Tier 0 (heuristic, bonded):   a "safe" claim, allowed only if delta > 15%.
+///   - Tier 0 (heuristic, bonded):   a "safe" claim, allowed only if delta exceeds
+///     the volatility-adaptive Tier-0 band (about 15% at 35% volatility).
 ///   - Tier 1 (commitment, bonded):  a "safe" claim with a salted commitment
-///     to the registered model's score, allowed only if delta > 5%. The
+///     to the registered model's score, allowed only if delta exceeds the
+///     Tier-1 band (about 5% at 35% volatility). The
 ///     claimant must open the commitment inside the window; a score that
 ///     says high risk, or no opening at all, forfeits the bond.
 ///   - Tier 2 (zk-SNARK):            always allowed; APPROVES A LIQUIDATION
-///     only if the proof's five public inputs equal the features read now
+///     only if the proof was made with the registered weights (instance 0)
+///     and its five feature inputs equal the features read now
 ///     (or a recent anchor the position has not improved on) and its label
 ///     is HIGH_RISK. The approval is executed by `liquidator` within
 ///     APPROVAL_TTL, or expires.
@@ -62,9 +65,19 @@ import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
 ///     and settles the previous claimant's bond.
 ///
 /// Public-instance layout produced by circuits/build_circuit.py:
-///   [0..4] q_ltv, q_vol, q_mom, q_topup, q_age   (INSTANCE_LABEL = 5)
-///   [5]    label, 1 = high risk
-///   [6..7] P(low), P(high), scaled by 2^10
+///   [0]    Poseidon hash of the model's weights (INSTANCE_WEIGHTS_HASH): the
+///          circuit hashes the weights it used, so a proof made with any
+///          other weights carries a different hash and is rejected
+///   [1..5] q_ltv, q_vol, q_mom, q_topup, q_age   (FIRST_FEATURE = 1)
+///   [6]    label, 1 = high risk                  (INSTANCE_LABEL = 6)
+///   [7..8] P(low), P(high), scaled by 2^10
+///
+/// TIER BANDS adapt to the collateral's 30-day volatility sigma (feature q_vol):
+///   Tier 0 needs delta > 5% + 0.3 sigma, kept within [10%, 30%]
+///          (a 2.2-sigma one-week price move plus a 5% buffer);
+///   Tier 1 needs delta > 1.5% + 0.1 sigma, kept within [3%, 12%]
+///          (a 2-sigma one-day move plus a 1.5% buffer).
+///   At sigma = 35% this is 15.5% / 5%; at 80%, 29% / 9.5%; at 10%, 10% / 3%.
 contract LiquidationEngine is Ownable {
     ModelRegistry public modelRegistry;
     TierAuditLog public auditLog;
@@ -73,6 +86,10 @@ contract LiquidationEngine is Ownable {
 
     /// @notice The registered model whose circuit `tier2Verifier` verifies.
     bytes32 public tier2ModelHash;
+
+    /// @notice Poseidon hash of that model's weights, as the circuit exposes
+    ///         it in public instance 0. Binds every proof to these weights.
+    uint256 public tier2WeightsHash;
 
     /// @notice Oldest acceptable Chainlink answers (seconds).
     uint256 public maxPriceAge;
@@ -95,10 +112,18 @@ contract LiquidationEngine is Ownable {
     }
 
     // --- policy constants -------------------------------------------------
-    int256 public constant TIER0_MIN_DELTA_BPS = 1500; // delta > 15%
-    int256 public constant TIER1_MIN_DELTA_BPS = 500;  // delta > 5%
+    int256 public constant TIER0_BASE_BPS = 500;   // Tier 0: 5% + 0.3 sigma
+    int256 public constant TIER0_VOL_TENTHS = 3;
+    int256 public constant TIER0_MIN_BPS = 1000;
+    int256 public constant TIER0_MAX_BPS = 3000;
+    int256 public constant TIER1_BASE_BPS = 150;   // Tier 1: 1.5% + 0.1 sigma
+    int256 public constant TIER1_VOL_TENTHS = 1;
+    int256 public constant TIER1_MIN_BPS = 300;
+    int256 public constant TIER1_MAX_BPS = 1200;
     uint256 public constant N_FEATURES = 5;
-    uint256 public constant INSTANCE_LABEL = 5;
+    uint256 public constant INSTANCE_WEIGHTS_HASH = 0;
+    uint256 public constant FIRST_FEATURE = 1;
+    uint256 public constant INSTANCE_LABEL = 6;
     uint256 public constant HIGH_RISK = 1;
     uint256 public constant SCALE = 1024;              // circuit input scale 2^10
     uint256 public constant MOMENTUM_WINDOW = 24 hours;
@@ -171,7 +196,7 @@ contract LiquidationEngine is Ownable {
     event CommitmentContradicted(uint256 indexed positionId, int256 score, uint256 bondForfeited);
     event BondForfeited(uint256 indexed positionId, address indexed claimant, uint256 bond);
     event ChallengeCommitted(uint256 indexed positionId, address indexed challenger);
-    event Tier2VerifierUpdated(address indexed newVerifier, bytes32 indexed modelHash);
+    event Tier2VerifierUpdated(address indexed newVerifier, bytes32 indexed modelHash, uint256 weightsHash);
     event PositionSourceUpdated(address indexed newSource);
     event LiquidatorUpdated(address indexed newLiquidator);
     event SequencerFeedUpdated(address indexed feed);
@@ -186,6 +211,7 @@ contract LiquidationEngine is Ownable {
 
     error ModelNotAuthorized(bytes32 modelHash);
     error ModelNotBoundToVerifier(bytes32 modelHash);
+    error WrongModelWeights(uint256 positionId, uint256 weightsHash);
     error InvalidZkProof(uint256 positionId);
     error CommitmentRequired();
     error PositionAlreadyFinalized(uint256 positionId);
@@ -219,6 +245,7 @@ contract LiquidationEngine is Ownable {
         address _auditLog,
         address _tier2Verifier,
         bytes32 _tier2ModelHash,
+        uint256 _tier2WeightsHash,
         address _positionSource,
         uint256 _maxPriceAge,
         uint256 _maxVolatilityAge
@@ -227,6 +254,7 @@ contract LiquidationEngine is Ownable {
         auditLog = TierAuditLog(_auditLog);
         tier2Verifier = ITier2Verifier(_tier2Verifier);
         tier2ModelHash = _tier2ModelHash;
+        tier2WeightsHash = _tier2WeightsHash;
         positionSource = IPositionSource(_positionSource);
         maxPriceAge = _maxPriceAge;
         maxVolatilityAge = _maxVolatilityAge;
@@ -288,10 +316,27 @@ contract LiquidationEngine is Ownable {
     // Owner configuration (behind the multisig + timelock when governed)
     // =====================================================================
 
-    function setTier2Verifier(address _tier2Verifier, bytes32 _tier2ModelHash) external onlyOwner {
+    function setTier2Verifier(address _tier2Verifier, bytes32 _tier2ModelHash, uint256 _tier2WeightsHash)
+        external
+        onlyOwner
+    {
         tier2Verifier = ITier2Verifier(_tier2Verifier);
         tier2ModelHash = _tier2ModelHash;
-        emit Tier2VerifierUpdated(_tier2Verifier, _tier2ModelHash);
+        tier2WeightsHash = _tier2WeightsHash;
+        emit Tier2VerifierUpdated(_tier2Verifier, _tier2ModelHash, _tier2WeightsHash);
+    }
+
+    /// @notice The tier bands for a position whose quantized volatility
+    ///         feature is `qVol` (sigma = qVol / 1024): Tier 0 needs
+    ///         delta > b0, Tier 1 needs delta > b1 (both in bps).
+    function tierBands(uint256 qVol) public pure returns (int256 b0, int256 b1) {
+        int256 sigmaBps = int256(qVol * 10_000 / SCALE);
+        b0 = _clamp(TIER0_BASE_BPS + sigmaBps * TIER0_VOL_TENTHS / 10, TIER0_MIN_BPS, TIER0_MAX_BPS);
+        b1 = _clamp(TIER1_BASE_BPS + sigmaBps * TIER1_VOL_TENTHS / 10, TIER1_MIN_BPS, TIER1_MAX_BPS);
+    }
+
+    function _clamp(int256 x, int256 lo, int256 hi) internal pure returns (int256) {
+        return x < lo ? lo : (x > hi ? hi : x);
     }
 
     function setPositionSource(address _positionSource) external onlyOwner {
@@ -420,12 +465,23 @@ contract LiquidationEngine is Ownable {
         return keccak256(abi.encodePacked(q));
     }
 
+    /// @dev Hash of a plain list of the five features (a Tier-1 opening).
+    function _listHash(uint256[] calldata q5) internal pure returns (bytes32) {
+        // slither-disable-next-line uninitialized-local
+        uint256[5] memory q;
+        for (uint256 i = 0; i < N_FEATURES; i++) {
+            q[i] = q5[i];
+        }
+        return _featureHash(q);
+    }
+
+    /// @dev Hash of the five feature instances of a proof (instances 1..5).
     function _proofFeatureHash(uint256[] calldata publicInputs) internal pure returns (bytes32) {
         // A fixed-size memory array starts zeroed and the loop sets every slot.
         // slither-disable-next-line uninitialized-local
         uint256[5] memory q;
         for (uint256 i = 0; i < N_FEATURES; i++) {
-            q[i] = publicInputs[i];
+            q[i] = publicInputs[FIRST_FEATURE + i];
         }
         return _featureHash(q);
     }
@@ -542,6 +598,12 @@ contract LiquidationEngine is Ownable {
         emit FeaturesSnapshotted(positionId, q, deltaBps);
     }
 
+    /// @dev The proof must have been made with the registered weights.
+    function _requireWeights(uint256 positionId, uint256[] calldata publicInputs) internal view {
+        uint256 h = publicInputs[INSTANCE_WEIGHTS_HASH];
+        if (h != tier2WeightsHash) revert WrongModelWeights(positionId, h);
+    }
+
     function _requireTier2Model(bytes32 modelHash) internal view {
         if (!modelRegistry.isAuthorized(modelHash)) revert ModelNotAuthorized(modelHash);
         if (modelHash != tier2ModelHash) revert ModelNotBoundToVerifier(modelHash);
@@ -564,19 +626,21 @@ contract LiquidationEngine is Ownable {
     // =====================================================================
 
     /// @notice Tier 0: a bonded claim that the position is far from its
-    ///         liquidation boundary. Allowed only if delta > 15% on-chain.
+    ///         liquidation boundary. Allowed only if delta exceeds the
+    ///         volatility-adaptive Tier-0 band (`tierBands`).
     function decideHeuristic(uint256 positionId, uint80 pastRoundId) external payable {
         _beginDecision(positionId, false);
         (uint256[5] memory q, int256 deltaBps) = currentFeatures(positionId, pastRoundId);
-        if (deltaBps <= TIER0_MIN_DELTA_BPS) revert TierNotAllowed(positionId, Tier.Heuristic, deltaBps);
+        (int256 b0, ) = tierBands(q[1]);
+        if (deltaBps <= b0) revert TierNotAllowed(positionId, Tier.Heuristic, deltaBps);
         (bytes32 snap, uint256 bond) = _openBondedClaim(positionId, q, deltaBps, false);
         auditLog.logDecision(positionId, TierAuditLog.Tier.Heuristic, bytes32(0), snap);
         emit SafeClaimRecorded(positionId, Tier.Heuristic, bytes32(0), msg.sender, bond);
     }
 
     /// @notice Tier 1: a bonded, salted commitment to the registered model's
-    ///         score on the snapshotted features. Allowed only if delta > 5%
-    ///         on-chain; the commitment must be opened (`revealCommitment`)
+    ///         score on the snapshotted features. Allowed only if delta exceeds
+    ///         the volatility-adaptive Tier-1 band; the commitment must be opened (`revealCommitment`)
     ///         before the window closes or the bond is forfeited.
     /// @param commitmentHash keccak256(abi.encode(uint256[] q, int256 score1e6, bytes32 salt))
     function decideCommitment(uint256 positionId, uint80 pastRoundId, bytes32 modelHash, bytes32 commitmentHash)
@@ -587,7 +651,8 @@ contract LiquidationEngine is Ownable {
         if (!modelRegistry.isAuthorized(modelHash)) revert ModelNotAuthorized(modelHash);
         if (commitmentHash == bytes32(0)) revert CommitmentRequired();
         (uint256[5] memory q, int256 deltaBps) = currentFeatures(positionId, pastRoundId);
-        if (deltaBps <= TIER1_MIN_DELTA_BPS) revert TierNotAllowed(positionId, Tier.Commitment, deltaBps);
+        (, int256 b1) = tierBands(q[1]);
+        if (deltaBps <= b1) revert TierNotAllowed(positionId, Tier.Commitment, deltaBps);
         (, uint256 bond) = _openBondedClaim(positionId, q, deltaBps, true);
         tier1Commitments[positionId] = commitmentHash;
         auditLog.logDecision(positionId, TierAuditLog.Tier.Commitment, modelHash, commitmentHash);
@@ -606,7 +671,7 @@ contract LiquidationEngine is Ownable {
         if (q.length != N_FEATURES || keccak256(abi.encode(q, score, salt)) != tier1Commitments[positionId]) {
             revert BadReveal(positionId);
         }
-        if (_proofFeatureHash(q) != st.featureSnapshot) revert BadReveal(positionId);
+        if (_listHash(q) != st.featureSnapshot) revert BadReveal(positionId);
         st.revealed = true;
         if (score >= HIGH_RISK_SCORE) {
             uint256 bond = st.bond;
@@ -635,6 +700,7 @@ contract LiquidationEngine is Ownable {
         _requireTier2Model(modelHash);
         (uint256[5] memory q, int256 deltaBps) = currentFeatures(positionId, pastRoundId);
         if (publicInputs.length <= INSTANCE_LABEL) revert ProofNotForPosition(positionId);
+        _requireWeights(positionId, publicInputs);
         if (!_inputsMatch(publicInputs, q)) {
             Anchor storage a = anchors[positionId];
             if (
@@ -655,7 +721,7 @@ contract LiquidationEngine is Ownable {
 
     function _inputsMatch(uint256[] calldata publicInputs, uint256[5] memory q) internal pure returns (bool) {
         for (uint256 i = 0; i < N_FEATURES; i++) {
-            if (publicInputs[i] != q[i]) return false;
+            if (publicInputs[FIRST_FEATURE + i] != q[i]) return false;
         }
         return true;
     }
@@ -739,6 +805,7 @@ contract LiquidationEngine is Ownable {
         if (publicInputs.length <= INSTANCE_LABEL || _proofFeatureHash(publicInputs) != st.featureSnapshot) {
             revert ProofNotForPosition(positionId);
         }
+        _requireWeights(positionId, publicInputs);
         if (publicInputs[INSTANCE_LABEL] != HIGH_RISK) revert ChallengeDidNotContradictClaim(positionId);
 
         st.challenged = true;

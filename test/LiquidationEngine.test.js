@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const {
-  deployTrustTier, increaseTime, now, DAY, PRICE, VOL, PAST_ROUND,
+  deployTrustTier, increaseTime, now, DAY, PRICE, VOL, PAST_ROUND, WEIGHTS_HASH,
 } = require("./helpers/fixture");
 
 // Positions used below (collateral $2,000, liquidation threshold 0.80):
@@ -100,7 +100,7 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
   });
 
   describe("tier enforcement from on-chain delta", function () {
-    it("allows Tier 0 only when delta > 15%", async function () {
+    it("allows Tier 0 only when delta exceeds the Tier-0 band (15.5% at 35% volatility)", async function () {
       await expect(tier0(SAFE)).to.emit(engine, "SafeClaimRecorded")
         .withArgs(SAFE, Tier.Heuristic, ethers.ZeroHash, owner.address, BOND);
       await expect(tier0(WATCH))
@@ -108,11 +108,36 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
       await expect(tier0(RISKY)).to.be.revertedWithCustomError(engine, "TierNotAllowed");
     });
 
-    it("allows Tier 1 only when delta > 5%", async function () {
+    it("allows Tier 1 only when delta exceeds the Tier-1 band (5% at 35% volatility)", async function () {
       await expect(tier1(WATCH)).to.emit(engine, "SafeClaimRecorded")
         .withArgs(WATCH, Tier.Commitment, MODEL, owner.address, BOND);
       await expect(tier1(RISKY))
         .to.be.revertedWithCustomError(engine, "TierNotAllowed").withArgs(RISKY, Tier.Commitment, -1300);
+    });
+
+    it("bands adapt to volatility: 5% + 0.3 sigma and 1.5% + 0.1 sigma, clamped", async function () {
+      const at = async (volPct) => (await engine.tierBands(BigInt(Math.floor((volPct / 100) * 1024))));
+      const [b0, b1] = await at(35);
+      expect(b0).to.equal(1548n);
+      expect(b1).to.equal(499n);
+      const [h0, h1] = await at(80);
+      expect(h0).to.equal(2899n);
+      expect(h1).to.equal(949n);
+      const [l0, l1] = await at(10);
+      expect(l0).to.equal(1000n); // floor 10%
+      expect(l1).to.equal(300n);  // floor 3%
+      const [x0, x1] = await at(100);
+      expect(x0).to.equal(3000n); // cap 30%
+      expect(x1).to.equal(1150n);
+    });
+
+    it("the same delta allows a cheap claim at normal volatility but not at high volatility", async function () {
+      await t.openPosition(4, "0.72"); // delta 8%
+      await t.openPosition(5, "0.72");
+      await t.volFeed.updateAnswer(35n * 10n ** 8n); // Tier-1 band about 5%
+      await expect(tier1(4)).to.emit(engine, "SafeClaimRecorded");
+      await t.volFeed.updateAnswer(80n * 10n ** 8n); // Tier-1 band about 9.5%
+      await expect(tier1(5)).to.be.revertedWithCustomError(engine, "TierNotAllowed").withArgs(5, Tier.Commitment, 800);
     });
 
     it("allows Tier 2 at any delta (a stronger tier is always acceptable)", async function () {
@@ -190,9 +215,15 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
 
     it("reject a proof computed on features other than the on-chain ones", async function () {
       const forged = await t.inputs(RISKY);
-      forged[0] += 1n; // a slightly different LTV
+      forged[1] += 1n; // a slightly different LTV (instance 1)
       await expect(engine.decideZkProof(RISKY, PAST_ROUND, MODEL, PROOF, forged))
         .to.be.revertedWithCustomError(engine, "ProofNotForPosition").withArgs(RISKY);
+    });
+
+    it("reject a proof made with weights other than the registered ones", async function () {
+      const other = await t.inputs(RISKY, 1, WEIGHTS_HASH ^ 1n);
+      await expect(engine.decideZkProof(RISKY, PAST_ROUND, MODEL, PROOF, other))
+        .to.be.revertedWithCustomError(engine, "WrongModelWeights").withArgs(RISKY, WEIGHTS_HASH ^ 1n);
     });
 
     it("reject replaying another position's proof", async function () {
@@ -417,7 +448,7 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
 
   describe("owner configuration", function () {
     it("only the owner can change the verifier, position source or feed ages", async function () {
-      await expect(engine.connect(other).setTier2Verifier(other.address, MODEL))
+      await expect(engine.connect(other).setTier2Verifier(other.address, MODEL, 1n))
         .to.be.revertedWithCustomError(engine, "OwnableUnauthorizedAccount");
       await expect(engine.connect(other).setPositionSource(other.address))
         .to.be.revertedWithCustomError(engine, "OwnableUnauthorizedAccount");
@@ -428,8 +459,8 @@ describe("LiquidationEngine (verified on-chain inputs)", function () {
     it("a verifier swap takes effect immediately and is evented", async function () {
       const strict = await (await ethers.getContractFactory("MockTier2Verifier")).deploy();
       await strict.setShouldVerify(false);
-      await expect(engine.setTier2Verifier(await strict.getAddress(), MODEL))
-        .to.emit(engine, "Tier2VerifierUpdated").withArgs(await strict.getAddress(), MODEL);
+      await expect(engine.setTier2Verifier(await strict.getAddress(), MODEL, WEIGHTS_HASH))
+        .to.emit(engine, "Tier2VerifierUpdated").withArgs(await strict.getAddress(), MODEL, WEIGHTS_HASH);
       await expect(tier2(RISKY)).to.be.revertedWithCustomError(engine, "InvalidZkProof");
     });
 

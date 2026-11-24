@@ -100,6 +100,14 @@ async function main() {
   if (modelHash === hre.ethers.ZeroHash) {
     console.warn("WARNING: no model hash found - train the model first (python -m risk_model.train).");
   }
+  // Poseidon hash of the model's weights, exposed by every real proof as public
+  // instance 0 (circuits/build_circuit.py writes it to samples.json).
+  const SAMPLES_PATH = path.join(__dirname, "..", "circuits", "samples.json");
+  let weightsHash = process.env.WEIGHTS_HASH || "0";
+  if (!process.env.WEIGHTS_HASH && fs.existsSync(SAMPLES_PATH)) {
+    weightsHash = JSON.parse(fs.readFileSync(SAMPLES_PATH, "utf8")).weights_hash || "0";
+  }
+  weightsHash = BigInt(weightsHash);
 
   // 1. Position source and feeds
   const H = 3600;
@@ -162,7 +170,7 @@ async function main() {
   const verifier = await deployed(verifierArtifactName);
   const engine = await deployed(
     "LiquidationEngine",
-    await registry.getAddress(), await auditLog.getAddress(), await verifier.getAddress(), modelHash,
+    await registry.getAddress(), await auditLog.getAddress(), await verifier.getAddress(), modelHash, weightsHash,
     await source.getAddress(), maxPriceAge, maxVolAge
   );
 
@@ -201,7 +209,7 @@ async function main() {
   const extra = {
     chainId: Number(chainId), deployBlock: startBlock, deployedAt: new Date().toISOString(),
     deployer: deployer.address,
-    verifierMode, modelHash, positionSource: sourceArtifact, markets,
+    verifierMode, modelHash, weightsHash: weightsHash.toString(), positionSource: sourceArtifact, markets,
     maxPriceAge, maxVolatilityAge: maxVolAge,
     aggregatorAbi: hre.artifacts.readArtifactSync("MockV3Aggregator").abi,
     governance: null,

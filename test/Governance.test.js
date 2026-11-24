@@ -23,7 +23,7 @@ describe("Governance (multisig + timelock)", function () {
     mock = await (await ethers.getContractFactory("MockTier2Verifier")).deploy();
     const pool = await (await ethers.getContractFactory("MockLendingPool")).deploy();
     engine = await (await ethers.getContractFactory("LiquidationEngine")).deploy(
-      await registry.getAddress(), await auditLog.getAddress(), await mock.getAddress(), MODEL,
+      await registry.getAddress(), await auditLog.getAddress(), await mock.getAddress(), MODEL, 1n,
       await pool.getAddress(), 3 * 3600, 2 * 86400
     );
     await auditLog.authorizeLogger(await engine.getAddress());
@@ -99,7 +99,7 @@ describe("Governance (multisig + timelock)", function () {
 
   describe("timelock owns the TrustTier contracts", function () {
     it("the deployer key alone can no longer change anything", async function () {
-      await expect(engine.setTier2Verifier(outsider.address, MODEL))
+      await expect(engine.setTier2Verifier(outsider.address, MODEL, 1n))
         .to.be.revertedWithCustomError(engine, "OwnableUnauthorizedAccount");
       await expect(registry.revokeModel(MODEL)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
       await expect(engine.setPositionSource(outsider.address))
@@ -109,21 +109,21 @@ describe("Governance (multisig + timelock)", function () {
     });
 
     it("a single multisig owner cannot schedule on the timelock directly", async function () {
-      const data = engine.interface.encodeFunctionData("setTier2Verifier", [outsider.address, MODEL]);
+      const data = engine.interface.encodeFunctionData("setTier2Verifier", [outsider.address, MODEL, 1n]);
       await expect(
         timelock.connect(a).schedule(await engine.getAddress(), 0, data, ZERO_SALT, ZERO_SALT, DELAY)
       ).to.be.revertedWithCustomError(timelock, "AccessControlUnauthorizedAccount");
     });
 
     it("refuses a delay shorter than the minimum", async function () {
-      const data = engine.interface.encodeFunctionData("setTier2Verifier", [outsider.address, MODEL]);
+      const data = engine.interface.encodeFunctionData("setTier2Verifier", [outsider.address, MODEL, 1n]);
       await expect(viaMultisig("schedule", [await engine.getAddress(), 0, data, ZERO_SALT, ZERO_SALT, DELAY - 1]))
         .to.be.reverted;
     });
 
     it("swaps the Tier-2 verifier only after 2-of-3 approval and the full delay", async function () {
       const newVerifier = await (await ethers.getContractFactory("MockTier2Verifier")).deploy();
-      await expect(scheduleAndExecute(engine, "setTier2Verifier", [await newVerifier.getAddress(), MODEL]))
+      await expect(scheduleAndExecute(engine, "setTier2Verifier", [await newVerifier.getAddress(), MODEL, 1n]))
         .to.emit(engine, "Tier2VerifierUpdated");
       expect(await engine.tier2Verifier()).to.equal(await newVerifier.getAddress());
     });

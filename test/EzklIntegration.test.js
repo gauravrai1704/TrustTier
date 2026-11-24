@@ -14,7 +14,7 @@ const { deployTrustTier, PAST_ROUND } = require("./helpers/fixture");
 // features itself. The proof is accepted only because the contract's
 // features equal the proof's public inputs - nobody "commits" them.
 describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", function () {
-  let samples, modelHash;
+  let samples, modelHash, weightsHash;
   const BOND = ethers.parseEther("0.01");
   const POSITION = 1;
 
@@ -23,7 +23,9 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
     const metadataPath = path.join(__dirname, "..", "off-chain", "risk_model", "artifacts", "model_metadata.json");
     if (!fs.existsSync(samplesPath) || !fs.existsSync(metadataPath)) this.skip();
     samples = {};
-    for (const s of JSON.parse(fs.readFileSync(samplesPath, "utf8")).samples) {
+    const file = JSON.parse(fs.readFileSync(samplesPath, "utf8"));
+    weightsHash = BigInt(file.weights_hash);
+    for (const s of file.samples) {
       samples[s.name] = { ...s, inputs: s.public_inputs.map((x) => BigInt(x)) };
     }
     modelHash = JSON.parse(fs.readFileSync(metadataPath, "utf8")).model_hash_keccak256;
@@ -35,6 +37,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
     const t = await deployTrustTier({
       verifier: await verifier.getAddress(),
       modelHash,
+      weightsHash,
       price: BigInt(sample.price_now),
       pricePast: BigInt(sample.price_past),
       vol: BigInt(sample.vol_answer),
@@ -55,7 +58,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
       const [q, delta] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
       expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
       expect(s.inputs.slice(0, 5)).to.deep.equal(s.q.map(BigInt));
-      expect(s.inputs[5]).to.equal(1n);
+      expect(s.inputs[6]).to.equal(1n);
       expect(delta).to.equal(8000n - 9300n);
     });
 
@@ -95,13 +98,20 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
 
     it("the real verifier rejects tampered outputs", async function () {
       const forged = [...s.inputs];
-      forged[6] = 0n; forged[7] = 1024n;
+      forged[7] = 0n; forged[8] = 1024n;
       await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, forged))
         .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
       const bytes = ethers.getBytes(s.proof);
       bytes[100] ^= 0xff;
       await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, bytes, s.inputs))
         .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
+    });
+
+    it("rejects a proof made with other weights: its weights hash is not the registered one", async function () {
+      const other = [...s.inputs];
+      other[0] = other[0] ^ 1n;
+      await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, other))
+        .to.be.revertedWithCustomError(t.engine, "WrongModelWeights");
     });
 
     it("rejects an unregistered model even with a valid proof", async function () {
@@ -114,7 +124,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
       const m = await setup(s, mock);
       await m.openPosition(2, "0.93", { ageDays: s.age_days, topupDays: s.topup_days_ago });
       await expect(m.engine.decideZkProof(2, PAST_ROUND, modelHash, "0x1234", s.inputs)).to.not.be.reverted;
-      await m.engine.setTier2Verifier(await t.verifier.getAddress(), modelHash);
+      await m.engine.setTier2Verifier(await t.verifier.getAddress(), modelHash, weightsHash);
       await expect(m.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, "0x1234", s.inputs))
         .to.be.revertedWithCustomError(m.engine, "InvalidZkProof");
       await expect(m.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, s.inputs)).to.not.be.reverted;
@@ -132,7 +142,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
     it("the contract computes the same features the proof was made on", async function () {
       const [q] = await t.engine.currentFeatures(POSITION, PAST_ROUND);
       expect(q.map(BigInt)).to.deep.equal(s.q.map(BigInt));
-      expect(s.inputs[5]).to.equal(0n);
+      expect(s.inputs[6]).to.equal(0n);
     });
 
     it("a real low-risk proof cannot liquidate", async function () {
@@ -142,7 +152,7 @@ describe("LiquidationEngine + real EzklVerifier (verified on-chain inputs)", fun
 
     it("the label cannot be flipped to high risk", async function () {
       const forged = [...s.inputs];
-      forged[5] = 1n;
+      forged[6] = 1n;
       await expect(t.engine.decideZkProof(POSITION, PAST_ROUND, modelHash, s.proof, forged))
         .to.be.revertedWithCustomError(t.engine, "InvalidZkProof");
     });

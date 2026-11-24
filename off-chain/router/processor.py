@@ -168,7 +168,7 @@ class PositionProcessor:
     def _plan(self, position_id: int, force_tier: Optional[str]) -> _Plan:
         view = self.chain.current_features(position_id)
         q, delta_bps, past_round, pos = view["q"], view["delta_bps"], view["past_round"], view["position"]
-        decision = decide_tier_bps(delta_bps)
+        decision = decide_tier_bps(delta_bps, q[1])
         if force_tier is not None:
             decision = TierDecision(Tier[force_tier], decision.delta,
                                     f"forced to {force_tier} (demo; policy said {decision.tier.name})")

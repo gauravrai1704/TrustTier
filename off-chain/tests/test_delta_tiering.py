@@ -1,7 +1,9 @@
 import pytest
 
 from router.delta import compute_delta
-from router.tiering import decide_tier, Tier, TIER_1_BAND, TIER_2_BAND
+from router.tiering import decide_tier, Tier, tier_bands, REFERENCE_SIGMA
+
+TIER_1_BAND, TIER_2_BAND = tier_bands(REFERENCE_SIGMA)  # 0.1548 / 0.0499 at 35% volatility
 
 
 class TestComputeDelta:

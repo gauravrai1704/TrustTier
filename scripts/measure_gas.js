@@ -24,9 +24,9 @@ async function main() {
   const SALT = ethers.id("salt");
   const commitmentOf = (q, score) => ethers.keccak256(coder.encode(["uint256[]", "int256", "bytes32"], [q, score, SALT]));
   const MH = JSON.parse(fs.readFileSync(path.join("off-chain", "risk_model", "artifacts", "model_metadata.json"), "utf8")).model_hash_keccak256;
-  const samples = Object.fromEntries(
-    JSON.parse(fs.readFileSync(path.join("circuits", "samples.json"), "utf8")).samples.map((s) => [s.name, s])
-  );
+  const samplesFile = JSON.parse(fs.readFileSync(path.join("circuits", "samples.json"), "utf8"));
+  const samples = Object.fromEntries(samplesFile.samples.map((s) => [s.name, s]));
+  const WH = BigInt(samplesFile.weights_hash);
   const ins = (s) => s.public_inputs.map(BigInt);
   const ltvOf = (s) => (Number(s.debt_usd) / Number(s.collateral_usd)).toFixed(4);
   const feedOpts = (s) => ({ price: BigInt(s.price_now), pricePast: BigInt(s.price_past), vol: BigInt(s.vol_answer) });
@@ -36,7 +36,7 @@ async function main() {
 
   // Deployment 1: the high-risk sample market.
   const high = samples.high_risk;
-  const t = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, ...feedOpts(high) });
+  const t = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, weightsHash: WH, ...feedOpts(high) });
   out.deploy_LiquidationEngine = Number((await t.engine.deploymentTransaction().wait()).gasUsed);
   out.deploy_MockLendingPool = Number((await t.pool.deploymentTransaction().wait()).gasUsed);
   const MH2 = ethers.id("m2");
@@ -71,11 +71,11 @@ async function main() {
   await increaseTime(3601);
   await t.priceFeed.updateAnswer(BigInt(high.price_now)); // keep the feed fresh (round 3)
   out.reclaimBond = await gas(t.engine.connect(carol).reclaimBond(2));
-  out.setTier2Verifier = await gas(t.engine.setTier2Verifier(await real.getAddress(), MH));
+  out.setTier2Verifier = await gas(t.engine.setTier2Verifier(await real.getAddress(), MH, WH));
 
   // Deployment 2: the watch-band sample - a Tier-1 claim slashed by a real proof.
   const watch = samples.watch_high;
-  const w = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, ...feedOpts(watch) });
+  const w = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, weightsHash: WH, ...feedOpts(watch) });
   await w.openPosition(1, ltvOf(watch), { ageDays: watch.age_days, topupDays: watch.topup_days_ago });
   await w.engine.connect(alice).decideCommitment(1, PAST_ROUND, MH, commitmentOf(await w.features(1), 120000), { value: BOND });
   out.challengeDecision = await gas(w.engine.connect(bob).challengeDecision(1, MH, watch.proof, ins(watch)));
@@ -83,14 +83,14 @@ async function main() {
 
   // Deployment 3: the same claim slashed through commit-reveal, and a
   // Tier-2 decision on anchored features after a feed update.
-  const v = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, ...feedOpts(watch) });
+  const v = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, weightsHash: WH, ...feedOpts(watch) });
   await v.openPosition(1, ltvOf(watch), { ageDays: watch.age_days, topupDays: watch.topup_days_ago });
   await v.engine.connect(alice).decideCommitment(1, PAST_ROUND, MH, commitmentOf(await v.features(1), 120000), { value: BOND });
   const ch = ethers.keccak256(coder.encode(["address", "uint256", "bytes32", "bytes32"],
     [bob.address, 1, await v.engine.featureSnapshot(1), ethers.keccak256(watch.proof)]));
   out.commitChallenge = await gas(v.engine.connect(bob).commitChallenge(1, ch));
   out.revealChallenge = await gas(v.engine.connect(bob).revealChallenge(1, MH, watch.proof, ins(watch)));
-  const a = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, ...feedOpts(high) });
+  const a = await deployTrustTier({ verifier: await real.getAddress(), modelHash: MH, weightsHash: WH, ...feedOpts(high) });
   await a.openPosition(1, ltvOf(high), { ageDays: high.age_days, topupDays: high.topup_days_ago });
   out.anchorFeatures = await gas(a.engine.anchorFeatures(1, PAST_ROUND));
   await a.priceFeed.updateAnswer(BigInt(high.price_now) - 1n); // a tick against the borrower while proving

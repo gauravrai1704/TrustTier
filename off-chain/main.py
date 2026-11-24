@@ -355,7 +355,7 @@ def position_features(position_id: int, refresh: bool = True):
                               "time_since_last_topup_days", "account_age_days"],
                              _dequantize(view["q"]))),
         "delta_bps": view["delta_bps"],
-        "allowed_tier": decide_tier_bps(view["delta_bps"]).tier.name,
+        "allowed_tier": decide_tier_bps(view["delta_bps"], view["q"][1]).tier.name,
         "past_round": view["past_round"],
         "collateral_usd": pos["collateral_usd"] / 1e8,
         "debt_usd": pos["debt_usd"] / 1e8,

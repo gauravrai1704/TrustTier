@@ -35,7 +35,10 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      // local in-memory chain used for the Week 1-2 mocked-verification milestone
+      // In-memory chain for tests. UNLIMITED_CODE=1 lifts the EIP-170 size limit,
+      // used only by the model-size study to measure verifiers that would not deploy.
+      allowUnlimitedContractSize: process.env.UNLIMITED_CODE === "1",
+      blockGasLimit: Number(process.env.BLOCK_GAS_LIMIT || 60_000_000),
     },
     localhost: {
       // explicit block so `--network localhost` (used by the off-chain

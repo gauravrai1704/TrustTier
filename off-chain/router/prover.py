@@ -4,7 +4,8 @@ run on a position's quantized on-chain features q (see
 risk_model/onchain_features.py), outputs the claimed label.
 
 The circuit's inputs are PUBLIC: the proof's instances are
-[q_ltv, q_vol, q_mom, q_topup, q_age, label, P(low)*2^10, P(high)*2^10], and
+[weights_hash, q_ltv, q_vol, q_mom, q_topup, q_age, label, P(low)*2^10, P(high)*2^10]
+(the circuit hashes the model's weights with Poseidon, so a proof binds them), and
 LiquidationEngine checks the first five against the values it reads from
 the lending protocol and Chainlink feeds itself. Only the model weights are
 private.
@@ -30,7 +31,9 @@ CIRCUITS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 
 # Public-instance layout (must match LiquidationEngine's constants).
 N_FEATURES = 5
-INSTANCE_LABEL = 5
+INSTANCE_WEIGHTS_HASH = 0
+FIRST_FEATURE = 1
+INSTANCE_LABEL = 6
 
 
 @dataclass
@@ -41,7 +44,11 @@ class Tier2Proof:
 
     @property
     def features(self) -> list[int]:
-        return self.public_inputs[:N_FEATURES]
+        return self.public_inputs[FIRST_FEATURE:FIRST_FEATURE + N_FEATURES]
+
+    @property
+    def weights_hash(self) -> int:
+        return self.public_inputs[INSTANCE_WEIGHTS_HASH]
 
     @property
     def label(self) -> int:
@@ -86,6 +93,7 @@ class EzklProver:
             ezkl.encode_evm_calldata(prf, cd)
             with open(cd, "rb") as f:
                 proof, instances = decode_evm_calldata(f.read())
-        if instances[:N_FEATURES] != [int(x) for x in q]:
-            raise RuntimeError(f"instance layout changed: expected features {list(q)}, got {instances[:N_FEATURES]}")
+        got = instances[FIRST_FEATURE:FIRST_FEATURE + N_FEATURES]
+        if got != [int(x) for x in q]:
+            raise RuntimeError(f"instance layout changed: expected features {list(q)}, got {got}")
         return Tier2Proof(proof=proof, public_inputs=instances, seconds=time.time() - t0)

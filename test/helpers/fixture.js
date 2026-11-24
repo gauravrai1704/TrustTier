@@ -29,6 +29,7 @@ async function now() {
  */
 async function deployTrustTier(opts = {}) {
   const modelHash = opts.modelHash || ethers.keccak256(ethers.toUtf8Bytes("risk-model-v1"));
+  const weightsHash = opts.weightsHash ?? WEIGHTS_HASH;
   const Agg = await ethers.getContractFactory("MockV3Aggregator");
   // Round 1 (the "24 h ago" price), then 25 h later round 2 (current price).
   const priceFeed = await Agg.deploy(8, "COLL / USD", opts.pricePast ?? PRICE_24H_AGO);
@@ -49,7 +50,7 @@ async function deployTrustTier(opts = {}) {
     verifierAddress = await mockVerifier.getAddress();
   }
   const engine = await (await ethers.getContractFactory("LiquidationEngine")).deploy(
-    await registry.getAddress(), await auditLog.getAddress(), verifierAddress, modelHash,
+    await registry.getAddress(), await auditLog.getAddress(), verifierAddress, modelHash, weightsHash,
     await pool.getAddress(), MAX_PRICE_AGE, MAX_VOL_AGE
   );
   await auditLog.authorizeLogger(await engine.getAddress());
@@ -70,19 +71,23 @@ async function deployTrustTier(opts = {}) {
     return q.map((x) => BigInt(x));
   }
 
-  /** Public inputs [q..., label, P(low), P(high)] for the position's current features. */
-  async function inputs(id, label = 1) {
+  /** Public inputs [weightsHash, q..., label, P(low), P(high)] for the position's current features. */
+  async function inputs(id, label = 1, weights = weightsHash) {
     const q = await features(id);
-    return [...q, BigInt(label), label ? 3n : 1021n, label ? 1021n : 3n];
+    return [BigInt(weights), ...q, BigInt(label), label ? 3n : 1021n, label ? 1021n : 3n];
   }
 
   return {
-    engine, registry, auditLog, pool, priceFeed, volFeed, mockVerifier, modelHash,
+    engine, registry, auditLog, pool, priceFeed, volFeed, mockVerifier, modelHash, weightsHash,
     openPosition, features, inputs,
   };
 }
 
+/** A stand-in Poseidon weights hash for mock-verifier tests (the real one comes from circuits/samples.json). */
+const WEIGHTS_HASH = 0x09c7c71239aa21b78a852b05f2a8a1cba3c955f0cfab2221e6263b04a9c6d609n;
+
 module.exports = {
+  WEIGHTS_HASH,
   deployTrustTier, increaseTime, now, DAY, PRICE, PRICE_24H_AGO, VOL, ONE, PAST_ROUND,
   MAX_PRICE_AGE, MAX_VOL_AGE,
 };

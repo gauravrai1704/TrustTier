@@ -38,6 +38,7 @@ contract EngineInvariants {
     uint256 internal constant MAX_POSITIONS = 4;
     int256 internal constant P0 = 2000e8;
     bytes32 internal constant MODEL = keccak256("risk-model");
+    uint256 internal constant WEIGHTS = 0x09c7c71239aa21b78a852b05f2a8a1cba3c955f0cfab2221e6263b04a9c6d609;
     bytes internal constant PROOF = hex"01";
 
     MockV3Aggregator public priceFeed;
@@ -60,6 +61,7 @@ contract EngineInvariants {
 
     // Violations: each set flag is a broken promise.
     bool public tierBandViolated;
+    bool public acceptedWrongWeights;
     bool public tier2WithoutValidHighRiskProof;
     bool public slashedWithoutValidProofOnSnapshot;
     bool public liquidatedWithoutFreshApproval;
@@ -75,7 +77,7 @@ contract EngineInvariants {
         registry = new ModelRegistry();
         auditLog = new TierAuditLog();
         verifier = new MockTier2Verifier();
-        engine = new LiquidationEngine(address(registry), address(auditLog), address(verifier), MODEL, address(pool), 3 hours, 2 days);
+        engine = new LiquidationEngine(address(registry), address(auditLog), address(verifier), MODEL, WEIGHTS, address(pool), 3 hours, 2 days);
         auditLog.authorizeLogger(address(engine));
         registry.registerModel(MODEL, "ipfs://model");
         liquidator = new TrustTierLiquidator(address(engine), address(pool));
@@ -118,11 +120,27 @@ contract EngineInvariants {
     }
 
     function _inputs(uint256[5] memory q, bool highRisk) internal pure returns (uint256[] memory a) {
-        a = new uint256[](8);
-        for (uint256 i = 0; i < 5; i++) a[i] = q[i];
-        a[5] = highRisk ? 1 : 0;
-        a[6] = highRisk ? 3 : 1021;
-        a[7] = highRisk ? 1021 : 3;
+        return _inputsW(q, highRisk, true);
+    }
+
+    /// Public inputs [weightsHash, q..., label, P(low), P(high)].
+    function _inputsW(uint256[5] memory q, bool highRisk, bool rightWeights) internal pure returns (uint256[] memory a) {
+        a = new uint256[](9);
+        a[0] = rightWeights ? WEIGHTS : WEIGHTS ^ 1;
+        for (uint256 i = 0; i < 5; i++) a[1 + i] = q[i];
+        a[6] = highRisk ? 1 : 0;
+        a[7] = highRisk ? 3 : 1021;
+        a[8] = highRisk ? 1021 : 3;
+    }
+
+    /// Bands computed independently of the engine: Tier 0 needs delta > 5% + 0.3 sigma
+    /// in [10%, 30%], Tier 1 needs delta > 1.5% + 0.1 sigma in [3%, 12%].
+    function _bands(uint256 qVol) internal pure returns (int256 b0, int256 b1) {
+        int256 s = int256(qVol * 10_000 / 1024);
+        b0 = 500 + (s * 3) / 10;
+        b0 = b0 < 1000 ? int256(1000) : (b0 > 3000 ? int256(3000) : b0);
+        b1 = 150 + s / 10;
+        b1 = b1 < 300 ? int256(300) : (b1 > 1200 ? int256(1200) : b1);
     }
 
     function _call(Actor who, uint256 value, bytes memory data) internal returns (bool ok) {
@@ -147,10 +165,10 @@ contract EngineInvariants {
         priceFeed.updateAnswer(p);
     }
 
-    function act_refreshFeeds() public {
+    function act_refreshFeeds(uint8 volSeed) public {
         (, int256 p, , , ) = priceFeed.latestRoundData();
         priceFeed.updateAnswer(p);
-        volFeed.updateAnswer(35e8);
+        volFeed.updateAnswer(int256(5 + uint256(volSeed) % 96) * 1e8);   // 5% - 100% volatility
     }
 
     function act_setVerifier(bool valid) public {
@@ -175,7 +193,8 @@ contract EngineInvariants {
         if (!ok) return;
         uint256 bond = fromDeposit ? 0 : engine.requiredBond();
         if (_call(_actor(who), bond, abi.encodeCall(engine.decideHeuristic, (pid, _pastRound())))) {
-            if (delta <= 1500) tierBandViolated = true;
+            (int256 b0, ) = _bands(q[1]);
+            if (delta <= b0) tierBandViolated = true;
             snapshotQ[pid] = q;
         }
     }
@@ -189,7 +208,8 @@ contract EngineInvariants {
         for (uint256 i = 0; i < 5; i++) qd[i] = q[i];
         bytes32 c = keccak256(abi.encode(qd, score, salt));
         if (_call(_actor(who), engine.requiredBond(), abi.encodeCall(engine.decideCommitment, (pid, _pastRound(), MODEL, c)))) {
-            if (delta <= 500) tierBandViolated = true;
+            (, int256 b1) = _bands(q[1]);
+            if (delta <= b1) tierBandViolated = true;
             snapshotQ[pid] = q;
             salts[pid] = salt;
             scores[pid] = score;
@@ -209,13 +229,16 @@ contract EngineInvariants {
         _call(_actor(who), 0, abi.encodeCall(engine.anchorFeatures, (pid, _pastRound())));
     }
 
-    function act_decideTier2(uint256 who, uint256 pidSeed, bool highRisk) public {
+    function act_decideTier2(uint256 who, uint256 pidSeed, bool highRisk, bool rightWeights) public {
         uint256 pid = _pid(pidSeed);
         (bool ok, uint256[5] memory q, ) = _features(pid);
         if (!ok) return;
         bool valid = verifier.shouldVerify();
-        if (_call(_actor(who), 0, abi.encodeCall(engine.decideZkProof, (pid, _pastRound(), MODEL, PROOF, _inputs(q, highRisk))))) {
+        uint256[] memory ins = _inputsW(q, highRisk, rightWeights);
+        bytes memory data = abi.encodeCall(engine.decideZkProof, (pid, _pastRound(), MODEL, PROOF, ins));
+        if (_call(_actor(who), 0, data)) {
             if (!highRisk || !valid) tier2WithoutValidHighRiskProof = true;
+            if (!rightWeights) acceptedWrongWeights = true;
             approvalOutstanding[pid] = true;
             approvalTime[pid] = block.timestamp;
         }
@@ -223,13 +246,16 @@ contract EngineInvariants {
 
     // ------------------------------------------------------------------ challenges
 
-    function act_challenge(uint256 who, uint256 pidSeed, bool highRisk, bool onSnapshot) public {
+    function act_challenge(uint256 who, uint256 pidSeed, bool highRisk, bool onSnapshot, bool rightWeights) public {
         uint256 pid = _pid(pidSeed);
         uint256[5] memory q = snapshotQ[pid];
         if (!onSnapshot) q[0] = q[0] + 1;
         bool valid = verifier.shouldVerify();
-        if (_call(_actor(who), 0, abi.encodeCall(engine.challengeDecision, (pid, MODEL, PROOF, _inputs(q, highRisk))))) {
+        uint256[] memory ins = _inputsW(q, highRisk, rightWeights);
+        bytes memory data = abi.encodeCall(engine.challengeDecision, (pid, MODEL, PROOF, ins));
+        if (_call(_actor(who), 0, data)) {
             if (!highRisk || !valid || !onSnapshot) slashedWithoutValidProofOnSnapshot = true;
+            if (!rightWeights) acceptedWrongWeights = true;
         }
     }
 
@@ -286,6 +312,11 @@ contract EngineInvariants {
 
     function echidna_tier_bands_enforced() public view returns (bool) {
         return !tierBandViolated;
+    }
+
+    /// No Tier-2 approval or slash ever uses a proof made with other weights.
+    function echidna_proofs_use_registered_weights() public view returns (bool) {
+        return !acceptedWrongWeights;
     }
 
     function echidna_tier2_needs_valid_high_risk_proof() public view returns (bool) {

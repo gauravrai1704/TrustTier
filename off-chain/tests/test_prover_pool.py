@@ -29,7 +29,7 @@ class _InlinePool(ProverPool):
             time.sleep(self.delay)
             if self.fail_on is not None and list(q) == self.fail_on:
                 raise RuntimeError("prover failed")
-            return Tier2Proof(proof=bytes(q), public_inputs=list(q) + [1, 3, 1021], seconds=self.delay)
+            return Tier2Proof(proof=bytes(q), public_inputs=[7] + list(q) + [1, 3, 1021], seconds=self.delay)
         return self._local.submit(work)
 
 

@@ -15,8 +15,16 @@ import { MODEL_HASH, predict } from "./model";
 
 const DAY = 86_400;
 const H = 3_600;
-const T0_MIN = 1500;
-const T1_MIN = 500;
+// Volatility-adaptive tier bands, exactly as LiquidationEngine.tierBands (bps).
+const clampN = (x, lo, hi) => (x < lo ? lo : x > hi ? hi : x);
+function tierBands(qVol) {
+  const s = Math.floor((Number(qVol) * 10_000) / 1024);
+  return [clampN(500 + Math.trunc((s * 3) / 10), 1000, 3000), clampN(150 + Math.trunc(s / 10), 300, 1200)];
+}
+function allowedTier(deltaBps, qVol) {
+  const [b0, b1] = tierBands(qVol);
+  return deltaBps > b0 ? "HEURISTIC" : deltaBps > b1 ? "COMMITMENT" : "ZK_PROOF";
+}
 const MIN_BOND = 10n ** 16n; // 0.01 ETH
 const BOND_GAS_COVER = 1_500_000n;
 const CHALLENGE_WINDOW = H;
@@ -307,7 +315,7 @@ export class SimEngine {
       position_id: id, market: p.market, features_q: f.q,
       features: Object.fromEntries(names.map((n, i) => [n, +(bounds[i][0] + (f.q[i] / 1024) * (bounds[i][1] - bounds[i][0])).toFixed(4)])),
       delta_bps: f.deltaBps,
-      allowed_tier: f.deltaBps > T0_MIN ? "HEURISTIC" : f.deltaBps > T1_MIN ? "COMMITMENT" : "ZK_PROOF",
+      allowed_tier: allowedTier(f.deltaBps, f.q[1]),
       past_round: 1, collateral_usd: f.collateralUsd, debt_usd: p.debt, liquidation_threshold_bps: f.market.thresholdBps,
       model_label: label, model_p_high: +probs[1].toFixed(4),
       state, approval_open: approvalOpen,
@@ -363,7 +371,7 @@ export class SimEngine {
   async _evaluate(id, forceTier = null) {
     id = Number(id);
     const f = this._features(id);
-    const allowed = f.deltaBps > T0_MIN ? "HEURISTIC" : f.deltaBps > T1_MIN ? "COMMITMENT" : "ZK_PROOF";
+    const allowed = allowedTier(f.deltaBps, f.q[1]);
     let tier = forceTier || allowed;
     if (POLICY[tier] < POLICY[allowed]) {
       throw new Error(`TierNotAllowed(${id}, ${TIER_NAMES[POLICY[tier]]}, ${f.deltaBps}): the chain refuses a tier this weak at delta ${f.deltaBps} bps`);
@@ -371,7 +379,7 @@ export class SimEngine {
     const { label, probs } = predict(f.q);
     const result = {
       position_id: id, ltv: f.ltv, delta: f.deltaBps / 10_000, delta_bps: f.deltaBps, features_q: f.q,
-      tier, tier_reason: forceTier ? `forced to ${forceTier} (demo; policy said ${allowed})` : bandReason(f.deltaBps),
+      tier, tier_reason: forceTier ? `forced to ${forceTier} (demo; policy said ${allowed})` : bandReason(f.deltaBps, f.q[1]),
       outcome: "APPROVED", risk_score: null, model_hash: null, evidence_ref: null, tx_hash: null, gas_used: 0,
       proof_kind: null, proving_seconds: null, revealed: null, anchored: null,
     };
@@ -650,8 +658,9 @@ export class SimEngine {
   }
 }
 
-function bandReason(d) {
-  if (d > T0_MIN) return `on-chain delta ${d} bps > 1500 (far from boundary)`;
-  if (d > T1_MIN) return `500 < on-chain delta ${d} bps <= 1500 (approaching boundary)`;
-  return `on-chain delta ${d} bps <= 500 (near or past boundary)`;
+function bandReason(d, qVol) {
+  const [b0, b1] = tierBands(qVol);
+  if (d > b0) return `on-chain delta ${d} bps > Tier-0 band ${b0} (far from boundary)`;
+  if (d > b1) return `Tier-1 band ${b1} < on-chain delta ${d} bps <= Tier-0 band ${b0} (approaching boundary)`;
+  return `on-chain delta ${d} bps <= Tier-1 band ${b1} (near or past boundary)`;
 }

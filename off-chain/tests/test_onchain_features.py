@@ -15,7 +15,7 @@ from risk_model.inference import RiskModel
 from risk_model.onchain_features import OnchainPosition, delta_bps, ltv_bps, quantize, to_model_input
 from router.chain_client import ChainClient, MOMENTUM_WINDOW
 from router.commitment import compute_commitment_hash, new_salt, verify_commitment
-from router.tiering import TIER0_MIN_DELTA_BPS, TIER1_MIN_DELTA_BPS, Tier, decide_tier_bps
+from router.tiering import Tier, decide_tier_bps, tier_bands_bps
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "..", "..", "circuits", "samples.json")
 NOW = 1_800_000_000
@@ -68,17 +68,31 @@ class TestQuantization(unittest.TestCase):
 
 
 class TestTierRule(unittest.TestCase):
-    def test_boundaries_match_the_contract(self):
-        self.assertEqual(decide_tier_bps(TIER0_MIN_DELTA_BPS + 1).tier, Tier.HEURISTIC)
-        self.assertEqual(decide_tier_bps(TIER0_MIN_DELTA_BPS).tier, Tier.COMMITMENT)
-        self.assertEqual(decide_tier_bps(TIER1_MIN_DELTA_BPS + 1).tier, Tier.COMMITMENT)
-        self.assertEqual(decide_tier_bps(TIER1_MIN_DELTA_BPS).tier, Tier.ZK_PROOF)
-        self.assertEqual(decide_tier_bps(-5000).tier, Tier.ZK_PROOF)
+    def test_bands_match_the_contract_formula(self):
+        q35 = int(0.35 * 1024)
+        self.assertEqual(tier_bands_bps(q35), (1548, 499))
+        self.assertEqual(tier_bands_bps(int(0.80 * 1024)), (2899, 949))
+        self.assertEqual(tier_bands_bps(int(0.10 * 1024)), (1000, 300))
+        self.assertEqual(tier_bands_bps(1024), (3000, 1150))
+
+    def test_boundaries(self):
+        q35 = int(0.35 * 1024)
+        b0, b1 = tier_bands_bps(q35)
+        self.assertEqual(decide_tier_bps(b0 + 1, q35).tier, Tier.HEURISTIC)
+        self.assertEqual(decide_tier_bps(b0, q35).tier, Tier.COMMITMENT)
+        self.assertEqual(decide_tier_bps(b1 + 1, q35).tier, Tier.COMMITMENT)
+        self.assertEqual(decide_tier_bps(b1, q35).tier, Tier.ZK_PROOF)
+        self.assertEqual(decide_tier_bps(-5000, q35).tier, Tier.ZK_PROOF)
+
+    def test_higher_volatility_demands_more_headroom(self):
+        self.assertEqual(decide_tier_bps(800, int(0.35 * 1024)).tier, Tier.COMMITMENT)
+        self.assertEqual(decide_tier_bps(800, int(0.80 * 1024)).tier, Tier.ZK_PROOF)
 
     def test_constants_match_the_solidity_source(self):
         src = open(os.path.join(os.path.dirname(__file__), "..", "..", "contracts", "LiquidationEngine.sol")).read()
-        self.assertIn(f"TIER0_MIN_DELTA_BPS = {TIER0_MIN_DELTA_BPS};", src)
-        self.assertIn(f"TIER1_MIN_DELTA_BPS = {TIER1_MIN_DELTA_BPS};", src)
+        for line in ["TIER0_BASE_BPS = 500;", "TIER0_VOL_TENTHS = 3;", "TIER0_MIN_BPS = 1000;", "TIER0_MAX_BPS = 3000;",
+                     "TIER1_BASE_BPS = 150;", "TIER1_VOL_TENTHS = 1;", "TIER1_MIN_BPS = 300;", "TIER1_MAX_BPS = 1200;"]:
+            self.assertIn(line, src)
 
 
 class TestCommitment(unittest.TestCase):

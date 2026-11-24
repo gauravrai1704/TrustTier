@@ -8,7 +8,7 @@
 // `confirm` by the others, then `exec`.
 //
 // Usage (each owner runs with their own PRIVATE_KEY / Hardhat account):
-//   ACTION=propose PHASE=schedule TARGET=LiquidationEngine FN=setTier2Verifier ARGS='["0xVerifier","0xModelHash"]' \
+//   ACTION=propose PHASE=schedule TARGET=LiquidationEngine FN=setTier2Verifier ARGS='["0xVerifier","0xModelHash","weightsHash"]' \
 //     npx hardhat run scripts/governance.js --network sepolia
 //   ACTION=confirm TXID=0 npx hardhat run scripts/governance.js --network sepolia
 //   ACTION=exec    TXID=0 npx hardhat run scripts/governance.js --network sepolia

@@ -56,3 +56,11 @@ crytic-export/
 .venv/
 docker/extra-ca.crt
 .venv-tools/
+
+# Downloaded / regenerated real-data inputs (see off-chain/evaluation/aave_fetch.py)
+off-chain/evaluation/data/Ethereum_V2_Transactions.parquet
+off-chain/evaluation/data/*_1h.parquet
+off-chain/evaluation/data/*.partial.jsonl
+off-chain/evaluation/data/aave_v2_training.npz
+off-chain/evaluation/data/aave_v2_positions.parquet
+.model_size/

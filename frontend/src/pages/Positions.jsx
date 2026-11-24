@@ -122,7 +122,7 @@ export default function Positions({ params }) {
                   {rows.map((p) => {
                     const dpct = p.delta_bps / 100;
                     const w = Math.max(4, Math.min(110, ((dpct + 20) / 60) * 110));
-                    const col = p.delta_bps > 1500 ? "var(--t0)" : p.delta_bps > 500 ? "var(--t1)" : "var(--t2)";
+                    const col = p.allowed_tier === "HEURISTIC" ? "var(--t0)" : p.allowed_tier === "COMMITMENT" ? "var(--t1)" : "var(--t2)";
                     return (
                       <tr key={p.position_id} className={selected === p.position_id ? "sel" : ""} onClick={() => go(`positions/${p.position_id}`)}>
                         <td className="mono">#{p.position_id}</td>

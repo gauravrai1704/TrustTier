@@ -13,9 +13,9 @@ function Ladder() {
   // A position drifting toward its liquidation boundary: the evidence the
   // chain demands grows as delta shrinks.
   const zones = [
-    { x: 20, w: 150, c: "var(--t2)", soft: "var(--t2-soft)", t: "Tier 2", s: "zk-SNARK proof", g: GAS.decideZkProof, band: "δ ≤ 5%" },
-    { x: 174, w: 150, c: "var(--t1)", soft: "var(--t1-soft)", t: "Tier 1", s: "bonded commitment", g: GAS.decideCommitment + GAS.revealCommitment, band: "5% < δ ≤ 15%" },
-    { x: 328, w: 152, c: "var(--t0)", soft: "var(--t0-soft)", t: "Tier 0", s: "bonded claim", g: GAS.decideHeuristic, band: "δ > 15%" },
+    { x: 20, w: 150, c: "var(--t2)", soft: "var(--t2-soft)", t: "Tier 2", s: "zk-SNARK proof", g: GAS.decideZkProof, band: "δ ≤ ~5%" },
+    { x: 174, w: 150, c: "var(--t1)", soft: "var(--t1-soft)", t: "Tier 1", s: "bonded commitment", g: GAS.decideCommitment + GAS.revealCommitment, band: "~5% < δ ≤ ~15%" },
+    { x: 328, w: 152, c: "var(--t0)", soft: "var(--t0-soft)", t: "Tier 0", s: "bonded claim", g: GAS.decideHeuristic, band: "δ > ~15%" },
   ];
   return (
     <svg viewBox="0 0 500 250" className="ladder" role="img" aria-label="Tier bands by distance to liquidation">
@@ -210,7 +210,7 @@ export default function Overview() {
             <div className="stack" style={{ gap: 10 }}>
               {[
                 ["cpu", "The contract computes the features", "LTV and δ from the lending pool, volatility and 24-hour momentum from Chainlink, ages from timestamps."],
-                ["layers", "δ picks the weakest tier allowed", <>Above 15%: <TierBadge tier="HEURISTIC" short />; above 5%: <TierBadge tier="COMMITMENT" short />; otherwise <TierBadge tier="ZK_PROOF" short />.</>],
+                ["layers", "δ picks the weakest tier allowed", <>Bands follow the collateral's volatility: at 35%, above 15.5%: <TierBadge tier="HEURISTIC" short />; above 5%: <TierBadge tier="COMMITMENT" short />; otherwise <TierBadge tier="ZK_PROOF" short />. Riskier assets need more headroom.</>],
                 ["hammer", "Cheap claims are optimistic", "Bonded for an hour. A Tier-2 proof on the snapshot slashes a false one; the bond always covers the challenge gas."],
                 ["bolt", "Only a proof can liquidate", "A verified HIGH-RISK proof approves one soft liquidation, executed within 30 minutes or it expires."],
               ].map(([ic, t, d]) => (
