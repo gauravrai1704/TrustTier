@@ -303,8 +303,14 @@ async function main() {
   S.push(["final_mix_t2heavy", { n: 200, mix: [0.1, 0.2, 0.7] }]);
   // One liquidator bot submitting the whole batch (one sender, a nonce chain).
   S.push(["final_single_sender", { n: 200, mix: MIX, senders: "single" }]);
+  // The same experiments with deposit-funded bonds, the deployed design.
+  for (const c of [0.1, 0.3, 0.5]) S.push([`deposit_contention${Math.round(c * 100)}`, { n: 200, mix: MIX, contention: c, bonds: "deposit" }]);
+  for (const u of [1, 6]) S.push([`deposit_oracle${u}`, { n: 200, mix: MIX, oracleUpdates: u, bonds: "deposit" }]);
+  S.push(["deposit_mix_t0heavy", { n: 200, mix: [0.8, 0.15, 0.05], bonds: "deposit" }]);
+  S.push(["deposit_mix_t2heavy", { n: 200, mix: [0.1, 0.2, 0.7], bonds: "deposit" }]);
   const only = process.env.SCENARIO;
-  for (const [name, opts] of S) if (!only || name === only) await runScenario(name, opts);
+  const prefix = process.env.SCENARIO_PREFIX;
+  for (const [name, opts] of S) if ((!only || name === only) && (!prefix || name.startsWith(prefix))) await runScenario(name, opts);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
