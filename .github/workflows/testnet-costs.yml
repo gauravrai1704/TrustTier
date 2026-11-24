@@ -7,8 +7,8 @@
 # Uses the same PRIVATE_KEY secret as "Deploy to Sepolia" (a TESTNET-ONLY key).
 # Fund that address on each network first:
 #   sepolia          ~0.1 Sepolia ETH (faucets: Google Cloud, Alchemy)
-#   baseSepolia      ~0.02 ETH (bridge Sepolia ETH at https://bridge.base.org or use a Base Sepolia faucet)
-#   opSepolia        ~0.02 ETH (Superchain faucet: https://app.optimism.io/faucet)
+#   baseSepolia      ~0.02 ETH (bridge Sepolia ETH at https://testnets.superbridge.app or use a Base Sepolia faucet)
+#   opSepolia        ~0.02 ETH (Superchain faucet: https://console.optimism.io/faucet)
 #   arbitrumSepolia  ~0.02 ETH (bridge at https://bridge.arbitrum.io or an Arbitrum Sepolia faucet)
 # Optional secrets to use your own RPCs: SEPOLIA_RPC_URL (required for sepolia),
 # BASE_SEPOLIA_RPC_URL, OP_SEPOLIA_RPC_URL, ARBITRUM_SEPOLIA_RPC_URL (public RPCs otherwise).

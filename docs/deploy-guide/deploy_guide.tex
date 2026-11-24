@@ -27,8 +27,8 @@
 
 \begin{document}
 
-{\color{accent}\Huge\bfseries TrustTier: Deploying to Sepolia}\\[4pt]
-{\large Step-by-step guide for a teammate}\\[2pt]
+{\color{accent}\Huge\bfseries TrustTier: Deploying on L1 and L2}\\[4pt]
+{\large Step-by-step guide: Sepolia redeploy, L1 vs L2 testnet measurements, Overleaf}\\[2pt]
 {\small Repository: \url{https://github.com/gauravrai1704/TrustTier}\quad Live site: \url{https://gauravrai1704.github.io/TrustTier/}}
 
 \vspace{6pt}
@@ -38,11 +38,15 @@
 \textbf{Who does what.} You can do every part yourself \emph{except Part~E}: on a personal GitHub repository, only the owner (Gaurav) can add repository secrets. Do Parts A--D, then add the secrets together with Gaurav (Part~E), then run Parts F--H. To run the workflow in Part~F you need to be a collaborator on the repository with \emph{Write} access (Gaurav: \ui{Settings}\arr\ui{Collaborators}\arr\ui{Add people}).
 \end{tipbox}
 
+\begin{tipbox}
+\textbf{Already deployed before?} The contracts changed in this version (the proof now carries the model's weights hash, the tier bands adapt to volatility, and the first feature is utilization), so the old Sepolia contracts no longer match the website. If the secrets from Part~E are still in place, skip to \textbf{Part~F} and run the workflow again; nothing else is needed for the website. \textbf{Parts I--K} are new: they measure TrustTier on Sepolia (L1) and on L2 testnets for the paper, and upload the paper to Overleaf.
+\end{tipbox}
+
 \begin{warnbox}
 \faExclamationTriangle\ \textbf{Never put real money anywhere in this guide.} Use a brand-new, testnet-only account. Never paste a private key into chat, email, a document or the repository.
 \end{warnbox}
 
-{\small\textbf{Checklist:}\quad \faSquare[regular]\ A account\quad \faSquare[regular]\ B $\geq$0.1 Sepolia ETH\quad \faSquare[regular]\ C RPC URL\quad \faSquare[regular]\ D Etherscan key\quad \faSquare[regular]\ E secrets added\quad \faSquare[regular]\ F run green\quad \faSquare[regular]\ G site shows Sepolia}
+{\small\textbf{Checklist:}\quad \faSquare[regular]\ A account\quad \faSquare[regular]\ B $\geq$0.2 Sepolia ETH\quad \faSquare[regular]\ C RPC URL\quad \faSquare[regular]\ D Etherscan key\quad \faSquare[regular]\ E secrets added\quad \faSquare[regular]\ F run green\quad \faSquare[regular]\ G site shows Sepolia\quad \faSquare[regular]\ I L2 ETH\quad \faSquare[regular]\ J testnet runs green\quad \faSquare[regular]\ K Overleaf}
 
 \section{Part A: Create a testnet-only account (\code{PRIVATE\_KEY})}
 \begin{enumerate}
@@ -59,7 +63,7 @@
 {\small MetaMask moves its menus between versions; if a label differs, look for the same option under the account's \ui{\faEllipsisV} menu.}
 
 \section{Part B: Get free Sepolia test ETH}
-Deployment uses about \textbf{12--14 million gas}, plus \textbf{0.01 test ETH} that funds the reward pool. At typical Sepolia gas prices that is roughly 0.03--0.15 ETH. \textbf{Aim for at least 0.1 Sepolia ETH}; 0.05 can be enough when gas is cheap.
+Deployment uses about \textbf{13--15 million gas}, plus \textbf{0.01 test ETH} that funds the reward pool. At typical Sepolia gas prices that is roughly 0.03--0.15 ETH. The L1 measurement in Part~J deploys a second copy and needs about as much again. \textbf{Aim for at least 0.2 Sepolia ETH} if you will do Part~J (0.1 for the website alone). Part~I also bridges a little of it to the L2 testnets.
 
 Use one or more of these faucets, pasting your deployer address:
 \begin{itemize}
@@ -164,9 +168,56 @@ export TRUSTTIER\_NETWORK=sepolia\\
 export TRUSTTIER\_PRIVATE\_KEY="<a funded Sepolia key; the deployer key works>"\\
 ../.venv/bin/python -m uvicorn main:app --port 8000
 \end{cmdbox}
-Open the live site; it detects the router at \code{http://127.0.0.1:8000} automatically (or set it on the \ui{Protocol} page). Tier-2 decisions then use real EZKL proofs (about 16\,s each) and the real on-chain verifier.
+Open the live site; it detects the router at \code{http://127.0.0.1:8000} automatically (or set it on the \ui{Protocol} page). Tier-2 decisions then use real EZKL proofs (about 10\,s each) and the real on-chain verifier.
 
 {\small The \code{export} lines keep the key only in that terminal session. Do not write it into a file inside the repository.}
+
+
+\section{Part I: Test ETH on the L2 testnets}
+The paper compares Ethereum (L1) with rollups (L2). Part~J measures real transactions on each testnet, from the \textbf{same deployer address} as Part~A. Fund that address with about \textbf{0.02 ETH} on each L2 testnet you want (one is enough; all three is best):
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Network} & \textbf{How to get test ETH there} \\
+\midrule
+\textbf{Base Sepolia} (recommended first) & Bridge Sepolia ETH with the official testnet bridge \url{https://testnets.superbridge.app} (connect MetaMask, choose \ui{Sepolia}\arr\ui{Base Sepolia}, about 3--10 minutes), or use a Base Sepolia faucet (Coinbase Developer Platform, Alchemy). \\
+\textbf{OP Sepolia} & Superchain faucet \url{https://console.optimism.io/faucet}, or bridge from Sepolia at \url{https://testnets.superbridge.app}. \\
+\textbf{Arbitrum Sepolia} & Bridge from Sepolia at \url{https://bridge.arbitrum.io} (switch on testnet mode), or an Arbitrum Sepolia faucet (Alchemy, QuickNode). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+In MetaMask, add the network if it is missing: network menu\arr\ui{Add a custom network}, or open \url{https://chainlist.org}, tick \ui{Include testnets}, search the name and click \ui{Add to MetaMask}. Check the balance on \url{https://sepolia.basescan.org}, \url{https://sepolia-optimism.etherscan.io} or \url{https://sepolia.arbiscan.io}.
+
+{\small Nothing else is needed: the workflow uses public RPCs for the L2 testnets. If one is slow, you can add your own endpoint as a secret (Part~E): \code{BASE\_SEPOLIA\_RPC\_URL}, \code{OP\_SEPOLIA\_RPC\_URL} or \code{ARBITRUM\_SEPOLIA\_RPC\_URL} (Alchemy offers all three).}
+
+\section{Part J: Measure real decisions on L1 and L2 (for the paper)}
+This deploys a separate \emph{benchmark} copy of TrustTier (it does not touch the website's contracts), sends one of each decision with the real verifier and a real zero-knowledge proof, runs the on-chain-inference baseline next to it, and commits what every transaction actually paid, including the fee a rollup charges for posting data to Ethereum.
+\begin{enumerate}
+  \item Repository\arr\ui{Actions}\arr left list: \ui{Testnet costs (L1 vs L2)}\arr\ui{Run workflow}.
+  \item \textbf{Branch:} \code{main}. \textbf{Network:} pick one of \code{sepolia}, \code{baseSepolia}, \code{opSepolia}, \code{arbitrumSepolia}.
+  \item Click \ui{Run workflow}. It takes about 5--10 minutes. Then run it again for each other network you funded. Run \code{sepolia} at least once: it is the L1 side of the comparison.
+\end{enumerate}
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Step} & \textbf{What happens} \\
+\midrule
+Deploy a benchmark copy & About 20 transactions; writes \path{deployments/<network>-bench.json}. \\
+Send real decisions & Tier~0, Tier~1 + reveal, Tier~2 with a real proof, the baseline's deploy, weights and decision, and a liquidation. The log prints each transaction's gas and fee. \\
+Commit the results & Adds \path{off-chain/evaluation/results/testnet_costs/<network>.json} to \code{main}. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+The run's \ui{Summary} shows a table of every action with its gas and fee. When the runs you want are green, tell the team (or Claude): the numbers go into the paper's L1/L2 section, next to the live-mainnet fee study it already has.
+
+\section{Part K: Upload the paper to Overleaf}
+\begin{enumerate}
+  \item Download \code{TrustTier\_overleaf.zip} (it holds \code{main.tex}, \code{references.bib} and the \code{figures/} folder with every figure pre-rendered).
+  \item On \url{https://www.overleaf.com}: \ui{New Project}\arr\ui{Upload Project}\arr choose the zip.
+  \item Open \code{main.tex} and click \ui{Recompile}. The default settings work (pdfLaTeX, BibTeX). Figures are pre-rendered PDFs in \path{figures/ext/}, so it compiles within the free plan's time limit.
+  \item To change a figure: edit its TikZ code, delete that figure's PDF in \path{figures/ext/}, and enable shell escape (\ui{Menu}\arr\ui{Settings}; Overleaf allows it) for one compile to re-render it.
+\end{enumerate}
 
 \section{If something goes wrong}
 \begin{center}
@@ -183,6 +234,9 @@ Verify step shows ``could not verify'' & Harmless; usually a missing or brand-ne
 Commit step fails (``protected branch'') & Owner: \ui{Settings}\arr\ui{Branches}: allow GitHub Actions to push to \code{main}, or remove the protection. \\
 Site still says ``Simulation'' & Wait for the Pages deploy to finish, then hard-refresh. \\
 \ui{Run workflow} button missing & You need Write access to the repository (see the box on page 1). \\
+Testnet costs: \code{insufficient funds} on an L2 & The deployer has no ETH on that L2 yet; bridge or use a faucet (Part~I), then re-run. \\
+Testnet costs: \code{features ... differ from the proof's} & A feed or the clock moved between steps (rare on a busy public RPC). Re-run; if it repeats, add your own RPC secret for that network. \\
+Testnet costs: commit step fails & Another run pushed first; click \ui{Re-run failed jobs}. \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -192,6 +246,7 @@ Site still says ``Simulation'' & Wait for the Pages deploy to finish, then hard-
   \item \textbf{Re-running the deploy} creates a fresh set of contracts and overwrites \path{deployments/sepolia.json}; the site then switches to the new ones.
   \item The \ui{Refresh Sepolia demo feeds} workflow runs automatically every 12 hours with the same secrets. It spends a tiny amount of test ETH and keeps the demo's mock price feeds from going stale before the presentation. Turn it off under \ui{Actions}\arr that workflow\arr\ui{\faEllipsisH}\arr\ui{Disable workflow}.
   \item \textbf{Never reuse this key for anything with real money.} If you think it leaked, make a new account and have the owner update the \code{PRIVATE\_KEY} secret.
+  \item The benchmark copies from Part~J are separate from the website's contracts; they can be ignored afterwards.
   \item When you are done, send the link to the workflow run (or the error from its log) to the team so the deployment and the live site can be checked.
 \end{itemize}
 
