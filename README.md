@@ -150,7 +150,7 @@ model weights stay private behind their hash. See `docs/SECURITY.md` findings 15
   deployment is rehearsed on a local node. The broadcast needs your RPC URL
   and a funded testnet key (see "Deploying to Sepolia").
 
-Tests: **130 contract tests** (Hardhat) and **94 Python tests** pass; Slither reports no findings and
+Tests: **137 contract tests** (Hardhat) and **94 Python tests** pass; Slither reports no findings and
 Echidna checks seven invariants over 100,000 random calls (`docs/FUZZING.md`). CI runs all of them on every push.
 
 ## Results
@@ -235,7 +235,7 @@ contracts/
     TrustTierTimelock.sol    OpenZeppelin TimelockController
   baselines/                 OnChainMLPBaseline (on-chain inference, AFT 2025)
   mocks/                     MockTier2Verifier, MockV3Aggregator, MockPhasedAggregator, MockAavePool
-test/                        Hardhat tests (130): engine, incentives + liquidator,
+test/                        Hardhat tests (137): engine, incentives + liquidator,
                              Aave adapter, registry, log, real verifier, real
                              proofs end to end, governance
 scripts/
@@ -285,7 +285,7 @@ docker run --rm trusttier            # ~2-3 min after the build
 ```
 
 or natively (Node 20, Python 3.11): `make reproduce`. Either way it rebuilds
-the 785 MB proving key from the shipped SRS, runs the 130 contract and 94
+the 785 MB proving key from the shipped SRS, runs the 137 contract and 94
 Python tests, Slither and Echidna (`docs/FUZZING.md`), re-measures gas,
 regenerates every evaluation, and reports whether each deterministic result
 file matches the committed one. On our machine and in the container all six
@@ -308,7 +308,7 @@ cd circuits && python3 make_proving_key.py && cd ..
 #     `python3 build_circuit.py` in circuits/ - regenerates everything.)
 
 # 2. Tests
-npx hardhat test                                   # 130 passing
+npx hardhat test                                   # 137 passing
 cd off-chain && python -m pytest tests -q && cd .. # 94 passing
 #    (offline machines: HARDHAT_LOCAL_SOLC=1 compiles with the solc npm package)
 
@@ -394,10 +394,10 @@ TRUSTTIER_PROVER_REMOTES=http://worker-1:8100,http://worker-2:8100 uvicorn main:
 
 Measured by `python -m evaluation.prover_pool` (12 real proofs per setting,
 4-core machine; `results/prover_pool.md`): one EZKL proof already uses the
-cores well (23.0 s on 1 thread, 6.4 s on 4), so splitting one machine gains
-only 13% throughput and makes each proof 3.5x slower. Scaling out is what
-works: two remote workers on separate 2-core sets prove 1.93x faster than one,
-at the same latency. Keep remote workers on a private network.
+cores well (10.3 s on 4 threads), so splitting one machine gains at most
+8-13% throughput and makes each proof 1.8-3.7x slower. Scaling out is what
+works: two remote workers on separate 2-core sets prove 1.82x faster than one,
+at nearly the same latency. Keep remote workers on a private network.
 
 ## The DApp
 

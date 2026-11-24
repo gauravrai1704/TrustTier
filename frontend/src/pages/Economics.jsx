@@ -168,7 +168,7 @@ export default function Economics() {
                 color: x.machines > 1 ? "var(--accent)" : "var(--axis)", note: `over HTTP · ${x.latency_mean_s} s per proof` })),
             ]} />
           <div className="stack small ink2">
-            <p>One proof already uses every core (23.0 s on 1 thread, 6.4 s on 4), so splitting one machine into more workers buys little throughput and makes each proof slower.</p>
+            <p>One proof already uses every core ({POOL.configs[0].latency_mean_s} s on 4 threads), so splitting one machine into more workers buys little throughput and makes each proof slower.</p>
             <p><b style={{ color: "var(--ink)" }}>Scaling out works:</b> two prover workers on separate core sets prove {POOL.scale_out?.[1]?.speedup_vs_one_machine}× faster than one, at the same latency.</p>
             <p>A crash backlog of {POOL.crash_backlog.tier2_positions} Tier-2 proofs: {POOL.crash_backlog.minutes_one_worker} min on one machine, about {POOL.crash_backlog.minutes_projected_by_machines["4"]} min on four (projected).</p>
           </div>

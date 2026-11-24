@@ -446,7 +446,7 @@ Figure~\ref{fig:arch} shows the system.
 
 \paragraph{Prover pool.} Inspired by BlockRaFT~\cite{piduguralla2026blockraft}, the router acts as a leader that hands Tier-2 proofs to workers: local processes, each with its own share of the cores, or prover workers on other machines reached over HTTP. When a batch of positions arrives (a crash), cheap claims are submitted at once while every proof runs in parallel; Tier-2 decisions are then submitted in order from the router's one account. Workers need no trust, since a wrong proof only makes the router's transaction revert.
 
-\paragraph{Testing.} 130 Hardhat tests cover every function and custom error, proofs with forged weights, real proofs against the real verifier end to end, the Aave adapter, governance, tier enforcement, snapshots, lifecycle, deposits, gas-scaled bonds, rewards, reveals, commit-reveal challenges, anchors, the liquidator, the sequencer check and a Chainlink phase boundary. 94 Python tests cover the feature mirror, the adaptive bands against real proof instances, the tier rule, commitments, the 24-hour round search (against brute force on 50 random histories), the cost model, the parallel-execution simulator and the DApp's exported model.
+\paragraph{Testing.} 137 Hardhat tests cover every function and custom error, proofs with forged weights, real proofs against the real verifier end to end, the Aave adapter, governance, tier enforcement, snapshots, lifecycle, deposits, gas-scaled bonds, rewards, reveals, commit-reveal challenges, anchors, the liquidator, the sequencer check and a Chainlink phase boundary. 94 Python tests cover the feature mirror, the adaptive bands against real proof instances, the tier rule, commitments, the 24-hour round search (against brute force on 50 random histories), the cost model, the parallel-execution simulator and the DApp's exported model.
 
 %% ===================================================================
 \section{Evaluation}
@@ -773,7 +773,7 @@ We study concurrency at four levels of realism: a modelled scheduler; opcode-tra
 
 \paragraph{Block capacity.}
 \label{sec:eval-capacity}
-How many decisions can one Ethereum block carry? \code{scripts/block\_capacity.js} sets Hardhat's block gas limit to mainnet's (60\,M gas when measured), submits more decisions of one tier than can fit from 20 accounts with mining paused, mines a single block and counts what it included. Tier-2 decisions use the deployed verifier and a real proof; every position is opened with the proof's on-chain parameters, so the one proof is valid for each. A block holds 216 Tier-0 claims, 172 Tier-1 claims or 59 Tier-2 decisions (99.4\%, 99.4\% and 98.8\% full), all of which succeed. Fifty-nine proven approvals per 12-second block is about 295 a minute, roughly thirty times what one 4-core prover produces (Section~\ref{sec:eval-proving}); in a crash, proving runs out long before block space does, unless proving is spread over many machines, at which point Tier-2 verification would take whole blocks and a batched settlement proof would pay.
+How many decisions can one Ethereum block carry? \code{scripts/block\_capacity.js} sets Hardhat's block gas limit to mainnet's (60\,M gas when measured), submits more decisions of one tier than can fit from 20 accounts with mining paused, mines a single block and counts what it included. Tier-2 decisions use the deployed verifier and a real proof; every position is opened with the proof's on-chain parameters, so the one proof is valid for each. A block holds 216 Tier-0 claims, 172 Tier-1 claims or 59 Tier-2 decisions (99.4\%, 99.4\% and 98.8\% full), all of which succeed. Fifty-nine proven approvals per 12-second block is about 295 a minute, some fifty times what one 4-core prover produces (Section~\ref{sec:eval-proving}); in a crash, proving runs out long before block space does, unless proving is spread over many machines, at which point Tier-2 verification would take whole blocks and a batched settlement proof would pay.
 
 \paragraph{Modelled scheduling.} Modelling each decision's read/write set and scheduling a batch greedily into conflict-free rounds, the array-based audit log needs one round per decision (374 rounds for 374 decisions), and per-position storage needs one round at every batch size from 50 to 2,000 and every tier mix from 80/15/5 to 10/20/70. Modelled same-position contention of 5--50\% raises this to 3--6 rounds.
 
@@ -916,7 +916,7 @@ Finally, we ran $K$ liquidator bots as real concurrent threads, each with its ow
 \subsection{Proving throughput}
 \label{sec:eval-proving}
 
-Tier-2 proving is TrustTier's bottleneck, and it matters most in a crash, when many positions cross into Tier~2 at once. \code{evaluation/prover\_pool.py} generates the same 12 real EZKL proofs under several configurations on a 4-core, 16\,GB machine, after warming the workers up, and checks every proof's features and label. A single proof already parallelises well inside Halo2: 23.0\,s on one thread, 11.8\,s on two and 6.4\,s on four (3.6$\times$). Splitting one machine's cores among workers therefore trades latency for little throughput (Table~\ref{tab:pool}): four single-thread workers prove 13\% more per minute, but each proof takes 3.5 times longer, and every worker holds its own 1.5--1.8\,GB copy of the proving key; oversubscribing the cores adds nothing. Scaling out is what works. With remote prover workers over HTTP, emulated as disjoint 2-core sets on the same host (so real machines can only do better), two ``machines'' prove 1.93$\times$ faster than one (5.05 $\to$ 9.74 proofs/min) at unchanged latency. For the 165 Tier-2 positions of the evaluation set, one 4-core machine needs 17.8 minutes; at the measured rate, four such machines would need about 3.9 (projected). On a live node, a 6-position batch through a 2-worker pool produced two real proofs in parallel and the real verifier accepted the approval (878,143 gas).
+Tier-2 proving is TrustTier's bottleneck, and it matters most in a crash, when many positions cross into Tier~2 at once. \code{evaluation/prover\_pool.py} generates the same 12 real EZKL proofs under several configurations on our 4-vCPU, 16\,GB machine, after warming the workers up, and checks every proof's features and label. A single proof already uses all four cores, 10.3\,s each. Splitting the cores among workers therefore trades latency for little throughput (Table~\ref{tab:pool}): two workers of two threads prove 8\% more per minute, but each proof takes 1.8 times longer, and every worker holds its own 1.9--2.2\,GB copy of the proving key; oversubscribing the cores adds at most 13\%. Scaling out is what works. With remote prover workers over HTTP, emulated as disjoint 2-core sets on the same host (so real machines can only do better), two ``machines'' prove 1.82$\times$ faster than one (3.53 $\to$ 6.42 proofs/min) at nearly unchanged latency. For the 155 Tier-2 positions of the design set, one 4-core machine needs 26.7 minutes; at the measured rate, four such machines would need about 5.9 (projected). On a live node, a batch through a 2-worker pool produced real proofs in parallel and the real verifier accepted the approvals.
 
 \begin{table}[t]
   \caption{Prover pool on one 4-core machine: 12 real proofs per configuration. RSS: resident set size (memory) of each worker.}
@@ -927,11 +927,11 @@ Tier-2 proving is TrustTier's bottleneck, and it matters most in a crash, when m
     \toprule
     \textbf{Workers $\times$ threads} & \textbf{Proofs/min} & \textbf{Latency (s)} & \textbf{RSS/worker (MB)} \\
     \midrule
-    1 $\times$ 4 & 9.25 & 6.5 & 1,761 \\
-    2 $\times$ 2 & 9.97 & 12.0 & 1,590 \\
-    4 $\times$ 1 & 10.46 & 22.8 & 1,514 \\
+    1 $\times$ 4 & 5.81 & 10.3 & 2,151 \\
+    2 $\times$ 2 & 6.28 & 18.9 & 1,909 \\
+    4 $\times$ 1 & 6.23 & 38.1 & 1,884 \\
     \midrule
-    \multicolumn{4}{@{}l}{Over HTTP, 2-core ``machines'': 1 $\to$ 5.05, 2 $\to$ 9.74 proofs/min} \\
+    \multicolumn{4}{@{}l}{Over HTTP, 2-core ``machines'': 1 $\to$ 3.53, 2 $\to$ 6.42 proofs/min} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1031,7 +1031,7 @@ All numbers in this paper are produced by scripts in the project repository. \co
 
 {\raggedright
 \begin{itemize}
-  \item Tests: \code{npx hardhat test} (130) and \code{python -m pytest off-chain/tests} (94).
+  \item Tests: \code{npx hardhat test} (137) and \code{python -m pytest off-chain/tests} (94).
   \item Real Aave~V2 data: \code{RPC\_URL=\dots{} python -m evaluation.aave\_fetch} (and \code{MODE=liquidated}), then \code{evaluation.aave\_real}, \code{risk\_model.train} and \code{evaluation.aave\_eval}.
   \item Model size: \code{python -m evaluation.model\_size}.
   \item Block capacity: \code{npx hardhat run scripts/block\_capacity.js}.

@@ -36,7 +36,16 @@ from router.prover_pool import ProverPool
 RESULTS = os.path.join(os.path.dirname(__file__), "results")
 # (workers, threads per worker); None = cores // workers. The last two oversubscribe the cores.
 CONFIGS = [(1, None), (2, None), (4, None), (2, "4"), (4, "4")]
-CRASH_TIER2 = 165  # Tier-2 positions in the 374-position evaluation set
+def _crash_tier2():
+    """Tier-2 positions of the 374-position design set (evaluation/evaluate.py's report)."""
+    try:
+        with open(os.path.join(RESULTS, "evaluation_report.json")) as f:
+            return json.load(f)["combined"]["tier_counts"]["ZK_PROOF"]
+    except (OSError, KeyError):
+        return 155
+
+
+CRASH_TIER2 = _crash_tier2()
 
 
 def batch(n: int, seed: int = 11) -> list[list[int]]:
