@@ -71,7 +71,7 @@ There's also a practical tooling gap: EZKL (Halo2/KZG-based) has mature,
 well-documented support for taking an ONNX model and producing a circuit,
 proof, and Solidity verifier with minimal custom work — which is exactly
 what made the real, working Tier-2 pipeline in this project possible on a
-course timeline. The closest STARK-side equivalent for ML models is
+short timeline. The closest STARK-side equivalent for ML models is
 Giza's **Orion** (`gizatechxyz/orion`, ONNX-to-Cairo, which compiles down
 to STARK proofs via the Cairo/StarkNet stack) — but it is less mature for
 general scikit-learn-style models than EZKL, and Giza's own newer project,
@@ -101,14 +101,14 @@ than something this project's scope or timeline supports today.
 
 STARKs' hash-based security is post-quantum; KZG-based SNARKs are not (a
 sufficiently large quantum computer could break the elliptic-curve
-discrete-log assumption KZG relies on). For a course project targeting
+discrete-log assumption KZG relies on). For a project targeting
 Sepolia testnet deployment, this is a theoretical rather than practical
 concern on any realistic timeline. For a real production deployment
 securing real liquidation decisions over a period of years, it would be a
 legitimate reason to revisit this choice — flagged here for completeness,
 consistent with this project's broader practice of documenting
 deployment-readiness gaps (see `docs/SECURITY.md`) rather than treating
-coursework-scale decisions as production-final ones.
+prototype-scale decisions as production-final ones.
 
 ## Conclusion
 

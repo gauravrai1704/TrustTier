@@ -6,7 +6,7 @@ checklist), covering the contracts (`contracts/`), the off-chain router
 finding below is a specific, concrete issue found in this project's actual
 code, not a hypothetical. "Fixed" means the fix is already merged into the
 code this document describes; "Accepted risk" and "Documented" mean the
-issue is real but intentionally out of scope for a coursework deployment,
+issue is real but intentionally out of scope for a testnet demo deployment,
 with the reasoning spelled out so it isn't silently forgotten.
 
 ## Summary table
@@ -368,7 +368,7 @@ verifier per claim would remove the effect at the cost of more storage.
 
 ## 20. The router, not the chain, chose the tier (Fixed — High)
 
-**Found by:** the course review ("the router is an unaudited operator; the
+**Found by:** an external design review ("the router is an unaudited operator; the
 chain cannot check δ").
 
 **The issue:** δ was computed off-chain and the tier chosen by the router.

@@ -103,9 +103,6 @@ function Shell() {
               <><strong>Simulation mode.</strong> The contract's rules and the real model, in your browser. <a href="#/protocol">Go on-chain</a>.</>
             )}
           </div>
-          <a className="small muted" href="https://github.com/gauravrai1704/TrustTier" target="_blank" rel="noreferrer">
-            <Icon name="external" className="" /> Source on GitHub
-          </a>
         </div>
       </aside>
       <div className="main">
