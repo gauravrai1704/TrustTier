@@ -1,0 +1,108 @@
+{
+  "model": {
+    "layers": [
+      5,
+      8,
+      1
+    ],
+    "params": 57
+  },
+  "block_gas_limit_mainnet": 60000000,
+  "samples": {
+    "high_risk": {
+      "deploy": 1019915,
+      "setParams": 1001585,
+      "classifyOnChain": 206187,
+      "decide": 303009,
+      "high_risk": true,
+      "proof_label": 1
+    },
+    "low_risk": {
+      "deploy": 1019903,
+      "setParams": 1001585,
+      "classifyOnChain": 206228,
+      "decide": 280879,
+      "high_risk": false,
+      "proof_label": 0
+    }
+  },
+  "sizes": [
+    {
+      "hidden": [
+        4
+      ],
+      "params": 29,
+      "upload_gas": 787585,
+      "upload_txs": 2,
+      "classifyOnChain": 122864
+    },
+    {
+      "hidden": [
+        8
+      ],
+      "params": 57,
+      "upload_gas": 1500020,
+      "upload_txs": 2,
+      "classifyOnChain": 205927
+    },
+    {
+      "hidden": [
+        16
+      ],
+      "params": 113,
+      "upload_gas": 2892986,
+      "upload_txs": 2,
+      "classifyOnChain": 372832
+    },
+    {
+      "hidden": [
+        32
+      ],
+      "params": 225,
+      "upload_gas": 5678881,
+      "upload_txs": 2,
+      "classifyOnChain": 706253
+    },
+    {
+      "hidden": [
+        64
+      ],
+      "params": 449,
+      "upload_gas": 11251692,
+      "upload_txs": 2,
+      "classifyOnChain": 1372838
+    },
+    {
+      "hidden": [
+        16,
+        16
+      ],
+      "params": 385,
+      "upload_gas": 10695234,
+      "upload_txs": 2,
+      "classifyOnChain": 1186947
+    },
+    {
+      "hidden": [
+        32,
+        32
+      ],
+      "params": 1281,
+      "upload_gas": 30967223,
+      "upload_txs": 4,
+      "classifyOnChain": 3866845
+    },
+    {
+      "hidden": [
+        64,
+        64
+      ],
+      "params": 4609,
+      "upload_gas": 110822337,
+      "upload_txs": 11,
+      "classifyOnChain": 13828312
+    }
+  ],
+  "deploy": 1019915,
+  "setParams": 1001585
+}

@@ -61,7 +61,7 @@ TrustTier spends verification only where a decision is risky. A position far fro
 
 Tiering gives power to whoever chooses the tier and supplies the model's inputs. TrustTier removes that party: the contract reads collateral, debt and prices from the lending protocol and Chainlink-style feeds, computes the distance to the boundary itself, refuses a tier too weak for it (with bands that widen with the collateral's volatility), and accepts a proof only if its public inputs equal the features it computed in the same transaction and the Poseidon hash of the weights it used equals the registered model's.
 
-We implement nine Solidity contracts, an EZKL proving pipeline, a router and a decentralized application (DApp), and evaluate them with real proofs and measured gas. The model is trained on 57,081 real Aave~V2 position-days of 1,297 borrowers, read from an archive node and labelled by whether the account became liquidatable within a week. On those positions tiering saves 66\% of decision gas on ordinary borrowers, and the proven model approves 59\% fewer soft liquidations than a distance-only rule while flagging 228 of 386 accounts a day or more before they became liquidatable (median six days). A 60\,M-gas block holds 216 Tier-0 or 59 Tier-2 decisions, and a real parallel EVM executes blocks of decisions \pevmHeadline{} faster than sequentially.
+We implement nine Solidity contracts, an EZKL proving pipeline, a router and a decentralized application (DApp), and evaluate them with real proofs and measured gas. The model is trained on 57,081 real Aave~V2 position-days of 1,297 borrowers, read from an archive node and labelled by whether the account became liquidatable within a week. On those positions tiering saves 66\% of decision gas on ordinary borrowers, and the proven model approves 59\% fewer soft liquidations than a distance-only rule while flagging 228 of 386 accounts a day or more before they became liquidatable (median six days). Against on-chain inference (Alhaidari et al., AFT 2025) with the same model and inputs, TrustTier makes the same decisions, keeps the weights private and costs the same for any model size, whereas on-chain inference is 11\% cheaper for our 57-weight model but dearer from 113 weights on. Live fees put a year of daily decisions at \$\leTtLone{} on Ethereum and \$\leTtBaseYr{} on Base. A 60\,M-gas block holds 216 Tier-0 or 59 Tier-2 decisions, and a real parallel EVM executes blocks of decisions \pevmHeadline{} faster than sequentially.
 \end{abstract}
 
 \keywords{DeFi, liquidations, zkML, zk-SNARK, EZKL, Halo2, smart contracts, optimistic verification, oracles, parallel execution}
@@ -73,6 +73,20 @@ We implement nine Solidity contracts, an EZKL proving pipeline, a router and a d
 \newcommand{\teaserRealText}{accounts warned $\ge$1 day before\\becoming liquidatable}
 \newcommand{\teaserPar}{TBD}
 \newcommand{\teaserParText}{speedup of a decision\\block on a real parallel EVM}
+% Live L1/L2 fee study (scripts/l2_costs.js -> results/l2_costs.json).
+\newcommand{\leGasDate}{2026-11-24}
+\newcommand{\leEth}{1,699}
+\newcommand{\leBlLone}{43.37}
+\newcommand{\leZkLone}{143.76}
+\newcommand{\leTtLone}{48.81}
+\newcommand{\leBlLtwo}{1.30 / 3.83}
+\newcommand{\leZkLtwo}{4.35 / 12.87}
+\newcommand{\leTtLtwo}{1.47 / 4.33}
+\newcommand{\leTtLoneYr}{48.81}
+\newcommand{\leMinDebtLone}{9.8\,k}
+\newcommand{\leMaxLoneData}{0.0005}
+\newcommand{\leTestnetSentence}{}
+\newcommand{\leTtBaseYr}{1.47}
 % Results set from the parallel-EVM run and the fuzzing campaign.
 \newcommand{\pevmHeadline}{TBD}
 \newcommand{\echidnaCalls}{100,117}
@@ -106,7 +120,7 @@ Recent work shows that such decisions \emph{can} be verified on-chain, either by
   \item \emph{Risk-proportional verification}: three tiers whose volatility-adaptive bands the contract enforces from inputs it reads itself, and proofs bound to both the position's on-chain features and the registered model's weights (Sections~\ref{sec:design-tiers}--\ref{sec:design-inputs}).
   \item \emph{An accountable optimistic path}: feature snapshots, a lifecycle in which a proof supersedes any pending cheap claim, gas-scaled and deposit-funded bonds, must-open commitments, commit-reveal challenges, and a liquidator that executes each approval once (Sections~\ref{sec:design-challenge}--\ref{sec:design-concurrency}).
   \item \emph{A complete system}: nine contracts, an EZKL/Halo2 circuit, an Aave~V3 adapter, timelocked governance, a router, a sentinel and a decentralized application (DApp) (Section~\ref{sec:impl}).
-  \item \emph{An evaluation with real proofs, measured gas and real data}: 57,081 Aave~V2 position-days for training and replay, the health-factor rule as baseline, Ethereum's base layer (Layer~1, L1) versus a Layer-2 (L2) rollup, ablations, band sweeps, a study of why the model is small, block capacity, and concurrency measured on a real parallel EVM (Section~\ref{sec:eval}); and a security analysis with static analysis and fuzzing (Section~\ref{sec:security}).
+  \item \emph{An evaluation with real proofs, measured gas and real data}: 57,081 Aave~V2 position-days for training and replay, a head-to-head comparison with on-chain inference (AFT 2025) on the same model and inputs, live L1 and L2 fees, the health-factor rule as baseline, Ethereum's base layer (Layer~1, L1) versus a Layer-2 (L2) rollup, ablations, band sweeps, a study of why the model is small, block capacity, and concurrency measured on a real parallel EVM (Section~\ref{sec:eval}); and a security analysis with static analysis and fuzzing (Section~\ref{sec:security}).
 \end{itemize}
 
 \paragraph{Scope.} TrustTier governs the \emph{decision} that a liquidation is justified and gates its execution: in the demo lending pool, only \code{TrustTierLiquidator}, and only on an open Tier-2 approval, can liquidate. It does not replace a protocol's own health-factor liquidations, which remain the fallback. The system runs on a local Ethereum chain (Hardhat) and is deployed to the Sepolia testnet by a tested workflow.
@@ -135,7 +149,7 @@ Prior work verifies ML decisions on-chain either completely, running or proving 
     \toprule
     \textbf{Work} & \textbf{Problem} & \textbf{Approach} & \textbf{Key result} & \textbf{Gap TrustTier addresses} \\
     \midrule
-    Alhaidari et al., AFT 2025~\cite{alhaidari2025onchain} (primary baseline) & Off-chain detectors miss DeFi exploits executed within one block & Train models on Layer~2 under a Proof-of-Improvement protocol; run quantized models directly in an L1 contract & Over 97\% detection on 298 real exploits; 57,603--506,397 gas per inference & Weights and inputs become public; TrustTier keeps the model private, proves only where needed, and verifies its inputs on-chain \\
+    Alhaidari et al., AFT 2025~\cite{alhaidari2025onchain} (primary baseline) & Off-chain detectors miss DeFi exploits executed within one block & Train models on Layer~2 under a Proof-of-Improvement protocol; run quantized models directly in an L1 contract & Over 97\% recall on unseen exploits (82\% F1); 57,603 gas (linear) to 138,173 (MLP) and up to 1.13\,M (RNN) per L1 inference & Weights become public, inputs are supplied by the caller, and gas grows with the model; TrustTier keeps the weights private, proves only where needed, and verifies its inputs on-chain (measured head-to-head in Section~\ref{sec:eval-baseline}) \\
     \addlinespace
     Chen et al., EuroSys 2024~\cite{chen2024zkml}; Kang et al., 2022~\cite{kang2022scaling} & Zero-knowledge proofs of ML inference are slow & Compile ML models to optimized Halo2 circuits & Practical proofs for realistic models; cost grows with model size & A proof on every decision is still costly; TrustTier proves only near the boundary \\
     \addlinespace
@@ -601,6 +615,69 @@ A 5$\to$8$\to$1 network has 57 parameters. Is it too small to be useful, or coul
 
 Two things stand out. First, size buys almost nothing: from 29 to 4,609 parameters, held-out ROC-AUC moves between 0.907 and 0.922 (accuracy 93.4--93.9\%), because five features, one of them dominant, carry little structure for depth to find. Second, on-chain cost is flat, since a Halo2 verifier's size and gas depend on the circuit's shape, not its row count, but \emph{proving} grows by powers of two: the largest network needs $2^{18}$ rows, 8.3$\times$ the proving time and 8$\times$ the memory of the smallest. Proving is what limits Tier~2 in a crash (Section~\ref{sec:eval-proving}), so a 160$\times$ larger model would cut crash throughput by about 8$\times$ for 0.01 of AUC. The deployed 8-unit network needs $2^{16}$ rows rather than $2^{15}$ because its activations span a wider range; how many rows a network needs depends on its weights as well as its size. A larger feature set, not a larger network, is where accuracy would come from, and each new feature is another on-chain input to verify.
 
+\subsection{Against on-chain inference (Alhaidari et al., AFT 2025)}
+\label{sec:eval-baseline}
+
+The closest published system runs the model \emph{inside} the contract~\cite{alhaidari2025onchain}: quantized integer weights live in contract storage, governance updates them (in their design, after a Proof-of-Improvement vote on an L2), and every decision executes the network on-chain. They report 57,603--138,173 gas per L1 inference for linear models and an MLP, up to 1.13\,M for an RNN, and 5.75\,M gas to push an updated MLP's weights from L2 to L1 (their Table~8). Their model detects exploits from transaction features, so their accuracy numbers do not transfer to our task. To compare like with like we rebuilt their approach for ours: \code{OnChainMLPBaseline} runs TrustTier's deployed 5$\to$8$\to$1 model in Solidity, with weights in storage at their fixed-point scale ($10^{12}$), on TrustTier's own verified features (\code{currentFeatures}), and approves a liquidation whenever the model says high risk. It even inherits our input integrity; in their design the caller supplies the features. The integer model makes the same decision as the ONNX model, and hence as the circuit, on all 57,081 real position-days. Table~\ref{tab:baseline} compares the two on the real Aave borrowers, together with proving every decision, the ZKML-style approach~\cite{chen2024zkml}.
+
+\begin{table}[t]
+  \caption{TrustTier against on-chain inference~\cite{alhaidari2025onchain} and always proving~\cite{chen2024zkml}, all with the same model and verified features, on real Aave~V2 random borrowers (33,676 position-days). Gas per decision is the average over the days, measured on Hardhat; dollar costs are live mainnet fees for daily decisions (\leGasDate, ETH \$\leEth).}
+  \label{tab:baseline}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabularx}{\columnwidth}{@{}Lrrr@{}}
+    \toprule
+    & \textbf{On-chain} & \textbf{Always} & \textbf{TrustTier} \\
+    & \textbf{inference} & \textbf{zk} & \\
+    \midrule
+    Soft liquidations approved & 838 & 838 & 838 \\
+    \quad of which liquidatable in 7 days & 80 & 80 & 80 \\
+    Accounts warned $\ge$1 day ahead & 228/386 & 228/386 & 228/386 \\
+    Gas per decision (avg.) & 281--303\,k & 1,004\,k & 341\,k \\
+    \$/position-year, L1 & \leBlLone & \leZkLone & \leTtLone \\
+    \$/position-year, Base / Arbitrum & \leBlLtwo & \leZkLtwo & \leTtLtwo \\
+    Model update (57 weights) & 1.0\,M gas & new verifier & new verifier \\
+    Model weights & public & hidden & hidden \\
+    Gas, 29 $\to$ 4,609 weights & 0.12 $\to$ 13.8\,M & flat, 0.74\,M & flat \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Same decisions.} Every position the model flags lies inside TrustTier's Tier-2 band or is escalated into it, so tiering loses none of the decisions that running the model on every position makes: the same 838 approvals, the same 80 of them on positions that became liquidatable, the same early warnings. Tiers change who pays for evidence, not what is decided.
+
+\paragraph{Cost: tiny models favour the baseline, larger ones do not.} For our 57-weight model, on-chain inference is the cheaper path: 281--303\,k gas per decision (92.6\,k of it reading the verified features) against TrustTier's average of 341\,k, about 11\% less in dollars on every chain. Its cost, however, grows with the model at about 3\,k gas per weight, since every weight is a storage read and a multiply. A 16-unit hidden layer (113 weights, 373\,k gas of inference) already makes it dearer than TrustTier's average decision, 64 units (449 weights, 1.37\,M) dearer than proving every decision, and a 64$\times$64 network costs 13.8\,M gas per inference, 82\% of the per-transaction cap of $2^{24}$ gas that Ethereum's Osaka upgrade introduced (EIP-7825), with 111\,M gas over 11 transactions to upload its weights. TrustTier's verifier costs the same 742\,k gas for every architecture in Table~\ref{tab:modelsize}; model size only moves proving time, off-chain.
+
+\paragraph{Privacy and gaming.} The baseline's weights are public, so anyone can compute exactly what changes a verdict. On the real data this is not hypothetical: a single top-up of any size resets the days-since-top-up feature and turns 1,403 of the 5,457 flagged position-days (26\%) into ``low risk''. With public weights a borrower can check this before acting; TrustTier keeps the weights private and commits to them by hash, so the same search must be done blind, against proofs that reveal only the label and two probabilities. Hiding the weights does not fix the feature, though: counting only top-ups above a minimum size, on-chain and in the training data, is the real remedy (Section~\ref{sec:limits}).
+
+\paragraph{Updates.} Changing the baseline's model is a storage write per weight (1.0\,M gas for 57 weights here; 5.75\,M for their MLP's L2-to-L1 transfer). Changing TrustTier's means deploying a new verifier (4.45\,M gas) and re-pointing the engine under the timelock, the same for any model size.
+
+\subsection{L1 and L2}
+\label{sec:eval-l2}
+
+TrustTier's contracts run unchanged on any EVM chain, and rollups price execution far below L1. \code{scripts/l2\_costs.js} prices every action from live mainnet fee data without sending a transaction: on Ethereum, measured gas times the current gas price; on the OP Stack (Base, OP Mainnet), the same plus the L1 data fee its \code{GasPriceOracle} charges for the exact transaction bytes; on Arbitrum One, measured gas plus the L1 component its \code{NodeInterface} estimates, at the L2 base fee. Execution gas carries over because both stacks price opcodes and precompiles as Ethereum does. Table~\ref{tab:l2} shows a snapshot (\leGasDate); over the 1,024 blocks before it, the L1 base fee's 90th percentile was below the snapshot's gas price, so the snapshot is not a quiet moment.
+
+\begin{table}[t]
+  \caption{One decision and a year of daily decisions on L1 and L2, live mainnet fees (\leGasDate, ETH \$\leEth). Tier~2 carries a 4,480-byte proof; ``L1 data'' is the rollup's charge for posting it to Ethereum. Min.\ debt: smallest debt for which a year of TrustTier decisions costs under 0.5\% of it.}
+  \label{tab:l2}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{@{}lrrrrr@{}}
+    \toprule
+    & \textbf{Gas price} & \textbf{Tier 0} & \textbf{Tier 2} & \textbf{TrustTier} & \textbf{Min.} \\
+    & \textbf{(gwei)} & \textbf{(\$)} & \textbf{(\$; L1 data)} & \textbf{\$/yr} & \textbf{debt} \\
+    \midrule
+    Ethereum L1 & 0.231 & 0.106 & 0.394; -- & 48.81 & \$9.8\,k \\
+    Base & 0.0069 & 0.0032 & 0.012; 0.0001 & 1.47 & \$293 \\
+    OP Mainnet & 0.0010 & 0.0005 & 0.0019; 0.0002 & 0.225 & \$45 \\
+    Arbitrum One & 0.020 & 0.0094 & 0.035; 0.0005 & 4.33 & \$865 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Three things follow. First, at today's low L1 prices daily decisions on Ethereum cost \$\leTtLoneYr{} per position-year, so they pay from a debt of about \$\leMinDebtLone{}; at the 5--20\,gwei of busier periods the same decisions need \$351\,k--1.4\,M (Table~\ref{tab:viability}). On a rollup they cost cents to a few dollars a year, ordinary retail size at any recent gas price. Second, the proof's calldata does not spoil the rollup case: posting the 4,480-byte proof to L1 costs at most \$\leMaxLoneData{} per Tier-2 decision today, 1--10\% of its fee, because rollups now post data as blobs. Third, a rollup changes throughput as well as price: a 2-second Base block of 40\,M gas holds 39 Tier-2 decisions, 19.5 per second, against 59 per 12-second L1 block, 4.9 per second. Rollups bring their own trust assumption, a sequencer that can stall; the engine's optional sequencer-uptime feed refuses decisions during an outage and for an hour after.
+
+\paragraph{On testnets.} \code{scripts/testnet\_costs.js} sends the same decisions on a live testnet, a Tier-2 decision with a real proof against the deployed verifier included, and records what each transaction paid, the rollup's L1 data fee included; a workflow runs it on Sepolia, Base Sepolia, OP Sepolia and Arbitrum Sepolia. \leTestnetSentence
+
 \subsection{Against the health-factor rule}
 \label{sec:eval-hf}
 
@@ -629,7 +706,7 @@ Table~\ref{tab:hf} shows the trade. Acting on the proven model cuts forced liqui
 
 \code{evaluation/bond\_economics.py} prices the challenge game with measured gas. With a fixed 0.01\,ETH bond, slashing a false claim loses money above 12.4\,gwei (11.1\,gwei with commit-reveal): the verifier's dilemma at ordinary L1 prices. The gas-scaled bond pays a watcher at every gas price, for example $+0.014$\,ETH at 20\,gwei and $+0.14$\,ETH at 200\,gwei, and stays profitable while the base fee at challenge time is under 1.86$\times$ the claim's.
 
-Decision gas also decides where TrustTier is worth deploying (Table~\ref{tab:viability}). With one decision per position per day and a budget of 0.5\% of the debt per year, daily monitoring on L1 only pays for positions above \$351\,k (5\,gwei) to \$1.4\,M (20\,gwei). On a rollup at an effective 0.05\,gwei it pays from \$3.5\,k, ordinary retail size. TrustTier's natural home is therefore an L2 lending market, or L1 with a slower cadence for Tier-0 positions.
+Decision gas also decides where TrustTier is worth deploying (Table~\ref{tab:viability}). With one decision per position per day and a budget of 0.5\% of the debt per year, daily monitoring on L1 only pays for positions above \$351\,k (5\,gwei) to \$1.4\,M (20\,gwei). On a rollup at an effective 0.05\,gwei it pays from \$3.5\,k, ordinary retail size. At those prices TrustTier's natural home is an L2 lending market, or L1 with a slower cadence for Tier-0 positions; Section~\ref{sec:eval-l2} prices the same decisions at today's live L1 and L2 fees.
 
 \begin{table}[t]
   \caption{Cost of daily decisions per position (ETH = \$3,000) and the smallest debt for which a year costs under 0.5\% of it.}
@@ -843,7 +920,7 @@ We reviewed the code with STRIDE, which sorts threats into spoofing, tampering, 
 \subsection{Limitations}
 \label{sec:limits}
 
-Inputs are only as sound as their feeds: the contract rejects stale data but leaves resistance to manipulation~\cite{zhou2023sok,eskandari2021oracles} to the oracle, and volatility feeds are mocked on testnets. The real data are Aave~V2 on Ethereum, with ETH's volatility standing in for each account's collateral mix and daily snapshots, so intraday crashes are seen only at day granularity; most near-boundary positions recover, and even the proven model's approvals are mostly positions that would not have become liquidatable within a week (90\% on ordinary borrowers), so a soft liquidation must stay small. Daily decisions pay for themselves on L1 only for large positions, and a bond keeps challenges profitable only while the base fee stays below 1.86$\times$ its value at the claim. The band formula is derived from move sizes, not optimized. The parallel-EVM measurements execute exported blocks on in-memory state, without a client's storage I/O, and use 4 cores. The SRS comes from a public ceremony, but KZG still needs one; the weights stay private only up to what the label and probabilities reveal over many queries.
+Inputs are only as sound as their feeds: the contract rejects stale data but leaves resistance to manipulation~\cite{zhou2023sok,eskandari2021oracles} to the oracle, and volatility feeds are mocked on testnets. The real data are Aave~V2 on Ethereum, with ETH's volatility standing in for each account's collateral mix and daily snapshots, so intraday crashes are seen only at day granularity; most near-boundary positions recover, and even the proven model's approvals are mostly positions that would not have become liquidatable within a week (90\% on ordinary borrowers), so a soft liquidation must stay small. Daily decisions pay for themselves on L1 only for large positions, and a bond keeps challenges profitable only while the base fee stays below 1.86$\times$ its value at the claim. The band formula is derived from move sizes, not optimized. The top-up feature counts a top-up of any size, so a borrower can reset it with dust; 26\% of flagged position-days would flip this way (Section~\ref{sec:eval-baseline}). Counting only top-ups above a minimum share of the collateral, in the contract and in the training labels, closes this, at the price of retraining. The parallel-EVM measurements execute exported blocks on in-memory state, without a client's storage I/O, and use 4 cores. The SRS comes from a public ceremony, but KZG still needs one; the weights stay private only up to what the label and probabilities reveal over many queries.
 
 \subsection{Future work}
 

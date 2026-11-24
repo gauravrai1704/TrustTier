@@ -41,9 +41,7 @@ module.exports = {
       blockGasLimit: Number(process.env.BLOCK_GAS_LIMIT || 60_000_000),
     },
     localhost: {
-      // explicit block so `--network localhost` (used by the off-chain
-      // router and deploy.js in Weeks 2-6) is documented here rather than
-      // relying purely on Hardhat's built-in default.
+      // used by the off-chain router and deploy.js against `npx hardhat node`.
       url: "http://127.0.0.1:8545",
     },
     sepolia: {
@@ -53,6 +51,22 @@ module.exports = {
       // hasn't been filled in yet.
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       chainId: 11155111,
+    },
+    // L2 testnets (same testnet-only key; public RPCs unless overridden).
+    baseSepolia: {
+      url: process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 84532,
+    },
+    opSepolia: {
+      url: process.env.OP_SEPOLIA_RPC_URL || "https://sepolia.optimism.io",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 11155420,
+    },
+    arbitrumSepolia: {
+      url: process.env.ARBITRUM_SEPOLIA_RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 421614,
     },
   },
   etherscan: {

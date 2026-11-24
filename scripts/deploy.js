@@ -50,7 +50,8 @@ const constructorArgs = {};
 function writeDeploymentManifest(networkName, contracts, extra) {
   const outDir = path.join(__dirname, "..", "deployments");
   fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, `${networkName}.json`);
+  // MANIFEST_NAME lets a benchmark deployment sit beside the DApp's own manifest.
+  const outPath = path.join(outDir, `${process.env.MANIFEST_NAME || networkName}.json`);
   const manifest = { network: networkName, ...extra, contracts: {} };
   for (const [name, { address, artifactName }] of Object.entries(contracts)) {
     const artifact = hre.artifacts.readArtifactSync(artifactName);

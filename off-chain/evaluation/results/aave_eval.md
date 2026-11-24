@@ -30,6 +30,12 @@
     "flagged_at_least_1_day_before": 237,
     "flagged_at_least_3_days_before": 178,
     "median_lead_days_when_flagged": 7.0
+  },
+  "onchain_model_every_position": {
+    "liquidated_accounts_observed": 386,
+    "flagged_at_least_1_day_before": 228,
+    "flagged_at_least_3_days_before": 165,
+    "median_lead_days_when_flagged": 6.0
   }
 }
 
@@ -44,6 +50,11 @@
   "delta_only_baseline": {
     "approved_soft_liquidations": 2023,
     "of_which_liquidatable_within_7d": 124,
+    "position_days": 33676
+  },
+  "onchain_model_every_position": {
+    "approved_soft_liquidations": 838,
+    "of_which_liquidatable_within_7d": 80,
     "position_days": 33676
   }
 }

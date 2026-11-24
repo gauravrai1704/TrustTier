@@ -115,7 +115,10 @@ def main():
     tier, _ = route(df, True)
     live_now = df.health_factor.values >= 1.0
     policies = {"trusttier_model": (tier == 2) & (df.model_label.values == 1) & live_now,
-                "delta_only_baseline": (tier == 2) & live_now}
+                "delta_only_baseline": (tier == 2) & live_now,
+                # Alhaidari et al. (AFT 2025)-style on-chain inference: the same model
+                # runs on every position, with no tiers, and approves whenever it says high risk.
+                "onchain_model_every_position": (df.model_label.values == 1) & live_now}
     report["early_warning"], report["false_alarms_random_sample"] = {}, {}
     for pname, approves in policies.items():
         df["approves"] = approves

@@ -1,0 +1,75 @@
+# L1 vs L2 on live testnets: deploys a benchmark copy of TrustTier (real EZKL
+# verifier) to the chosen testnet, sends real decisions - Tier 0, Tier 1 +
+# reveal, Tier 2 with a real proof, a liquidation, and the on-chain-inference
+# baseline - and commits what each transaction paid
+# (off-chain/evaluation/results/testnet_costs/<network>.json).
+#
+# Uses the same PRIVATE_KEY secret as "Deploy to Sepolia" (a TESTNET-ONLY key).
+# Fund that address on each network first:
+#   sepolia          ~0.1 Sepolia ETH (faucets: Google Cloud, Alchemy)
+#   baseSepolia      ~0.02 ETH (bridge Sepolia ETH at https://bridge.base.org or use a Base Sepolia faucet)
+#   opSepolia        ~0.02 ETH (Superchain faucet: https://app.optimism.io/faucet)
+#   arbitrumSepolia  ~0.02 ETH (bridge at https://bridge.arbitrum.io or an Arbitrum Sepolia faucet)
+# Optional secrets to use your own RPCs: SEPOLIA_RPC_URL (required for sepolia),
+# BASE_SEPOLIA_RPC_URL, OP_SEPOLIA_RPC_URL, ARBITRUM_SEPOLIA_RPC_URL (public RPCs otherwise).
+name: Testnet costs (L1 vs L2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "Testnet to measure on"
+        default: baseSepolia
+        type: choice
+        options: [sepolia, baseSepolia, opSepolia, arbitrumSepolia]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: testnet-costs-${{ inputs.network }}
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    env:
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+      BASE_SEPOLIA_RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+      OP_SEPOLIA_RPC_URL: ${{ secrets.OP_SEPOLIA_RPC_URL }}
+      ARBITRUM_SEPOLIA_RPC_URL: ${{ secrets.ARBITRUM_SEPOLIA_RPC_URL }}
+      MANIFEST_NAME: ${{ inputs.network }}-bench
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Check secrets
+        run: |
+          if [ -z "$PRIVATE_KEY" ]; then echo "::error::Add the PRIVATE_KEY repository secret (testnet-only key)."; exit 1; fi
+          if [ "${{ inputs.network }}" = "sepolia" ] && [ -z "$SEPOLIA_RPC_URL" ]; then echo "::error::Add SEPOLIA_RPC_URL."; exit 1; fi
+      - name: Deploy a benchmark copy (real verifier, mock feeds)
+        env:
+          VERIFIER_MODE: real
+          REWARD_FUND_ETH: "0"
+        run: npx hardhat run scripts/deploy.js --network ${{ inputs.network }}
+      - name: Send real decisions and record their fees
+        run: npx hardhat run scripts/testnet_costs.js --network ${{ inputs.network }}
+      - name: Commit the results
+        run: |
+          git config user.name "Gaurav Rai"
+          git config user.email "gauravrai2114@gmail.com"
+          git add -f off-chain/evaluation/results/testnet_costs/${{ inputs.network }}.json deployments/${{ inputs.network }}-bench.json
+          git commit -m "Testnet costs on ${{ inputs.network }}"
+          git pull --rebase
+          git push
+      - name: Summary
+        run: |
+          node -e '
+            const r = require("./off-chain/evaluation/results/testnet_costs/${{ inputs.network }}.json");
+            const rows = r.rows.map((x) => `| ${x.action} | ${x.gas_used} | ${x.l1_data_fee_wei ?? ""} | ${x.total_fee_wei ?? ""} |`);
+            console.log(["## TrustTier costs on ${{ inputs.network }}", "", "| Action | Gas used | L1 data fee (wei) | Total fee (wei) |", "|---|---|---|---|", ...rows].join("\n"));
+          ' >> "$GITHUB_STEP_SUMMARY"

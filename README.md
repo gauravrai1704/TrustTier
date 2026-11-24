@@ -167,11 +167,52 @@ Echidna checks seven invariants over 100,000 random calls (`docs/FUZZING.md`). C
 | Accounts warned ≥ 1 day before becoming liquidatable | 228 of 386 (median lead 6 days) |
 | vs health-factor rule, 3,000-position 30-day stress test | forced liquidations −85%, insolvencies 61 → 6 |
 | Decisions per 60 M-gas block (Tier 0 / Tier 1 / Tier 2, real verifier) | 216 / 172 / 59 |
-| Parallel EVM (RISE pevm, Block-STM), 374-decision block | @@PEVM@@ |
+| Parallel EVM (RISE pevm, Block-STM), 374-decision block, real verifier | @@PEVM@@ |
 | Model size: 29 → 4,609 parameters | ROC-AUC 0.907-0.922; proving 6.6 s → 56.6 s, proving key 392 MB → 3.1 GB |
 | Watcher profit at 20 gwei (fixed bond / gas-scaled bond) | −0.0061 / +0.0139 ETH |
 | Scheduling rounds for 374 decisions (old array log → per-position storage) | 374 → 1 |
 | Circuit/ONNX label agreement on 200 random positions | 200/200 (`circuits/fidelity.json`) |
+
+## Baseline: on-chain inference (Alhaidari et al., AFT 2025)
+
+The closest published system runs the model *inside* the contract, with
+fixed-point weights in storage. `contracts/baselines/OnChainMLPBaseline.sol`
+rebuilds that approach for TrustTier's own model and verified features
+(`scripts/baseline_onchain.js`, `evaluation/baseline_onchain.py`):
+
+| | On-chain inference | Always zk-proof | TrustTier |
+|---|---|---|---|
+| Soft liquidations approved / became liquidatable in 7 d (real random borrowers) | 838 / 80 | 838 / 80 | 838 / 80 |
+| Gas per decision (average) | 281-303 k | 1,004 k | 341 k |
+| Model weights | public | hidden (Poseidon-committed) | hidden |
+| Gas as the model grows (29 → 4,609 weights) | 0.12 M → 13.8 M per inference | flat (~742 k verify) | flat |
+
+Same decisions (the model never flags a position outside the Tier-2 band). For
+our 57-weight model on-chain inference is ~11% cheaper; from 113 weights on it
+costs more than TrustTier, from 449 more than proving every decision, and with
+public weights anyone can see that a dust top-up flips 26% of flagged
+position-days.
+
+## L1 vs L2 (live fees)
+
+`NODE_USE_ENV_PROXY=1 node scripts/l2_costs.js` prices every action from live
+mainnet fee data (OP Stack `GasPriceOracle.getL1Fee`, Arbitrum
+`NodeInterface.gasEstimateL1Component`; nothing is sent). Snapshot
+2026-11-24, ETH $1,699, per position-year = one decision a day with
+the real tier mix:
+
+| Chain | Gas price (gwei) | Tier 0 | Tier 2 | TrustTier / yr | On-chain inference / yr | Always zk / yr |
+|---|---|---|---|---|---|---|
+| Ethereum L1 | 0.2307 | $0.106 | $0.394 | $48.81 | $43.37 | $143.76 |
+| Base | 0.0069 | $0.0032 | $0.012 | $1.47 | $1.30 | $4.35 |
+| OP Mainnet | 0.0010 | $0.0005 | $0.0019 | $0.225 | $0.196 | $0.711 |
+| Arbitrum One | 0.0203 | $0.0094 | $0.035 | $4.33 | $3.83 | $12.87 |
+
+On live testnets: Actions → **Testnet costs (L1 vs L2)** deploys a benchmark
+copy to Sepolia, Base Sepolia, OP Sepolia or Arbitrum Sepolia, sends real
+decisions (Tier 2 with a real proof) and the baseline, and commits what each
+transaction paid (`results/testnet_costs/`). Fund the `PRIVATE_KEY` address on
+that testnet first (the workflow file lists faucets and bridges).
 
 ## Repository layout
 
@@ -192,6 +233,7 @@ contracts/
   governance/
     TrustTierMultisig.sol    minimal M-of-N wallet
     TrustTierTimelock.sol    OpenZeppelin TimelockController
+  baselines/                 OnChainMLPBaseline (on-chain inference, AFT 2025)
   mocks/                     MockTier2Verifier, MockV3Aggregator, MockPhasedAggregator, MockAavePool
 test/                        Hardhat tests (130): engine, incentives + liquidator,
                              Aave adapter, registry, log, real verifier, real

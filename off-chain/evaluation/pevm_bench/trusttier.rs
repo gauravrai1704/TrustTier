@@ -98,7 +98,7 @@ fn median(mut v: Vec<f64>) -> f64 {
 
 fn main() {
     let chain = PevmEthereum::mainnet();
-    let spec = SpecId::PRAGUE;
+    let spec = match std::env::var("SPEC").as_deref() { Ok("prague") => SpecId::PRAGUE, _ => SpecId::OSAKA };
     let reps: usize = std::env::var("REPS").ok().and_then(|s| s.parse().ok()).unwrap_or(15);
     let max_threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1);
     for path in std::env::args().skip(1) {
@@ -112,6 +112,9 @@ fn main() {
         for (i, r) in seq.iter().enumerate() {
             let used = r.receipt.cumulative_gas_used - prev;
             prev = r.receipt.cumulative_gas_used;
+            if used != hh_gas[i] && std::env::var("SHOW_GAS").is_ok() {
+                eprintln!("{name} tx {i}: pevm {used} hardhat {} diff {}", hh_gas[i], used as i64 - hh_gas[i] as i64);
+            }
             gas_match &= used == hh_gas[i];
             status_match &= r.receipt.status.coerce_status() == hh_ok[i];
         }

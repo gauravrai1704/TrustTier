@@ -1,0 +1,346 @@
+{
+  "measured_at": "2026-11-24T13:08:50.716Z",
+  "eth_usd": 1699.38013953,
+  "chains": {
+    "ethereum": {
+      "gas_price_gwei": 0.230748591,
+      "block_gas_limit": 60000000,
+      "base_fee_gwei_1024_blocks": {
+        "median": 0.123072608,
+        "p90": 0.171699472,
+        "max": 0.273768542
+      },
+      "actions": {
+        "tier0": {
+          "calldata_bytes": 68,
+          "exec_gas": 270820,
+          "exec_usd": 0.1061965308975527,
+          "l1_data_usd": 0,
+          "usd": 0.1061965308975527
+        },
+        "tier1": {
+          "calldata_bytes": 132,
+          "exec_gas": 341390,
+          "exec_usd": 0.1338691148479267,
+          "l1_data_usd": 0,
+          "usd": 0.1338691148479267
+        },
+        "tier1_reveal": {
+          "calldata_bytes": 324,
+          "exec_gas": 39089,
+          "exec_usd": 0.015327952870003828,
+          "l1_data_usd": 0,
+          "usd": 0.015327952870003828
+        },
+        "tier2": {
+          "calldata_bytes": 4996,
+          "exec_gas": 1004422,
+          "exec_usd": 0.3938635697407195,
+          "l1_data_usd": 0,
+          "usd": 0.3938635697407195
+        },
+        "challenge": {
+          "calldata_bytes": 4964,
+          "exec_gas": 804800,
+          "exec_usd": 0.31558588016524036,
+          "l1_data_usd": 0,
+          "usd": 0.31558588016524036
+        },
+        "liquidate": {
+          "calldata_bytes": 36,
+          "exec_gas": 96582,
+          "exec_usd": 0.03787265839726547,
+          "l1_data_usd": 0,
+          "usd": 0.03787265839726547
+        },
+        "baseline_decide": {
+          "calldata_bytes": 68,
+          "exec_gas": 303009,
+          "exec_usd": 0.118818789715444,
+          "l1_data_usd": 0,
+          "usd": 0.118818789715444
+        }
+      },
+      "per_position_day_usd": {
+        "trusttier": 0.1337346509788516,
+        "baseline_onchain_inference": 0.118818789715444,
+        "always_zk": 0.3938635697407195
+      },
+      "per_position_day_usd_p90_base_fee": {
+        "trusttier": 0.1337346509788516,
+        "baseline_onchain_inference": 0.118818789715444,
+        "always_zk": 0.3938635697407195
+      },
+      "per_position_year_usd": {
+        "trusttier": 48.81314760728083,
+        "baseline_onchain_inference": 43.36885824613706,
+        "always_zk": 143.76020295536262
+      },
+      "min_debt_usd_at_0_5pct": {
+        "trusttier": 9762.629521456167,
+        "baseline_onchain_inference": 8673.771649227412,
+        "always_zk": 28752.040591072524
+      },
+      "decisions_per_block": {
+        "tier0": 221,
+        "tier2": 59,
+        "baseline": 198
+      }
+    },
+    "base": {
+      "gas_price_gwei": 0.006917273,
+      "block_gas_limit": 40000000,
+      "base_fee_gwei_1024_blocks": {
+        "median": 0.005,
+        "p90": 0.005065057,
+        "max": 0.005925997
+      },
+      "actions": {
+        "tier0": {
+          "calldata_bytes": 68,
+          "exec_gas": 270820,
+          "exec_usd": 0.0031835097787067616,
+          "l1_data_usd": 0.000002696121695464749,
+          "usd": 0.003186205900402226
+        },
+        "tier1": {
+          "calldata_bytes": 132,
+          "exec_gas": 341390,
+          "exec_usd": 0.004013065517143125,
+          "l1_data_usd": 0.0000034526642279278394,
+          "usd": 0.004016518181371053
+        },
+        "tier1_reveal": {
+          "calldata_bytes": 324,
+          "exec_gas": 39089,
+          "exec_usd": 0.0004594941796760527,
+          "l1_data_usd": 0.0000039037253878003516,
+          "usd": 0.000463397905063853
+        },
+        "tier2": {
+          "calldata_bytes": 4996,
+          "exec_gas": 1004422,
+          "exec_usd": 0.011807057303552922,
+          "l1_data_usd": 0.0001087979980936362,
+          "usd": 0.011915855301646558
+        },
+        "challenge": {
+          "calldata_bytes": 4964,
+          "exec_gas": 804800,
+          "exec_usd": 0.009460485451234036,
+          "l1_data_usd": 0.00010854991445613115,
+          "usd": 0.009569035365690166
+        },
+        "liquidate": {
+          "calldata_bytes": 36,
+          "exec_gas": 96582,
+          "exec_usd": 0.0011353287846062195,
+          "l1_data_usd": 0.000002696121695464749,
+          "usd": 0.0011380249063016844
+        },
+        "baseline_decide": {
+          "calldata_bytes": 68,
+          "exec_gas": 303009,
+          "exec_usd": 0.003561893931527055,
+          "l1_data_usd": 0.000002696121695464749,
+          "usd": 0.0035645900532225196
+        }
+      },
+      "per_position_day_usd": {
+        "trusttier": 0.004019216194472716,
+        "baseline_onchain_inference": 0.0035645900532225196,
+        "always_zk": 0.011915855301646558
+      },
+      "per_position_day_usd_p90_base_fee": {
+        "trusttier": 0.004019216194472716,
+        "baseline_onchain_inference": 0.00356459005322252,
+        "always_zk": 0.011915855301646558
+      },
+      "per_position_year_usd": {
+        "trusttier": 1.4670139109825413,
+        "baseline_onchain_inference": 1.3010753694262196,
+        "always_zk": 4.3492871851009935
+      },
+      "min_debt_usd_at_0_5pct": {
+        "trusttier": 293.40278219650827,
+        "baseline_onchain_inference": 260.2150738852439,
+        "always_zk": 869.8574370201987
+      },
+      "decisions_per_block": {
+        "tier0": 147,
+        "tier2": 39,
+        "baseline": 132
+      }
+    },
+    "optimism": {
+      "gas_price_gwei": 0.001032576,
+      "block_gas_limit": 40000000,
+      "base_fee_gwei_1024_blocks": {
+        "median": 0.000027889,
+        "p90": 0.000031585,
+        "max": 0.000032695
+      },
+      "actions": {
+        "tier0": {
+          "calldata_bytes": 68,
+          "exec_gas": 270820,
+          "exec_usd": 0.0004752184557784423,
+          "l1_data_usd": 0.000004592619423912827,
+          "usd": 0.0004798110752023551
+        },
+        "tier1": {
+          "calldata_bytes": 132,
+          "exec_gas": 341390,
+          "exec_usd": 0.0005990503973790799,
+          "l1_data_usd": 0.000005804492282041155,
+          "usd": 0.000604854889661121
+        },
+        "tier1_reveal": {
+          "calldata_bytes": 324,
+          "exec_gas": 39089,
+          "exec_usd": 0.00006859099851533687,
+          "l1_data_usd": 0.0000065728375125898014,
+          "usd": 0.00007516383602792667
+        },
+        "tier2": {
+          "calldata_bytes": 4996,
+          "exec_gas": 1004422,
+          "exec_usd": 0.0017624986034631659,
+          "l1_data_usd": 0.00018525152070750445,
+          "usd": 0.00194775012417067
+        },
+        "challenge": {
+          "calldata_bytes": 4964,
+          "exec_gas": 804800,
+          "exec_usd": 0.001412214065469649,
+          "l1_data_usd": 0.00018482893083163735,
+          "usd": 0.0015970429963012864
+        },
+        "liquidate": {
+          "calldata_bytes": 36,
+          "exec_gas": 96582,
+          "exec_usd": 0.0001694762162912396,
+          "l1_data_usd": 0.000004592619423912827,
+          "usd": 0.00017406883571515242
+        },
+        "baseline_decide": {
+          "calldata_bytes": 68,
+          "exec_gas": 303009,
+          "exec_usd": 0.0005317017541797873,
+          "l1_data_usd": 0.000004592619423912827,
+          "usd": 0.0005362943736037003
+        }
+      },
+      "per_position_day_usd": {
+        "trusttier": 0.0006157508766164928,
+        "baseline_onchain_inference": 0.0005362943736037003,
+        "always_zk": 0.00194775012417067
+      },
+      "per_position_day_usd_p90_base_fee": {
+        "trusttier": 0.0006157508766164928,
+        "baseline_onchain_inference": 0.0005362943736037002,
+        "always_zk": 0.0019477501241706703
+      },
+      "per_position_year_usd": {
+        "trusttier": 0.22474906996501987,
+        "baseline_onchain_inference": 0.1957474463653506,
+        "always_zk": 0.7109287953222946
+      },
+      "min_debt_usd_at_0_5pct": {
+        "trusttier": 44.94981399300397,
+        "baseline_onchain_inference": 39.14948927307012,
+        "always_zk": 142.18575906445892
+      },
+      "decisions_per_block": {
+        "tier0": 147,
+        "tier2": 39,
+        "baseline": 132
+      }
+    },
+    "arbitrum": {
+      "gas_price_gwei": 0.02034,
+      "block_gas_limit": 1125899906842624,
+      "base_fee_gwei_1024_blocks": {
+        "median": 0.02003,
+        "p90": 0.0203,
+        "max": 0.022486
+      },
+      "actions": {
+        "tier0": {
+          "calldata_bytes": 68,
+          "exec_gas": 270820,
+          "exec_usd": 0.009360999471742047,
+          "l1_data_usd": 0.000023246765783988448,
+          "usd": 0.009384246237526036
+        },
+        "tier1": {
+          "calldata_bytes": 132,
+          "exec_gas": 341390,
+          "exec_usd": 0.011800279187866544,
+          "l1_data_usd": 0.000030336688486436538,
+          "usd": 0.01183061587635298
+        },
+        "tier1_reveal": {
+          "calldata_bytes": 324,
+          "exec_gas": 39089,
+          "exec_usd": 0.0013511266093749533,
+          "l1_data_usd": 0.00003572230284694999,
+          "usd": 0.0013868489122219035
+        },
+        "tier2": {
+          "calldata_bytes": 4996,
+          "exec_gas": 1004422,
+          "exec_usd": 0.03471824020163241,
+          "l1_data_usd": 0.0005323577536867032,
+          "usd": 0.03525059795531911
+        },
+        "challenge": {
+          "calldata_bytes": 4964,
+          "exec_gas": 804800,
+          "exec_usd": 0.027818227512214754,
+          "l1_data_usd": 0.000531331545603085,
+          "usd": 0.028349559057817837
+        },
+        "liquidate": {
+          "calldata_bytes": 36,
+          "exec_gas": 96582,
+          "exec_usd": 0.003338394693817998,
+          "l1_data_usd": 0.000019622844433961283,
+          "usd": 0.00335801753825196
+        },
+        "baseline_decide": {
+          "calldata_bytes": 68,
+          "exec_gas": 303009,
+          "exec_usd": 0.010473624876054523,
+          "l1_data_usd": 0.000023272004977820748,
+          "usd": 0.010496896881032343
+        }
+      },
+      "per_position_day_usd": {
+        "trusttier": 0.011852469130555815,
+        "baseline_onchain_inference": 0.010496896881032343,
+        "always_zk": 0.03525059795531911
+      },
+      "per_position_day_usd_p90_base_fee": {
+        "trusttier": 0.011852469130555812,
+        "baseline_onchain_inference": 0.010496896881032345,
+        "always_zk": 0.03525059795531911
+      },
+      "per_position_year_usd": {
+        "trusttier": 4.326151232652872,
+        "baseline_onchain_inference": 3.831367361576805,
+        "always_zk": 12.866468253691476
+      },
+      "min_debt_usd_at_0_5pct": {
+        "trusttier": 865.2302465305745,
+        "baseline_onchain_inference": 766.273472315361,
+        "always_zk": 2573.293650738295
+      },
+      "decisions_per_block": {
+        "tier0": 4157373557,
+        "tier2": 1120943096,
+        "baseline": 3715730908
+      }
+    }
+  }
+}
