@@ -52,7 +52,9 @@ function writeDeploymentManifest(networkName, contracts, extra) {
   fs.mkdirSync(outDir, { recursive: true });
   // MANIFEST_NAME lets a benchmark deployment sit beside the DApp's own manifest.
   const outPath = path.join(outDir, `${process.env.MANIFEST_NAME || networkName}.json`);
-  const manifest = { network: networkName, ...extra, contracts: {} };
+  // schema 3: weights-hash proofs, adaptive bands, utilization feature. The DApp
+  // ignores older manifests (their contracts predate these changes) and benchmark ones.
+  const manifest = { network: networkName, schema: 3, benchmark: Boolean(process.env.MANIFEST_NAME), ...extra, contracts: {} };
   for (const [name, { address, artifactName }] of Object.entries(contracts)) {
     const artifact = hre.artifacts.readArtifactSync(artifactName);
     manifest.contracts[name] = {

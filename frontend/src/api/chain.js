@@ -11,7 +11,10 @@ import GAS from "../../../off-chain/evaluation/results/gas_measurements.json";
 import { predict } from "../sim/model";
 
 const RAW = import.meta.glob("../../../deployments/*.json", { eager: true, import: "default" });
-export const MANIFESTS = Object.fromEntries(Object.values(RAW).map((m) => [m.network, m]));
+// Only manifests for the current contracts (schema 3+) and not benchmark copies
+// (deployments/<network>-bench.json, from the testnet-costs workflow).
+export const MANIFESTS = Object.fromEntries(Object.values(RAW)
+  .filter((m) => (m.schema ?? 0) >= 3 && !m.benchmark).map((m) => [m.network, m]));
 export const DEFAULT_RPC = {
   sepolia: import.meta.env.VITE_SEPOLIA_RPC || "https://ethereum-sepolia-rpc.publicnode.com",
   localhost: "http://127.0.0.1:8545",
