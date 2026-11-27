@@ -60,6 +60,10 @@ HORIZON_DAYS = 30
 LT = 0.80                    # liquidation threshold
 CLOSE_FACTOR = 0.5
 BONUS = 0.05
+# Pre-emptive (soft) liquidations may use gentler terms than the protocol's own
+# rule; evaluation/soft_liquidation.py compares them. Default: the same terms.
+SOFT_CLOSE_FACTOR = CLOSE_FACTOR
+SOFT_BONUS = BONUS
 RHO = 0.6                    # weight of the common market factor
 CRASH_PROB = 0.02            # chance per day of a market-wide crash
 CRASH_RANGE = (0.12, 0.30)   # size of a crash day
@@ -113,11 +117,14 @@ def _positions(rng):
     return ltv, vol, topup, age
 
 
-def _liquidate(coll, debt, idx, price):
-    """Close CLOSE_FACTOR of debt at `price`, seizing repaid * (1 + BONUS) of
-    collateral value. Returns the bonus paid by each borrower (USD)."""
-    repaid = debt[idx] * CLOSE_FACTOR
-    seized_value = np.minimum(repaid * (1 + BONUS), coll[idx] * price[idx])
+def _liquidate(coll, debt, idx, price, close_factor=None, bonus=None):
+    """Close a share of debt at `price`, seizing repaid * (1 + bonus) of
+    collateral value (default: the protocol's CLOSE_FACTOR and BONUS).
+    Returns the bonus paid by each borrower (USD)."""
+    close_factor = CLOSE_FACTOR if close_factor is None else close_factor
+    bonus = BONUS if bonus is None else bonus
+    repaid = debt[idx] * close_factor
+    seized_value = np.minimum(repaid * (1 + bonus), coll[idx] * price[idx])
     coll[idx] -= seized_value / price[idx]
     debt[idx] -= repaid
     return seized_value - repaid
@@ -174,7 +181,7 @@ def simulate(policy: str, model: _Model, ltv0, vol, topup0, age0, rel_price):
             idx = live[act & (ltv[live] < LT)]  # pre-emptive (the HF rule handles LTV >= LT)
             out["gas"] += int(tier2.sum()) * GAS_BY_TIER["ZK_PROOF"] + len(idx) * LIQUIDATE_GAS
             if len(idx):
-                out["borrower_bonus_paid"] += float(_liquidate(coll, debt, idx, price).sum())
+                out["borrower_bonus_paid"] += float(_liquidate(coll, debt, idx, price, SOFT_CLOSE_FACTOR, SOFT_BONUS).sum())
                 out["soft_liquidations"] += len(idx)
                 out["soft_positions"].update(int(i) for i in idx)
 
