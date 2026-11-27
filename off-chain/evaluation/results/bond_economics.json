@@ -10,6 +10,13 @@
   "fixed_bond_breakeven_committed_gwei": 11.11,
   "gas_scaled_max_basefee_rise": 1.86,
   "gas_scaled_max_basefee_rise_committed": 1.67,
+  "withdraw_gas": 30070,
+  "with_withdrawal": {
+    "fixed_bond_breakeven_gwei": 11.98,
+    "fixed_bond_breakeven_committed_gwei": 10.75,
+    "max_gas_price_over_claim_basefee": 1.8,
+    "max_gas_price_over_claim_basefee_committed": 1.61
+  },
   "table": [
     {
       "gas_price_gwei": 1,
