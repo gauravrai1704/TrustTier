@@ -1,0 +1,51 @@
+{
+  "same_as_protocol": {
+    "close_factor": 0.5,
+    "bonus": 0.05,
+    "cost_of_one_unnecessary_soft_liquidation_pct_of_debt": 2.5,
+    "forced_liquidations": 373,
+    "insolvent_positions": 6,
+    "bad_debt_pct_of_debt": 0.003,
+    "borrower_bonus_paid_pct_of_debt": 1.626,
+    "soft_liquidations": 2262,
+    "positions_soft_liquidated": 1238,
+    "unnecessary_soft_liquidations": 282,
+    "ten_scenarios_mean_bad_debt_pct": 0.023
+  },
+  "hf_rule": {
+    "forced_liquidations": 2461,
+    "insolvent_positions": 61,
+    "bad_debt_pct_of_debt": 0.018,
+    "borrower_bonus_paid_pct_of_debt": 1.353,
+    "soft_liquidations": 0,
+    "positions_soft_liquidated": 0,
+    "unnecessary_soft_liquidations": 0,
+    "ten_scenarios_mean_bad_debt_pct": 0.087
+  },
+  "gentle": {
+    "close_factor": 0.2,
+    "bonus": 0.02,
+    "cost_of_one_unnecessary_soft_liquidation_pct_of_debt": 0.4,
+    "forced_liquidations": 1029,
+    "insolvent_positions": 13,
+    "bad_debt_pct_of_debt": 0.004,
+    "borrower_bonus_paid_pct_of_debt": 0.869,
+    "soft_liquidations": 4221,
+    "positions_soft_liquidated": 1238,
+    "unnecessary_soft_liquidations": 282,
+    "ten_scenarios_mean_bad_debt_pct": 0.037
+  },
+  "minimal": {
+    "close_factor": 0.1,
+    "bonus": 0.01,
+    "cost_of_one_unnecessary_soft_liquidation_pct_of_debt": 0.1,
+    "forced_liquidations": 1683,
+    "insolvent_positions": 27,
+    "bad_debt_pct_of_debt": 0.01,
+    "borrower_bonus_paid_pct_of_debt": 0.929,
+    "soft_liquidations": 4910,
+    "positions_soft_liquidated": 1238,
+    "unnecessary_soft_liquidations": 282,
+    "ten_scenarios_mean_bad_debt_pct": 0.055
+  }
+}

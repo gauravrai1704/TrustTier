@@ -1,0 +1,82 @@
+{
+  "network": "sepolia",
+  "chain_id": 11155111,
+  "measured_at": "2026-11-24T17:36:37.818Z",
+  "rows": [
+    {
+      "action": "tier0_decideHeuristic",
+      "tx": "0x8d7afe60cdf3e80a224ea00b4489c9a814feab33f551945178b6673eb66ae1cb",
+      "gas_used": 888068,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 68,
+      "total_fee_wei": "888068000000000"
+    },
+    {
+      "action": "tier1_decideCommitment",
+      "tx": "0xd83abaf272bccb6e645e0f3e902eb040ff1178b3048bffe5745af2f59848b399",
+      "gas_used": 1223062,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 132,
+      "total_fee_wei": "1223062000000000"
+    },
+    {
+      "action": "tier1_revealCommitment",
+      "tx": "0x75f3186052e649574ab5d0f3ebb699a37d7d64a2351b3993e7c9af057fc9f9d1",
+      "gas_used": 40373,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 324,
+      "total_fee_wei": "40373000000000"
+    },
+    {
+      "action": "tier2_decideZkProof",
+      "tx": "0xd827f8fd7dd184c845942da621709da52d3bb0d8c8a44a4ea4a15368e209bde7",
+      "gas_used": 1616734,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 4996,
+      "total_fee_wei": "1616734000000000"
+    },
+    {
+      "action": "baseline_deploy",
+      "tx": "0x394ee915d1c80b2fdbc1526fadd01ef5751d31aac68b2fa9eda29d6f198cce8b",
+      "gas_used": 7068795
+    },
+    {
+      "action": "baseline_setParams",
+      "tx": "0xd53198baf9dc8505bf313fb4ed77df7ef6cff991199fb4f3c8190d4383f46703",
+      "gas_used": 4598705,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 2052,
+      "total_fee_wei": "4598705000000000"
+    },
+    {
+      "action": "baseline_decide",
+      "tx": "0x40fb4bb7c06dfb714deb4d18d693c52cb60e50507555e3bebfdc0e11a4af5e1d",
+      "gas_used": 386701,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 68,
+      "total_fee_wei": "386701000000000"
+    },
+    {
+      "action": "liquidate",
+      "tx": "0x48684d6ab3c6d865a4baa0f8d2bcd45cf29ae0905ae6cff503d9884a1debbecd",
+      "gas_used": 201574,
+      "effective_gas_price_wei": "1000000000",
+      "l1_data_fee_wei": "0",
+      "arbitrum_l1_gas": null,
+      "calldata_bytes": 36,
+      "total_fee_wei": "201574000000000"
+    }
+  ]
+}
