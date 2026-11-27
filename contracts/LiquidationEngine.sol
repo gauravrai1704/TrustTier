@@ -131,9 +131,11 @@ contract LiquidationEngine is Ownable {
     uint256 public constant MAX_AGE_DAYS = 2000;
 
     uint256 public constant MIN_BOND = 0.01 ether;
-    /// @dev Gas the bond must cover at the claim's base fee: about twice a
-    ///      measured challenge (676k gas), so a false claim is always worth
-    ///      slashing even if the base fee doubles inside the window.
+    /// @dev Gas the bond must cover at the claim's base fee: 1.86x a measured
+    ///      challenge (804,800 gas; 900,046 with commit-reveal), so slashing a
+    ///      false claim pays while the challenger's gas price (base fee plus
+    ///      priority fee) stays below ~1.8x the claim's base fee, withdrawal
+    ///      included (evaluation/bond_economics.py).
     uint256 public constant BOND_GAS_COVER = 1_500_000;
     uint256 public constant CHALLENGE_WINDOW = 1 hours;
     uint256 public constant APPROVAL_TTL = 30 minutes;

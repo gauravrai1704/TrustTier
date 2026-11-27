@@ -95,6 +95,17 @@ def run() -> dict:
         "fixed_bond_breakeven_committed_gwei": round(breakeven_fixed_committed, 2),
         "gas_scaled_max_basefee_rise": round(BOND_GAS_COVER / CHALLENGE_GAS, 2),
         "gas_scaled_max_basefee_rise_committed": round(BOND_GAS_COVER / COMMITTED_CHALLENGE_GAS, 2),
+        # The slashed bond is credited to the challenger and paid out by a
+        # separate withdraw() (one call can collect several credits); counting
+        # it in full gives the conservative break-even points. "Gas price" is
+        # what the challenger pays per gas: base fee plus priority fee.
+        "withdraw_gas": MEASURED["withdraw"],
+        "with_withdrawal": {
+            "fixed_bond_breakeven_gwei": round(MIN_BOND_ETH / ((CHALLENGE_GAS + MEASURED["withdraw"]) * 1e-9), 2),
+            "fixed_bond_breakeven_committed_gwei": round(MIN_BOND_ETH / ((COMMITTED_CHALLENGE_GAS + MEASURED["withdraw"]) * 1e-9), 2),
+            "max_gas_price_over_claim_basefee": round(BOND_GAS_COVER / (CHALLENGE_GAS + MEASURED["withdraw"]), 2),
+            "max_gas_price_over_claim_basefee_committed": round(BOND_GAS_COVER / (COMMITTED_CHALLENGE_GAS + MEASURED["withdraw"]), 2),
+        },
         "table": rows,
         "assumptions": {"eth_usd": ETH_USD, "target_cost_bps_per_year": TARGET_COST_BPS_PER_YEAR,
                         "decision_cadence": "one decision per position per day (hf_baseline)"},
