@@ -5,7 +5,6 @@
   "rows": [
     {
       "action": "tier0_decideHeuristic",
-      "tx": "0x23320e0a16c1e973c78f22b927773266ffcee361e27fd4fb8425c650a78e7192",
       "gas_used": 270828,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "689",
@@ -15,7 +14,6 @@
     },
     {
       "action": "tier1_decideCommitment",
-      "tx": "0x69c5f5568547bb8984ada6eb6ae2776a8ca69fb79744e365b77ac9f85f118519",
       "gas_used": 341462,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "929",
@@ -25,7 +23,6 @@
     },
     {
       "action": "tier1_revealCommitment",
-      "tx": "0x08a43104aa2a5aa634c28bd9f9c26a4190ddeaf746b532e88b37ba44289315c9",
       "gas_used": 39173,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "1056",
@@ -35,7 +32,6 @@
     },
     {
       "action": "tier2_decideZkProof",
-      "tx": "0xcf35391863b69abbb5ea16cb355d555f2258f982ed4ced89656a66b8605ea917",
       "gas_used": 1004494,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "27835",
@@ -45,12 +41,10 @@
     },
     {
       "action": "baseline_deploy",
-      "tx": "0x28a714cdc1dd9f0a246ec5b4f04437f51783557437eeb7e6de24b88e3f0a32eb",
       "gas_used": 1019915
     },
     {
       "action": "baseline_setParams",
-      "tx": "0x666bf6fad3f1b98ba668cc54764036db16c73af419f899a96dfd1a3315b2856e",
       "gas_used": 1001585,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "3179",
@@ -60,7 +54,6 @@
     },
     {
       "action": "baseline_decide",
-      "tx": "0x6759b19040751872ac00e95d811c7f23a8ac4e4261c67242cab25ae900113b8c",
       "gas_used": 303081,
       "effective_gas_price_wei": "6000000",
       "l1_data_fee_wei": "689",
@@ -70,7 +63,6 @@
     },
     {
       "action": "liquidate",
-      "tx": "0x974306b9ac077f50827941ba30082e8bc85f8a025eb95861c4f40487ee7b7696",
       "gas_used": 96654,
       "effective_gas_price_wei": "5010000",
       "l1_data_fee_wei": "689",
